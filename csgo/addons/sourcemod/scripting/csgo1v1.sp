@@ -305,14 +305,14 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			CS_SetTeamScore(CS_TEAM_T, g_Score);
 			if (g_Score > g_HighestScore) {
 				g_HighestScore = g_Score;
-				PrintToChatAll("%N has set a record of leading %d rounds in a row!", leader, g_Score);
+				PrintToChatAll("\x01\x0B\x04%N has set a record of leading %d rounds in a row!", leader, g_Score);
 			} else {
-				PrintToChatAll("%N has stayed at the top for %d rounds in a row!", leader, g_Score);
+				PrintToChatAll("\x01\x0B\x04%N has stayed at the top for %d rounds in a row!", leader, g_Score);
 			}
 		} else {
 			g_Score = 1;
 			CS_SetTeamScore(CS_TEAM_T, 0);
-			PrintToChatAll("The new leader is %N", leader);
+			PrintToChatAll("\x01\x0B\x04The new leader is %N", leader);
 		}
 	}
 	g_LastWinner = leader;
