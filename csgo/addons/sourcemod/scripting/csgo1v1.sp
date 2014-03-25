@@ -12,15 +12,16 @@
 
 new Handle:g_Enabled = INVALID_HANDLE;
 new g_Arenas = 1;
-new g_Rankings[MAX_ARENAS+1] = -1;		// which arena each player is in
-new g_ArenaPlayer1[MAX_ARENAS+1] = -1;	// who is player 1 in each arena
-new g_ArenaPlayer2[MAX_ARENAS+1] = -1;	// who is player 2 in each arena
-new g_ArenaWinners[MAX_ARENAS+1] = -1; 	// who won each arena
-new g_ArenaLosers[MAX_ARENAS+1] = -1;	// who lost each arena
+new g_Rankings[MAXPLAYERS+1] = -1;		// which arena each player is in
+new g_ArenaPlayer1[MAXPLAYERS+1] = -1;	// who is player 1 in each arena
+new g_ArenaPlayer2[MAXPLAYERS+1] = -1;	// who is player 2 in each arena
+new g_ArenaWinners[MAXPLAYERS+1] = -1; 	// who won each arena
+new g_ArenaLosers[MAXPLAYERS+1] = -1;	// who lost each arena
 
 new g_LastWinner = -1;
 new g_Score = 0;
 new g_HighestScore = 0;
+new g_RoundsLeader[MAXPLAYERS+1] = 0;
 
 new bool:g_GameStarted = false;
 new bool:g_RoundFinished = false;
@@ -204,8 +205,20 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 		}
 	}
 
-	CS_SetTeamScore(CS_TEAM_CT, g_Score);
-	CS_SetTeamScore(CS_TEAM_T, 0);
+	CS_SetTeamScore(CS_TEAM_T, g_Score);
+
+	for (new i = 1; i <= MaxClients; i++) {
+		if (IsValidClient(i))
+			CS_SetMVPCount(i, 0);
+	}
+
+
+	new leader = g_ClientQueue[g_QueueHead];
+	if (IsValidClient(leader)) {
+		g_RoundsLeader[leader]++;
+		CS_SetMVPCount(leader, g_RoundsLeader[leader]);
+	}
+
 
 	CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
@@ -213,7 +226,12 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 public SetupPlayer(client, Float:spawn[3], arena, other) {
 	RespawnPlayer(client);
 	TeleportEntity(client, spawn, NULL_VECTOR, NULL_VECTOR);
-	CS_SetClientContributionScore(client, 3*g_Arenas - 3*arena + 1);
+	new score = 0;
+	if (g_ArenaPlayer1[arena] == client)
+		score = 3*g_Arenas - 3*arena + 1;
+	else
+		score = 3*g_Arenas - 3*arena;
+	CS_SetClientContributionScore(client, score);
 
 	decl String:buffer[20];
 	Format(buffer, sizeof(buffer), "Arena %d", arena);
@@ -247,10 +265,8 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 		}
 	}
 
-	new bool:earlyEnd = !g_GameStarted && (g_numWaitingPlayers >= 1);
-
-	if ((AllDone || earlyEnd) && (nPlayers >= 2 || g_numWaitingPlayers >= 1)) {
-		CS_TerminateRound(2.0, CSRoundEnd_TerroristWin);
+	if ((AllDone || !g_GameStarted) && (nPlayers >= 2 || g_numWaitingPlayers >= 1)) {
+		CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
 		return Plugin_Stop;
 	}
 
@@ -290,29 +306,23 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			AddPlayer(i);
 	}
 
-	new queueLength = GetQueueLength();
-	for (new i = 1; i <= MaxClients; i++) {
-		new pos = FindInQueue(i);
-		if (i != -1)
-			PrintToChat(i, "You are in position %d out of %d", pos, queueLength);
-	}
-
-
 	new leader = g_ClientQueue[g_QueueHead];
 	if (IsValidClient(leader)) {
+		g_RoundsLeader[leader]++;
+		CS_SetMVPCount(leader, g_RoundsLeader[leader]);
 		if (g_LastWinner == leader && GetQueueLength() >= 2) {
 			g_Score++;
-			CS_SetTeamScore(CS_TEAM_T, g_Score);
+			CS_SetTeamScore(CS_TEAM_CT, g_Score);
 			if (g_Score > g_HighestScore) {
 				g_HighestScore = g_Score;
-				PrintToChatAll("\x01\x0B\x04%N has set a record of leading %d rounds in a row!", leader, g_Score);
+				PrintToChatAll("%N has set a record of leading %d rounds in a row!", leader, g_Score);
 			} else {
-				PrintToChatAll("\x01\x0B\x04%N has stayed at the top for %d rounds in a row!", leader, g_Score);
+				PrintToChatAll("%N has stayed at the top for %d rounds in a row!", leader, g_Score);
 			}
 		} else {
 			g_Score = 1;
 			CS_SetTeamScore(CS_TEAM_T, 0);
-			PrintToChatAll("\x01\x0B\x04The new leader is %N", leader);
+			PrintToChatAll("The new leader is %N", leader);
 		}
 	}
 	g_LastWinner = leader;
@@ -332,7 +342,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		if (realp1) {
 			g_isWaiting[p1] = false;
 			g_Rankings[p1] = arena;
-			ChangeClientTeam(p1, CS_TEAM_CT);
+			ChangeClientTeam(p1, CS_TEAM_T);
 		}
 
 		if (realp2) {
