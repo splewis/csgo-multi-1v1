@@ -380,6 +380,7 @@ public ResetClientVariables(client) {
 	g_isWaiting[client] = false;
 	primaryWeapon[client] = "weapon_ak47";
 	secondaryWeapon[client] = "weapon_glock";
+	g_RoundsLeader[client] = 0;
 }
 
 public OnClientConnected(client) {
