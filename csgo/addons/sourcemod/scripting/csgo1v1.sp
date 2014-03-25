@@ -59,8 +59,14 @@ public OnPluginStart() {
 	AutoExecConfig(true, "csgo1v1");
 
 	if (GetConVarInt(g_Enabled) == 1) {
-		AddCommandListener(OnJoinTeamCommand, "jointeam");
+		// Client commands
 		RegConsoleCmd("sm_guns", Command_Primary, "Opens the !guns menu");
+		AddCommandListener(Command_Say, "say");
+		AddCommandListener(Command_Say, "say2");
+		AddCommandListener(Command_Say, "say_team");
+		AddCommandListener(OnJoinTeamCommand, "jointeam");
+
+		// Event hooks
 		HookEvent("player_team", OnPlayerTeam, EventHookMode_Pre);
 		HookEvent("round_start", OnRoundStart, EventHookMode_Post);
 		HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
@@ -206,20 +212,6 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 	}
 
 	CS_SetTeamScore(CS_TEAM_T, g_Score);
-
-	for (new i = 1; i <= MaxClients; i++) {
-		if (IsValidClient(i))
-			CS_SetMVPCount(i, 0);
-	}
-
-
-	new leader = g_ClientQueue[g_QueueHead];
-	if (IsValidClient(leader)) {
-		g_RoundsLeader[leader]++;
-		CS_SetMVPCount(leader, g_RoundsLeader[leader]);
-	}
-
-
 	CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
@@ -232,6 +224,8 @@ public SetupPlayer(client, Float:spawn[3], arena, other) {
 	else
 		score = 3*g_Arenas - 3*arena;
 	CS_SetClientContributionScore(client, score);
+	CS_SetMVPCount(client, g_RoundsLeader[client]);
+
 
 	decl String:buffer[20];
 	Format(buffer, sizeof(buffer), "Arena %d", arena);
@@ -321,15 +315,14 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			}
 		} else {
 			g_Score = 1;
-			CS_SetTeamScore(CS_TEAM_T, 0);
 			PrintToChatAll("The new leader is %N", leader);
 		}
 	}
 	g_LastWinner = leader;
 
-	g_Arenas = 0;
 
 	// Player placement logic for next round
+	g_Arenas = 0;
 	for (new arena = 1; arena <= MAX_ARENAS; arena++) {
 		new p1 = DeQueue();
 		new p2 = DeQueue();
@@ -438,12 +431,18 @@ public SecondaryMenu(client) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public Action:Command_Primary(client, args) {
-	PrimaryMenu(client);
+public Action:Command_Say(client, const String:command[], argc) {
+	decl String:text[192];
+	if (GetCmdArgString(text, sizeof(text)) < 1)
+		return Plugin_Continue;
+	StripQuotes(text);
+	if (strcmp(text[0], "guns", false) == 0)
+		Command_Primary(client, 0);
+	return Plugin_Continue;
 }
 
-public Action:Command_Secondary(client, args) {
-	SecondaryMenu(client);
+public Action:Command_Primary(client, args) {
+	PrimaryMenu(client);
 }
 
 public Weapon_MenuHandler_Primary(Handle:menu, MenuAction:action, param1, param2) {
