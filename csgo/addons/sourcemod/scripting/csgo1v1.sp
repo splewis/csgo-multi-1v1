@@ -99,7 +99,7 @@ public OnMapEnd() {
 }
 
 public Action:OnJoinTeamCommand(client, const String:command[], argc) {
-	if (!IsValidClient(client) || argc < 1)
+	if (!IsValidClient(client))
 		return Plugin_Handled;
 
 	decl String:arg[4];
@@ -120,7 +120,6 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 			g_numWaitingPlayers++;
 			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
 			PrintToChat(client, "You will be placed into an arena next round!");
-			PrimaryMenu(client);
 		}
 	}
 	return Plugin_Handled;
@@ -130,7 +129,6 @@ public Action:OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast
 	dontBroadcast = true;
 	return Plugin_Changed;
 }
-
 
 public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -185,7 +183,7 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
 public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = false;
 
-	for (new arena = 1; arena <= g_Arenas; arena++) {
+	for (new arena = 1; arena <= MAX_ARENAS; arena++) {
 		g_ArenaWinners[arena] = -1;
 		g_ArenaLosers[arena] = -1;
 		if (g_ArenaPlayer2[arena] == -1) {
@@ -195,7 +193,7 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 
 	new Handle:spawns = SC_GetSpawnsArray();
 	new spawned = 0;
-	for (new i = 1; i <= g_Arenas; i++) {
+	for (new i = 1; i <= MAX_ARENAS; i++) {
 		new p1 = g_ArenaPlayer1[i];
 		new p2 = g_ArenaPlayer2[i];
 		new Float:spawn[3];
@@ -255,10 +253,15 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 		if (hasp2)
 			nPlayers++;
 
+		if (!hasp1)
+			g_ArenaWinners[arena] = g_ArenaPlayer2[arena];
+		if (!hasp2)
+			g_ArenaWinners[arena] = g_ArenaPlayer1[arena];
+
 		if (g_ArenaWinners[arena] == -1 && hasp1 && hasp2) {
 			AllDone = false;
 			break;
-			}
+		}
 	}
 
 	if ((AllDone || !g_GameStarted) && (nPlayers >= 2 || g_numWaitingPlayers >= 1)) {
@@ -298,7 +301,8 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	AddPlayer(g_ArenaLosers[6]);
 
 	for (new i = 1; i <= MaxClients; i++) {
-		if (g_isWaiting[i])
+		g_isWaiting[i] = false;
+		if (FindInQueue(i) == -1)
 			AddPlayer(i);
 	}
 
@@ -337,7 +341,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		if (realp1) {
 			g_isWaiting[p1] = false;
 			g_Rankings[p1] = arena;
-			ChangeClientTeam(p1, CS_TEAM_T);
+			ChangeClientTeam(p1, CS_TEAM_CT);
 		}
 
 		if (realp2) {
@@ -395,17 +399,14 @@ public UpdateArena(arena) {
 	if (arena != -1) {
 		new p1 = g_ArenaPlayer1[arena];
 		new p2 = g_ArenaPlayer2[arena];
-		if (IsValidClient(p1) && IsClientInGame(p1))
+		if (IsValidClient(p1) && !IsValidClient(p2)) {
 			g_ArenaWinners[arena] = p1;
-		else if (IsValidClient(p2) && IsClientInGame(p2))
-			g_ArenaWinners[arena] = p2;
+			g_ArenaLosers[arena] = p2;
+		} else {
+			g_ArenaWinners[arena] = p1;
+			g_ArenaLosers[arena] = p2;
+		}
 	}
-}
-
-RespawnPlayer(client) {
-	g_PluginTeamSwitch[client] = true;
-	CS_RespawnPlayer(client);
-	g_PluginTeamSwitch[client] = false;
 }
 
 public PrimaryMenu(client) {
@@ -469,11 +470,21 @@ public Action:RemoveRadar(Handle:timer, any:clientIndex) {
 	SetEntProp(clientIndex, Prop_Send, "m_iHideHUD", 1 << 12);
 }
 
-public OnPlayerRadio(Handle:event, const String:name[], bool:dontBroadcast) {
-	PrintToChatAll("radio command");
+public Action:OnPlayerRadio(Handle:event, const String:name[], bool:dontBroadcast) {
 	// new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-	// dontBroadcast = true;
+	dontBroadcast = true;
+	// SetEventInt(event, "userid", 0);
+	// SetEventInt(event, "slot", 1);
 	return Plugin_Handled;
+}
+
+/**
+ * Respawn a Player while ensuring join team command is ignored if triggered
+ */
+RespawnPlayer(client) {
+	g_PluginTeamSwitch[client] = true;
+	CS_RespawnPlayer(client);
+	g_PluginTeamSwitch[client] = false;
 }
 
 /*********************************
