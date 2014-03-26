@@ -72,6 +72,7 @@ public OnPluginStart() {
 		HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
 		HookEvent("player_death", OnPlayerDeath, EventHookMode_Post);
 		HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
+		HookEvent("player_radio", OnPlayerRadio, EventHookMode_Pre);
 		SC_Initialize("csgo1v1",
 					  "spawn_menu", ADMFLAG_GENERIC,
 					  "spawn_add", ADMFLAG_GENERIC,
@@ -140,6 +141,7 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
 	GivePlayerItem(client, primaryWeapon[client]);
 	GivePlayerItem(client, secondaryWeapon[client]);
 	GivePlayerItem(client, "weapon_knife");
+	CreateTimer(0.0, RemoveRadar, client);
 }
 
 public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -256,7 +258,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 		if (g_ArenaWinners[arena] == -1 && hasp1 && hasp2) {
 			AllDone = false;
 			break;
-		}
+			}
 	}
 
 	if ((AllDone || !g_GameStarted) && (nPlayers >= 2 || g_numWaitingPlayers >= 1)) {
@@ -463,6 +465,16 @@ public Weapon_MenuHandler_Secondary(Handle:menu, MenuAction:action, param1, para
 	}
 }
 
+public Action:RemoveRadar(Handle:timer, any:clientIndex) {
+	SetEntProp(clientIndex, Prop_Send, "m_iHideHUD", 1 << 12);
+}
+
+public OnPlayerRadio(Handle:event, const String:name[], bool:dontBroadcast) {
+	PrintToChatAll("radio command");
+	// new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+	// dontBroadcast = true;
+	return Plugin_Handled;
+}
 
 /*********************************
  * Circular Queue Implementation *
