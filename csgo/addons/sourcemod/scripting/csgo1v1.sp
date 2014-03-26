@@ -25,7 +25,6 @@ new g_Score = 0;
 new g_HighestScore = 0;
 new g_RoundsLeader[MAXPLAYERS+1] = 0;
 
-new bool:g_GameStarted = false;
 new bool:g_RoundFinished = false;
 new g_numWaitingPlayers = 0;
 new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false; 	// Flags the teamswitches as being done by the plugin
@@ -74,7 +73,6 @@ public OnPluginStart() {
 }
 
 public OnMapStart() {
-	g_GameStarted = false;
 	ServerCommand("exec sourcemod/csgo1v1.cfg");
 	SC_LoadMapConfig();
 	new numSpawns = GetArraySize(SC_GetSpawnsArray());
@@ -253,7 +251,10 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 		}
 	}
 
-	if ((AllDone || !g_GameStarted) && (nPlayers >= 2 || g_numWaitingPlayers >= 1)) {
+	new bool:NormalFinish = AllDone && nPlayers >= 2;
+	new bool:WaitingPlayers = nPlayers < 2 && g_numWaitingPlayers > 0;
+
+	if (NormalFinish || WaitingPlayers) {
 		CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
 		return Plugin_Stop;
 	}
@@ -262,7 +263,6 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 }
 
 public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
-	g_GameStarted = true;
 	g_RoundFinished = true;
 
 	// If time ran out and we have no winners/losers, set them
@@ -351,6 +351,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_numWaitingPlayers = 0;
 	while (!IsQueueEmpty()) {
 		new client = DeQueue();
+		g_Rankings[client] = -1;
 		g_isWaiting[client] = true;
 		g_numWaitingPlayers++;
 	}

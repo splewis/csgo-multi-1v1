@@ -39,7 +39,7 @@ public SecondaryMenu(client) {
 	AddMenuItem(menu, "weapon_p250", "P250");
 	AddMenuItem(menu, "weapon_cz75a", "CZ75");
 	AddMenuItem(menu, "weapon_deagle", "Deagle");
-	AddMenuItem(menu, "weapon_fiveseven", "Five Seven");
+	AddMenuItem(menu, "weapon_fiveseven", "Five-Seven");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
