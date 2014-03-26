@@ -5,6 +5,8 @@
 #include <cstrike>
 #include <adminmenu>
 #include "spawnpoints"
+#include "queue.sp"
+#include "weaponmenu.sp"
 
 #pragma semicolon 1
 
@@ -28,19 +30,6 @@ new bool:g_RoundFinished = false;
 new g_numWaitingPlayers = 0;
 new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false; 	// Flags the teamswitches as being done by the plugin
 
-// Other data for weapon handling
-#define WEAPON_LENGTH 24
-new String:primaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
-new String:secondaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
-
-// Queue data
-new g_QueueSize = MAXPLAYERS+1;
-new g_ClientQueue[MAXPLAYERS+1];
-new g_QueueHead = 0;
-new g_QueueTail = 0;
-new g_isWaiting[MAXPLAYERS+1] = false;
-
-
 public Plugin:myinfo = {
 	name = "CS:GO 1v1",
 	author = "splewis",
@@ -60,7 +49,7 @@ public OnPluginStart() {
 
 	if (GetConVarInt(g_Enabled) == 1) {
 		// Client commands
-		RegConsoleCmd("sm_guns", Command_Primary, "Opens the !guns menu");
+		RegConsoleCmd("sm_guns", Command_guns, "Opens the !guns menu");
 		AddCommandListener(Command_Say, "say");
 		AddCommandListener(Command_Say, "say2");
 		AddCommandListener(Command_Say, "say_team");
@@ -286,6 +275,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		}
 	}
 
+	InitQueue();
 	//  top arena
 	AddPlayer(g_ArenaWinners[1]);
 	AddPlayer(g_ArenaWinners[2]);
@@ -409,63 +399,6 @@ public UpdateArena(arena) {
 	}
 }
 
-public PrimaryMenu(client) {
-	new Handle:menu = CreateMenu(Weapon_MenuHandler_Primary);
-	SetMenuTitle(menu, "Chose your primary weapon:");
-	AddMenuItem(menu, "weapon_ak47", "AK47");
-	AddMenuItem(menu, "weapon_m4a1", "M4A4");
-	AddMenuItem(menu, "weapon_m4a1_silencer", "M4A1-S");
-	AddMenuItem(menu, "weapon_famas", "Famas");
-	AddMenuItem(menu, "weapon_galilar", "Galil");
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
-}
-
-public SecondaryMenu(client) {
-	new Handle:menu = CreateMenu(Weapon_MenuHandler_Secondary);
-	SetMenuExitButton(menu, true);
-	SetMenuTitle(menu, "Chose your secondary weapon:");
-	AddMenuItem(menu, "weapon_hkp2000", "P2000");
-	AddMenuItem(menu, "weapon_usp_silencer", "USP");
-	AddMenuItem(menu, "weapon_glock", "Glock");
-	AddMenuItem(menu, "weapon_p250", "P250");
-	AddMenuItem(menu, "weapon_cz75a", "CZ75");
-	AddMenuItem(menu, "weapon_deagle", "Deagle");
-	AddMenuItem(menu, "weapon_fiveseven", "Five Seven");
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
-}
-
-public Action:Command_Say(client, const String:command[], argc) {
-	decl String:text[192];
-	if (GetCmdArgString(text, sizeof(text)) < 1)
-		return Plugin_Continue;
-	StripQuotes(text);
-	if (strcmp(text[0], "guns", false) == 0)
-		Command_Primary(client, 0);
-	return Plugin_Continue;
-}
-
-public Action:Command_Primary(client, args) {
-	PrimaryMenu(client);
-}
-
-public Weapon_MenuHandler_Primary(Handle:menu, MenuAction:action, param1, param2) {
-	if (action == MenuAction_Select) {
-		decl String:info[WEAPON_LENGTH];
-		GetMenuItem(menu, param2, info, sizeof(info));
-		primaryWeapon[param1] = info;
-		SecondaryMenu(param1);
-	}
-}
-
-public Weapon_MenuHandler_Secondary(Handle:menu, MenuAction:action, param1, param2) {
-	if (action == MenuAction_Select) {
-		decl String:info[WEAPON_LENGTH];
-		GetMenuItem(menu, param2, info, sizeof(info));
-		secondaryWeapon[param1] = info;
-		PrintToChat(param1, "You will get your new weapons next spawn.");
-	}
-}
-
 public Action:RemoveRadar(Handle:timer, any:clientIndex) {
 	SetEntProp(clientIndex, Prop_Send, "m_iHideHUD", 1 << 12);
 }
@@ -487,111 +420,6 @@ RespawnPlayer(client) {
 	g_PluginTeamSwitch[client] = false;
 }
 
-/*********************************
- * Circular Queue Implementation *
-**********************************/
-
-/**
- * Push a Client into the Queue (don't add a client if already in queue)
- * @param client		The client to push into the queue
- * @return				returns 0 if added or -1 if already in queue
- */
-public EnQueue(client) {
-	//if (g_QueueTail + 1) mod g_QueueSize equals head, then the queue is full. - not sure if possible, so ignoring
-	if(FindInQueue(client) != -1)
-		return -1;
-
-	g_ClientQueue[g_QueueTail] = client;
-	g_QueueTail = (g_QueueTail + 1) % g_QueueSize;
-	return 0;
-}
-
-/**
- * Finds a client in the Queue
- * @param client		The client to find in the queue
- * @return				index of client in internal array, -1 if not in queue
- */
-public FindInQueue(client) {
-	new i = g_QueueHead, bool:found = false;
-	while(i != g_QueueTail && !found) {
-		if (client == g_ClientQueue[i]) {
-			found = true;
-		} else {
-			i = (i + 1) % g_QueueSize;
-		}
-	}
-	return found ? i : -1;
-}
-
-/**
- * Drops a client from the Queue
- * @param client		The client to drop from the queue
- * @return				0 if success or -1 if not in queue
- */
-public DropFromQueue(client) {
-	// find client cur position in queue
-	new cur = FindInQueue(client);
-
-	if (cur == -1) {
-		// client was not found in the queue
-		return -1;
-	}
-	else if (cur == g_QueueHead) {
-		// dropping client from queue is same as deQueue, head moves forward on deletion
-		g_QueueHead = (cur + 1) % g_QueueSize;
-	} else {
-		// shift all clients forward in queue
-		new next, prev = cur == 0 ? g_QueueSize : cur - 1;
-		while(cur != g_QueueTail) {
-			next = (cur + 1) % g_QueueSize;
-			if(next != g_QueueTail) {
-				// move next client forward to cur
-				g_ClientQueue[cur] = g_ClientQueue[next];
-			}
-			prev = cur;
-			cur = next;
-		}
-		// tail needs to update as well
-		g_QueueTail = prev;
-	}
-	return 0;
-}
-
-/**
- * Get queue length, does not validate clients in queue
- * @return			Queue length
-*/
-public GetQueueLength() {
-	new i = g_QueueHead, count = 0;
-	while (i != g_QueueTail) {
-		count++;
-		i = (i + 1) % g_QueueSize;
-	}
-	return count;
-}
-
-/**
- * Test if queue is empty
- * @return			true if queue is empty, false if queue is not empty
-*/
-public IsQueueEmpty() {
-	return g_QueueTail == g_QueueHead;
-}
-
-/**
- * Fetch next client from queue
- * @return				Returns the next client from the queue or -1 if queue is empty.
- */
-public DeQueue() {
-	// check if queue is empty
-	if (g_QueueTail == g_QueueHead)
-		return -1;
-
-	// head advances on dequeue
-	new client = g_ClientQueue[g_QueueHead];
-	g_QueueHead = (g_QueueHead + 1) % g_QueueSize;
-	return client;
-}
 
 /***************************
  * Stocks                  *
