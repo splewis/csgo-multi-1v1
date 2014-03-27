@@ -60,7 +60,6 @@ public OnPluginStart() {
 		HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
 		HookEvent("player_death", OnPlayerDeath, EventHookMode_Post);
 		HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
-		HookEvent("player_radio", OnPlayerRadio, EventHookMode_Pre);
 		SC_Initialize("csgo1v1",
 					  "spawn_menu", ADMFLAG_GENERIC,
 					  "spawn_add", ADMFLAG_GENERIC,
@@ -76,8 +75,8 @@ public OnMapStart() {
 	ServerCommand("exec sourcemod/csgo1v1.cfg");
 	SC_LoadMapConfig();
 	new numSpawns = GetArraySize(SC_GetSpawnsArray());
-	if (numSpawns != 2*MAX_ARENAS) {
-		LogMessage("[CS:GO 1v1] There are not enough spawns on this map, found %d, expected %d", numSpawns, 2*MAX_ARENAS);
+	if (numSpawns < 2*MAX_ARENAS) {
+		LogMessage("[CS:GO 1v1] There are not enough spawns on this map, only found %d, expected at least %d", numSpawns, 2*MAX_ARENAS);
 	}
 }
 
@@ -198,12 +197,12 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 		}
 	}
 
-	CS_SetTeamScore(CS_TEAM_T, g_Score);
 	CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
 public SetupPlayer(client, Float:spawn[3], arena, other) {
 	RespawnPlayer(client);
+	FreezePlayer(client, false);
 	TeleportEntity(client, spawn, NULL_VECTOR, NULL_VECTOR);
 	new score = 0;
 	if (g_ArenaPlayer1[arena] == client)
@@ -212,7 +211,6 @@ public SetupPlayer(client, Float:spawn[3], arena, other) {
 		score = 3*g_Arenas - 3*arena;
 	CS_SetClientContributionScore(client, score);
 	CS_SetMVPCount(client, g_RoundsLeader[client]);
-
 
 	decl String:buffer[20];
 	Format(buffer, sizeof(buffer), "Arena %d", arena);
@@ -297,12 +295,11 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	}
 
 	new leader = g_ClientQueue[g_QueueHead];
-	if (IsValidClient(leader)) {
+	if (IsValidClient(leader) && GetQueueLength() >= 2) {
 		g_RoundsLeader[leader]++;
 		CS_SetMVPCount(leader, g_RoundsLeader[leader]);
 		if (g_LastWinner == leader && GetQueueLength() >= 2) {
 			g_Score++;
-			CS_SetTeamScore(CS_TEAM_CT, g_Score);
 			if (g_Score > g_HighestScore) {
 				g_HighestScore = g_Score;
 				PrintToChatAll("%N has set a record of leading %d rounds in a row!", leader, g_Score);
@@ -331,13 +328,15 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		if (realp1) {
 			g_isWaiting[p1] = false;
 			g_Rankings[p1] = arena;
-			ChangeClientTeam(p1, CS_TEAM_CT);
+			SwitchPlayerTeam(p1, CS_TEAM_CT);
+			FreezePlayer(p1, true);
 		}
 
 		if (realp2) {
 			g_isWaiting[p2] = false;
 			g_Rankings[p2] = arena;
-			ChangeClientTeam(p2, CS_TEAM_T);
+			SwitchPlayerTeam(p2, CS_TEAM_T);
+			FreezePlayer(p2, true);
 		}
 
 		if (realp1 || realp2) {
@@ -400,16 +399,8 @@ public UpdateArena(arena) {
 	}
 }
 
-public Action:RemoveRadar(Handle:timer, any:clientIndex) {
-	SetEntProp(clientIndex, Prop_Send, "m_iHideHUD", 1 << 12);
-}
-
-public Action:OnPlayerRadio(Handle:event, const String:name[], bool:dontBroadcast) {
-	// new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-	dontBroadcast = true;
-	// SetEventInt(event, "userid", 0);
-	// SetEventInt(event, "slot", 1);
-	return Plugin_Handled;
+public Action:RemoveRadar(Handle:timer, any:client) {
+	SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
 }
 
 /**
@@ -421,6 +412,18 @@ RespawnPlayer(client) {
 	g_PluginTeamSwitch[client] = false;
 }
 
+
+SwitchPlayerTeam(client, team) {
+	g_PluginTeamSwitch[client] = true;
+	if (team > CS_TEAM_SPECTATOR) {
+		CS_SwitchTeam(client, team);
+		CS_UpdateClientModel(client);
+		CS_RespawnPlayer(client);
+	} else {
+		ChangeClientTeam(client, team);
+	}
+	g_PluginTeamSwitch[client] = false;
+}
 
 /***************************
  * Stocks                  *
@@ -438,4 +441,16 @@ stock bool:IsValidClient(client) {
 	if (client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
 		return true;
 	return false;
+}
+
+/**
+ * Function to handle un/freezing of a player
+ */
+FreezePlayer(client, bool:freeze) {
+	if (IsValidEntity(client)) {
+		if (freeze)
+			SetEntityMoveType(client, MOVETYPE_NONE);
+		else
+			SetEntityMoveType(client, MOVETYPE_WALK);
+	}
 }
