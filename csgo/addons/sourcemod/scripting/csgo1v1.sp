@@ -28,6 +28,7 @@ new g_RoundsLeader[MAXPLAYERS+1] = 0;
 new bool:g_RoundFinished = false;
 new g_numWaitingPlayers = 0;
 new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false; 	// Flags the teamswitches as being done by the plugin
+new bool:g_SittingOut[MAXPLAYERS+1] = false;
 
 public Plugin:myinfo = {
 	name = "CS:GO 1v1",
@@ -95,6 +96,7 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 	if (IsFakeClient(client) || g_PluginTeamSwitch[client]) {
 		return Plugin_Continue;
 	} else if (team_to == CS_TEAM_SPECTATOR) {
+		g_SittingOut[client] = true;
 		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
 		new arena = g_Rankings[client];
 		g_Rankings[client] = -1;
@@ -358,7 +360,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 }
 
 public AddPlayer(client) {
-	if (IsValidClient(client) && !IsFakeClient(client)) {
+	if (IsValidClient(client) && !IsFakeClient(client) && !g_SittingOut[client]) {
 		EnQueue(client);
 	}
 }
@@ -366,6 +368,7 @@ public AddPlayer(client) {
 public ResetClientVariables(client) {
 	if (g_isWaiting[client])
 		g_numWaitingPlayers--;
+	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
 	primaryWeapon[client] = "weapon_ak47";
 	secondaryWeapon[client] = "weapon_glock";
