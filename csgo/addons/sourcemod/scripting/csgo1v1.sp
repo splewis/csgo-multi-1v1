@@ -288,8 +288,8 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	}
 
 	// bottom arena
-	AddPlayer(g_ArenaLosers[5]);
-	AddPlayer(g_ArenaLosers[6]);
+	AddPlayer(g_ArenaLosers[MAX_ARENAS - 1]);
+	AddPlayer(g_ArenaLosers[MAX_ARENAS]);
 
 	for (new i = 1; i <= MaxClients; i++) {
 		g_isWaiting[i] = false;
