@@ -13,8 +13,10 @@ public Action:Command_Say(client, const String:command[], argc) {
 	if (GetCmdArgString(text, sizeof(text)) < 1)
 		return Plugin_Continue;
 	StripQuotes(text);
-	if (strcmp(text[0], "guns", false) == 0)
+	if (strcmp(text[0], "guns", false) == 0) {
 		Command_guns(client, 0);
+		return Plugin_Handled;
+	}
 	return Plugin_Continue;
 }
 

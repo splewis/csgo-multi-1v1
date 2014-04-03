@@ -108,6 +108,7 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 			g_numWaitingPlayers++;
 			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
 			PrintToChat(client, "You will be placed into an arena next round!");
+			PrintToChat(client, "Type guns into chat to select new weapons.");
 		}
 	}
 	return Plugin_Handled;
