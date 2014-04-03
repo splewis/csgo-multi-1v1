@@ -10,7 +10,7 @@
 
 #pragma semicolon 1
 
-#define MAX_ARENAS 6
+#define MAX_ARENAS 12
 
 new Handle:g_Enabled = INVALID_HANDLE;
 new g_Arenas = 1;
@@ -77,7 +77,7 @@ public OnMapStart() {
 	SC_LoadMapConfig();
 	new numSpawns = GetArraySize(SC_GetSpawnsArray());
 	if (numSpawns < 2*MAX_ARENAS) {
-		LogMessage("[CS:GO 1v1] There are not enough spawns on this map, only found %d, expected at least %d", numSpawns, 2*MAX_ARENAS);
+		LogMessage("[CS:GO 1v1] Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
 	}
 }
 
@@ -169,10 +169,16 @@ public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
 
 }
 
+public GetNumArenas() {
+	return GetArraySize(SC_GetSpawnsArray()) / 2;
+}
+
 public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = false;
+	new Handle:spawns = SC_GetSpawnsArray();
+	new numArenas = GetArraySize(spawns) / 2;
 
-	for (new arena = 1; arena <= MAX_ARENAS; arena++) {
+	for (new arena = 1; arena <= numArenas; arena++) {
 		g_ArenaWinners[arena] = -1;
 		g_ArenaLosers[arena] = -1;
 		if (g_ArenaPlayer2[arena] == -1) {
@@ -180,9 +186,8 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 		}
 	}
 
-	new Handle:spawns = SC_GetSpawnsArray();
 	new spawned = 0;
-	for (new i = 1; i <= MAX_ARENAS; i++) {
+	for (new i = 1; i <= numArenas; i++) {
 		new p1 = g_ArenaPlayer1[i];
 		new p2 = g_ArenaPlayer2[i];
 		new Float:spawn[3];
@@ -265,6 +270,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 
 public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = true;
+	new numArenas = GetNumArenas();
 
 	// If time ran out and we have no winners/losers, set them
 	for (new arena = 1; arena <= g_Arenas; arena++) {
@@ -282,14 +288,14 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	AddPlayer(g_ArenaWinners[2]);
 
 	// middle arenas
-	for (new i = 2; i <= MAX_ARENAS - 1; i++) {
+	for (new i = 2; i <= numArenas - 1; i++) {
 		AddPlayer(g_ArenaLosers[i - 1]);
 		AddPlayer(g_ArenaWinners[i + 1]);
 	}
 
 	// bottom arena
-	AddPlayer(g_ArenaLosers[MAX_ARENAS - 1]);
-	AddPlayer(g_ArenaLosers[MAX_ARENAS]);
+	AddPlayer(g_ArenaLosers[numArenas - 1]);
+	AddPlayer(g_ArenaLosers[numArenas]);
 
 	for (new i = 1; i <= MaxClients; i++) {
 		g_isWaiting[i] = false;
@@ -319,7 +325,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 
 	// Player placement logic for next round
 	g_Arenas = 0;
-	for (new arena = 1; arena <= MAX_ARENAS; arena++) {
+	for (new arena = 1; arena <= numArenas; arena++) {
 		new p1 = DeQueue();
 		new p2 = DeQueue();
 		g_ArenaPlayer1[arena] = p1;
