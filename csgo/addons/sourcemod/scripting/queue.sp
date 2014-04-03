@@ -28,8 +28,10 @@ public EnQueue(client) {
  * Finds a client in the Queue
  */
 public FindInQueue(client) {
-	new i = g_QueueHead, bool:found = false;
-	while(i != g_QueueTail && !found) {
+	new i = g_QueueHead
+	new bool:found = false;
+
+	while (i != g_QueueTail && !found) {
 		if (client == g_ClientQueue[i]) {
 			found = true;
 		} else {
@@ -47,18 +49,15 @@ public DropFromQueue(client) {
 	new cur = FindInQueue(client);
 
 	if (cur == -1) {
-		// client was not found in the queue
 		return -1;
-	}
-	else if (cur == g_QueueHead) {
-		// dropping client from queue is same as deQueue, head moves forward on deletion
+	} else if (cur == g_QueueHead) {
 		g_QueueHead = (cur + 1) % g_QueueSize;
 	} else {
 		// shift all clients forward in queue
 		new next, prev = cur == 0 ? g_QueueSize : cur - 1;
-		while(cur != g_QueueTail) {
+		while (cur != g_QueueTail) {
 			next = (cur + 1) % g_QueueSize;
-			if(next != g_QueueTail) {
+			if (next != g_QueueTail) {
 				// move next client forward to cur
 				g_ClientQueue[cur] = g_ClientQueue[next];
 			}
