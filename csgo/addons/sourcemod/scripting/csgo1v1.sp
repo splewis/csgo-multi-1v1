@@ -77,7 +77,10 @@ public OnMapStart() {
 	SC_LoadMapConfig();
 	new numSpawns = GetArraySize(SC_GetSpawnsArray());
 	if (numSpawns < 2*MAX_ARENAS) {
-		LogMessage("[CS:GO 1v1] Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
+		LogMessage("Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
+	}
+	if (numSpawns < 2) {
+		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
 	}
 }
 
@@ -108,7 +111,7 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 			g_numWaitingPlayers++;
 			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
 			PrintToChat(client, "You will be placed into an arena next round!");
-			PrintToChat(client, "Type guns into chat to select new weapons.");
+			PrintToChat(client, "Type \x04guns\x01 into chat to select new weapons.");
 		}
 	}
 	return Plugin_Handled;
@@ -317,7 +320,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			}
 		} else {
 			g_Score = 1;
-			PrintToChatAll("The new leader is %N", leader);
+			PrintToChatAll("The new leader is \x04%N\x01", leader);
 		}
 	}
 	g_LastWinner = leader;
