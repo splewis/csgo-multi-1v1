@@ -110,7 +110,7 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 			g_Rankings[client] = -1;
 			g_numWaitingPlayers++;
 			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
-			PrintToChat(client, "You will be placed into an arena next round!");
+			PrintToChat(client, "\x01\x0B\x04You will be placed into an arena next round!");
 			PrintToChat(client, "Type \x04guns\x01 into chat to select new weapons.");
 		}
 	}
@@ -228,9 +228,9 @@ public SetupPlayer(client, Float:spawn[3], arena, other) {
 	CS_SetClientClanTag(client, buffer);
 
 	if (IsValidClient(other)) {
-		PrintToChat(client, "You are in arena %d, facing off against %N", arena, other);
+		PrintToChat(client, "You are in arena \x04%d\x01, facing off against %N", arena, other);
 	} else {
-		PrintToChat(client, "You are in arena %d with no opponent", arena);
+		PrintToChat(client, "You are in arena \x04%d\x01 with no opponent", arena);
 	}
 }
 
@@ -314,9 +314,9 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			g_Score++;
 			if (g_Score > g_HighestScore) {
 				g_HighestScore = g_Score;
-				PrintToChatAll("%N has set a record of leading %d rounds in a row!", leader, g_Score);
+				PrintToChatAll("\x01\x0B\x04%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
 			} else {
-				PrintToChatAll("%N has stayed at the top for %d rounds in a row!", leader, g_Score);
+				PrintToChatAll("\x01\x0B\x04%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
 			}
 		} else {
 			g_Score = 1;
