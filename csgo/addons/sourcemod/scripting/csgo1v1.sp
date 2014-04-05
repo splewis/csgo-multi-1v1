@@ -1,9 +1,8 @@
 #include <sourcemod>
-#include <sdktools>
 #include <sdkhooks>
 #include <smlib>
 #include <cstrike>
-#include <adminmenu>
+#include <clientprefs>
 #include "spawnpoints"
 #include "queue.sp"
 #include "weaponmenu.sp"
@@ -431,7 +430,7 @@ SwitchPlayerTeam(client, team) {
 	if (team > CS_TEAM_SPECTATOR) {
 		CS_SwitchTeam(client, team);
 		CS_UpdateClientModel(client);
-		CS_RespawnPlayer(client);
+		// CS_RespawnPlayer(client);
 	} else {
 		ChangeClientTeam(client, team);
 	}
