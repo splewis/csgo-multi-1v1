@@ -212,7 +212,6 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 
 public SetupPlayer(client, Float:spawn[3], arena, other) {
 	RespawnPlayer(client);
-	FreezePlayer(client, false);
 	TeleportEntity(client, spawn, NULL_VECTOR, NULL_VECTOR);
 	new score = 0;
 	if (g_ArenaPlayer1[arena] == client)
@@ -285,6 +284,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	}
 
 	InitQueue();
+
 	//  top arena
 	AddPlayer(g_ArenaWinners[1]);
 	AddPlayer(g_ArenaWinners[2]);
@@ -296,8 +296,10 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	}
 
 	// bottom arena
-	AddPlayer(g_ArenaLosers[numArenas - 1]);
-	AddPlayer(g_ArenaLosers[numArenas]);
+	if (numArenas >= 1) {
+		AddPlayer(g_ArenaLosers[numArenas - 1]);
+		AddPlayer(g_ArenaLosers[numArenas]);
+	}
 
 	for (new i = 1; i <= MaxClients; i++) {
 		g_isWaiting[i] = false;
@@ -340,14 +342,12 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			g_isWaiting[p1] = false;
 			g_Rankings[p1] = arena;
 			SwitchPlayerTeam(p1, CS_TEAM_CT);
-			FreezePlayer(p1, true);
 		}
 
 		if (realp2) {
 			g_isWaiting[p2] = false;
 			g_Rankings[p2] = arena;
 			SwitchPlayerTeam(p2, CS_TEAM_T);
-			FreezePlayer(p2, true);
 		}
 
 		if (realp1 || realp2) {
@@ -453,16 +453,4 @@ stock bool:IsValidClient(client) {
 	if (client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
 		return true;
 	return false;
-}
-
-/**
- * Function to handle un/freezing of a player
- */
-FreezePlayer(client, bool:freeze) {
-	if (IsValidEntity(client)) {
-		if (freeze)
-			SetEntityMoveType(client, MOVETYPE_NONE);
-		else
-			SetEntityMoveType(client, MOVETYPE_WALK);
-	}
 }
