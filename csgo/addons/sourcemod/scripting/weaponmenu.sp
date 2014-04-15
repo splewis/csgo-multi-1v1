@@ -62,3 +62,10 @@ public Weapon_MenuHandler_Secondary(Handle:menu, MenuAction:action, param1, para
 		PrintToChat(param1, "You will get your new weapons next spawn.");
 	}
 }
+
+public Action:Timer_PrintGunsMessage(Handle:timer, any:client) {
+	if (IsValidClient(client)) {
+		PrintToChat(client, "Type \x04guns\x01 into chat to select new weapons.");
+	}
+	return Plugin_Handled;
+}

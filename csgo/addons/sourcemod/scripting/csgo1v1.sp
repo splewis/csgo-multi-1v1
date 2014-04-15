@@ -6,6 +6,7 @@
 #include "spawnpoints"
 #include "queue.sp"
 #include "weaponmenu.sp"
+#include "spawn_angles.sp"
 
 #pragma semicolon 1
 
@@ -49,6 +50,8 @@ public OnPluginStart() {
 	if (GetConVarInt(g_Enabled) == 1) {
 		// Client commands
 		RegConsoleCmd("sm_guns", Command_guns, "Opens the !guns menu");
+		RegAdminCmd("sm_csgo1v1_spawn", Command_Spawn, ADMFLAG_ROOT, "Goes to a spawn index.");
+
 		AddCommandListener(Command_Say, "say");
 		AddCommandListener(Command_Say, "say2");
 		AddCommandListener(Command_Say, "say_team");
@@ -74,6 +77,7 @@ public OnPluginStart() {
 public OnMapStart() {
 	ServerCommand("exec sourcemod/csgo1v1.cfg");
 	SC_LoadMapConfig();
+	Angles_MapInit();
 	new numSpawns = GetArraySize(SC_GetSpawnsArray());
 	if (numSpawns < 2*MAX_ARENAS) {
 		LogMessage("Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
@@ -110,7 +114,8 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 			g_numWaitingPlayers++;
 			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
 			PrintToChat(client, "\x01\x0B\x04You will be placed into an arena next round!");
-			PrintToChat(client, "Type \x04guns\x01 into chat to select new weapons.");
+			CreateTimer(1.0, Timer_PrintGunsMessage, client);
+			// CreateTimer(30.0, Timer_PrintGunsMessage, client);
 		}
 	}
 	return Plugin_Handled;
@@ -175,6 +180,19 @@ public GetNumArenas() {
 	return GetArraySize(SC_GetSpawnsArray()) / 2;
 }
 
+public Action:Command_Spawn(client, args) {
+	new String:arg1[32];
+	GetCmdArg(1, arg1, sizeof(arg1));
+	new Handle:spawns = SC_GetSpawnsArray();
+	new index = StringToInt(arg1);
+	PrintToChat(client, "Moving to spawn \x04%d", index);
+
+	new Float:spawn[3];
+	GetArrayArray(spawns, index, spawn);
+	SetupPlayer(client, spawn, 1, -1, index);
+	return Plugin_Handled;
+}
+
 public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = false;
 	new Handle:spawns = SC_GetSpawnsArray();
@@ -196,23 +214,39 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 
 		if (IsValidClient(p1)) {
 			GetArrayArray(spawns, spawned, spawn);
-			SetupPlayer(p1, spawn, i, p2);
+			SetupPlayer(p1, spawn, i, p2, spawned);
 			spawned++;
 		}
 
 		if (IsValidClient(p2)) {
 			GetArrayArray(spawns, spawned, spawn);
-			SetupPlayer(p2, spawn, i, p1);
+			SetupPlayer(p2, spawn, i, p1, spawned);
 			spawned++;
 		}
 	}
 
-	CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
+	// GameRules_SetPropInt("m_iRoundTime", GetGameTime() + GetConVarFloat(g_WarmupTimeVar), _, true);
+	GameRules_SetProp("m_iRoundTime", 40, 4, 0, true);
+	CreateTimer(2.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
-public SetupPlayer(client, Float:spawn[3], arena, other) {
+public SetupPlayer(client, Float:spawn[3], arena, other, spawnIndex) {
 	RespawnPlayer(client);
-	TeleportEntity(client, spawn, NULL_VECTOR, NULL_VECTOR);
+
+	new Float:angles[3];
+	angles[0] = 0.0;
+	angles[1] = 0.0;
+	angles[2] = 0.0;
+	if (GetArraySize(g_hAngles) == 2) {
+		if (spawnIndex % 2 == 0) {
+			GetArrayArray(g_hAngles, 0, angles);
+		} else {
+			GetArrayArray(g_hAngles, 1, angles);
+		}
+	}
+
+
+	TeleportEntity(client, spawn, angles, NULL_VECTOR);
 	new score = 0;
 	if (g_ArenaPlayer1[arena] == client)
 		score = 3*g_Arenas - 3*arena + 1;
@@ -240,8 +274,8 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 	new nPlayers = 0;
 	new bool:AllDone = true;
 	for (new arena = 1; arena <= g_Arenas; arena++) {
-		new bool:hasp1 = IsValidClient(g_ArenaPlayer1[arena]);
-		new bool:hasp2 = IsValidClient(g_ArenaPlayer2[arena]);
+		new bool:hasp1 = IsValidClient(g_ArenaPlayer1[arena]) && IsOnTeam(g_ArenaPlayer1[arena]);
+		new bool:hasp2 = IsValidClient(g_ArenaPlayer2[arena]) && IsOnTeam(g_ArenaPlayer2[arena]);
 		if (hasp1)
 			nPlayers++;
 		if (hasp2)
@@ -453,4 +487,9 @@ stock bool:IsValidClient(client) {
 	if (client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
 		return true;
 	return false;
+}
+
+bool:IsOnTeam(client) {
+	new client_team = GetClientTeam(client);
+	return (client_team == CS_TEAM_CT) || (client_team == CS_TEAM_T);
 }
