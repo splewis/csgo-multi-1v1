@@ -226,9 +226,9 @@ public SetupPlayer(client, Float:spawn[3], arena, other) {
 	CS_SetClientClanTag(client, buffer);
 
 	if (IsValidClient(other)) {
-		PrintToChat(client, "You are in arena \x04%d\x01, facing off against %N", arena, other);
+		PrintToChat(client, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
 	} else {
-		PrintToChat(client, "You are in arena \x04%d\x01 with no opponent", arena);
+		PrintToChat(client, "You are in arena \x04%d\x01 with \x03no opponent", arena);
 	}
 }
 
@@ -261,7 +261,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 	new bool:NormalFinish = AllDone && nPlayers >= 2;
 	new bool:WaitingPlayers = nPlayers < 2 && g_numWaitingPlayers > 0;
 
-	if (NormalFinish || WaitingPlayers) {
+	if ((NormalFinish || WaitingPlayers) && GetNumArenas() >= 1) {
 		CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
 		return Plugin_Stop;
 	}
@@ -315,13 +315,13 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			g_Score++;
 			if (g_Score > g_HighestScore) {
 				g_HighestScore = g_Score;
-				PrintToChatAll("\x01\x0B\x04%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
+				PrintToChatAll("\x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
 			} else {
-				PrintToChatAll("\x01\x0B\x04%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
+				PrintToChatAll("\x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
 			}
 		} else {
 			g_Score = 1;
-			PrintToChatAll("The new leader is \x04%N\x01", leader);
+			PrintToChatAll("The new leader is \x03%N\x01", leader);
 		}
 	}
 	g_LastWinner = leader;
