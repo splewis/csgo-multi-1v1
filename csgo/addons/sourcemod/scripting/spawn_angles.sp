@@ -16,21 +16,30 @@ ParseMapConfig() {
 
 
 	if (!FileExists(cfgFile)) {
-		LogMessage("No spawns file (%s).", cfgFile);
+		LogMessage("No angles file (%s).", cfgFile);
 		ClearArray(g_hAngles);
 		return;
 	}
 
 	new Float:vec[3];
 	new Handle:KV = CreateKeyValues(cfgFile);
-	LogMessage("%s", cfgFile);
+	new added = 0;
 	if (FileToKeyValues(KV, cfgFile) && KvGotoFirstSubKey(KV, false)) {
 		do { // load spawns
+			added++;
 			KvGetVector(KV, NULL_STRING, vec);
 			PushArrayArray(g_hAngles, vec);
-			LogMessage("%f %f %f", vec[0], vec[1], vec[2]);
 		} while (KvGotoNextKey(KV, false));
 	}
+
+	while (added < 2) {
+		vec[0] = 0.0;
+		vec[1] = 0.0;
+		vec[2] = 0.0;
+		PushArrayArray(g_hAngles, vec);
+		added++;
+	}
+
 	CloseHandle(KV);
 }
 

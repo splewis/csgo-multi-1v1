@@ -6,6 +6,7 @@
 #include "spawnpoints"
 #include "queue.sp"
 #include "weaponmenu.sp"
+#include "stats.sp"
 #include "spawn_angles.sp"
 
 #pragma semicolon 1
@@ -13,6 +14,7 @@
 #define MAX_ARENAS 12
 
 new Handle:g_Enabled = INVALID_HANDLE;
+new Handle:g_RoundTimeVar = INVALID_HANDLE;
 new g_Arenas = 1;
 new g_Rankings[MAXPLAYERS+1] = -1;		// which arena each player is in
 new g_ArenaPlayer1[MAXPLAYERS+1] = -1;	// who is player 1 in each arena
@@ -40,16 +42,17 @@ public Plugin:myinfo = {
 
 public OnPluginStart() {
 	LoadTranslations("common.phrases");
+	DB_Connect();
 
 	/** convars **/
 	g_Enabled = CreateConVar("sm_csgo1v1_enabled", "1", "Sets whether csgo1v1 is enabled");
+	g_RoundTimeVar = CreateConVar("sm_csgo1v1_roundtime", "40", "Roundtime (in seconds)");
 
 	// Create and exec plugin's configuration file
 	AutoExecConfig(true, "csgo1v1");
 
 	if (GetConVarInt(g_Enabled) == 1) {
 		// Client commands
-		RegConsoleCmd("sm_guns", Command_guns, "Opens the !guns menu");
 		RegAdminCmd("sm_csgo1v1_spawn", Command_Spawn, ADMFLAG_ROOT, "Goes to a spawn index.");
 
 		AddCommandListener(Command_Say, "say");
@@ -63,6 +66,7 @@ public OnPluginStart() {
 		HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
 		HookEvent("player_death", OnPlayerDeath, EventHookMode_Post);
 		HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
+		HookEvent("player_connect_full", OnFullConnect);
 		SC_Initialize("csgo1v1",
 					  "spawn_menu", ADMFLAG_GENERIC,
 					  "spawn_add", ADMFLAG_GENERIC,
@@ -85,10 +89,28 @@ public OnMapStart() {
 	if (numSpawns < 2) {
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
 	}
+
+	g_LastWinner = -1;
+	g_Score = 0;
+	g_HighestScore = 0;
+	g_RoundFinished = false;
+	g_numWaitingPlayers = 0;
+	for (new i = 0; i <= MAXPLAYERS; i++) {
+		g_RoundsLeader[i] = 0;
+		g_Rankings[i] = -1;
+		g_Arenas = 1;
+		g_Rankings[i] = -1;
+		g_ArenaPlayer1[i] = -1;
+		g_ArenaPlayer2[i] = -1;
+		g_ArenaWinners[i] = -1;
+		g_ArenaLosers[i] = -1;
+		g_PluginTeamSwitch[i] = false;
+		g_SittingOut[i] = false;
+	}
 }
 
 public OnMapEnd() {
-	SC_SaveMapConfig();
+	// SC_SaveMapConfig();
 }
 
 public Action:OnJoinTeamCommand(client, const String:command[], argc) {
@@ -104,26 +126,43 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 	} else if (team_to == CS_TEAM_SPECTATOR) {
 		g_SittingOut[client] = true;
 		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
+		g_isWaiting[client] = false;
 		new arena = g_Rankings[client];
 		g_Rankings[client] = -1;
 		UpdateArena(arena);
 	} else {
-		if (!g_isWaiting[client]) {
-			g_isWaiting[client] = true;
-			g_Rankings[client] = -1;
-			g_numWaitingPlayers++;
-			ChangeClientTeam(client, CS_TEAM_SPECTATOR);
-			PrintToChat(client, "\x01\x0B\x04You will be placed into an arena next round!");
-			CreateTimer(1.0, Timer_PrintGunsMessage, client);
-			// CreateTimer(30.0, Timer_PrintGunsMessage, client);
-		}
+		AddWaiter(client);
 	}
 	return Plugin_Handled;
+}
+
+public AddWaiter(client) {
+	if (!g_isWaiting[client]) {
+		g_SittingOut[client] = false;
+		g_isWaiting[client] = true;
+		g_Rankings[client] = -1;
+		g_numWaitingPlayers++;
+		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
+		PrintToChat(client, " \x01\x0B\x04You will be placed into an arena next round!");
+		CreateTimer(1.0, Timer_PrintGunsMessage, client);
+		CreateTimer(60.0, Timer_PrintGunsMessage, client);
+		CreateTimer(180.0, Timer_PrintGunsMessage, client);
+	}
 }
 
 public Action:OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)  {
 	dontBroadcast = true;
 	return Plugin_Changed;
+}
+
+public Action:OnFullConnect(Handle:event, const String:name[], bool:dontBroadcast) {
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (IsClientInGame(client) && !IsFakeClient(client)) {
+		ids[client] = GetSteamAccountID(client);
+		AddWaiter(client);
+		DB_AddPlayer(client);
+	}
+	return Plugin_Continue;
 }
 
 public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -132,7 +171,26 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
 		return;
 	Client_RemoveAllWeapons(client, "", true);
 	// TODO: try using Weapon_CreateForOwner or Client_GiveWeapon with same args to see if skins work better
-	GivePlayerItem(client, primaryWeapon[client]);
+
+	if (StrEqual(primaryWeapon[client], "weapon_awp")) {
+		new arena = g_Rankings[client];
+		new other = -1;
+		if (client != -1 && arena != -1) {
+			other = g_ArenaPlayer1[arena];
+			if (other == client)
+				other = g_ArenaPlayer2[arena];
+		}
+		if (other != -1 && StrEqual(primaryWeapon[other], "weapon_awp")) {
+			GivePlayerItem(client, primaryWeapon[client]);
+		} else {
+			GivePlayerItem(client, backupWeapon[client]);
+		}
+
+	} else {
+		GivePlayerItem(client, primaryWeapon[client]);
+	}
+
+
 	GivePlayerItem(client, secondaryWeapon[client]);
 	GivePlayerItem(client, "weapon_knife");
 	CreateTimer(0.0, RemoveRadar, client);
@@ -225,8 +283,7 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 		}
 	}
 
-	// GameRules_SetPropInt("m_iRoundTime", GetGameTime() + GetConVarFloat(g_WarmupTimeVar), _, true);
-	GameRules_SetProp("m_iRoundTime", 40, 4, 0, true);
+	GameRules_SetProp("m_iRoundTime", GetConVarInt(g_RoundTimeVar), 4, 0, true);
 	CreateTimer(2.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
@@ -245,7 +302,6 @@ public SetupPlayer(client, Float:spawn[3], arena, other, spawnIndex) {
 		}
 	}
 
-
 	TeleportEntity(client, spawn, angles, NULL_VECTOR);
 	new score = 0;
 	if (g_ArenaPlayer1[arena] == client)
@@ -262,7 +318,7 @@ public SetupPlayer(client, Float:spawn[3], arena, other, spawnIndex) {
 	if (IsValidClient(other)) {
 		PrintToChat(client, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
 	} else {
-		PrintToChat(client, "You are in arena \x04%d\x01 with \x03no opponent", arena);
+		PrintToChat(client, "You are in arena \x04%d\x01 with \x07no opponent", arena);
 	}
 }
 
@@ -315,6 +371,14 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			g_ArenaWinners[arena] = p1;
 			g_ArenaLosers[arena] = p2;
 		}
+		new winner = g_ArenaWinners[arena];
+		new loser = g_ArenaLosers[arena];
+		if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
+			DB_Increment(winner, "wins");
+			DB_Increment(loser, "losses");
+			DB_UpdateRating(winner, loser);
+		}
+
 	}
 
 	InitQueue();
@@ -335,11 +399,25 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		AddPlayer(g_ArenaLosers[numArenas]);
 	}
 
+
+
 	for (new i = 1; i <= MaxClients; i++) {
 		g_isWaiting[i] = false;
-		if (FindInQueue(i) == -1)
+		if (IsClientInGame(i) && !IsFakeClient(i) && FindInQueue(i) == -1)
 			AddPlayer(i);
 	}
+
+	// new qSize = GetQueueLength();
+	// if (qSize > 0 && qSize % 2 == 1) {
+	// 	ServerCommand("bot_quota %d", qSize + 1);
+	// 	for (new i = 1; i <= MaxClients; i++) {
+	// 		if (IsClientInGame(i) && IsFakeClient(i) && FindInQueue(i) == -1)
+	// 			AddPlayer(i);
+	// 	}
+	// } else {
+	// 	ServerCommand("bot_quota 0");
+	// 	ServerCommand("bot_kick");
+	// }
 
 	new leader = g_ClientQueue[g_QueueHead];
 	if (IsValidClient(leader) && GetQueueLength() >= 2) {
@@ -349,9 +427,9 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			g_Score++;
 			if (g_Score > g_HighestScore) {
 				g_HighestScore = g_Score;
-				PrintToChatAll("\x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
+				PrintToChatAll(" \x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
 			} else {
-				PrintToChatAll("\x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
+				PrintToChatAll(" \x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
 			}
 		} else {
 			g_Score = 1;
@@ -403,7 +481,7 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 }
 
 public AddPlayer(client) {
-	if (IsValidClient(client) && !IsFakeClient(client) && !g_SittingOut[client]) {
+	if (IsValidClient(client) && !g_SittingOut[client]) {
 		EnQueue(client);
 	}
 }
@@ -411,6 +489,7 @@ public AddPlayer(client) {
 public ResetClientVariables(client) {
 	if (g_isWaiting[client])
 		g_numWaitingPlayers--;
+	ratings[client] = 0.0;
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
 	primaryWeapon[client] = "weapon_ak47";
@@ -423,6 +502,7 @@ public OnClientConnected(client) {
 }
 
 public OnClientDisconnect(client) {
+	DB_WriteRating(client);
 	if (IsValidClient(client)) {
 		new arena = g_Rankings[client];
 		UpdateArena(arena);
@@ -446,7 +526,8 @@ public UpdateArena(arena) {
 }
 
 public Action:RemoveRadar(Handle:timer, any:client) {
-	SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
+	if (!IsFakeClient(client))
+		SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
 }
 
 /**
@@ -454,17 +535,22 @@ public Action:RemoveRadar(Handle:timer, any:client) {
  */
 RespawnPlayer(client) {
 	g_PluginTeamSwitch[client] = true;
-	CS_RespawnPlayer(client);
+	if (IsOnTeam(client))
+		CS_RespawnPlayer(client);
 	g_PluginTeamSwitch[client] = false;
 }
 
 
 SwitchPlayerTeam(client, team) {
+	if (GetClientTeam(client) == team)
+		return;
+
 	g_PluginTeamSwitch[client] = true;
 	if (team > CS_TEAM_SPECTATOR) {
 		CS_SwitchTeam(client, team);
 		CS_UpdateClientModel(client);
-		// CS_RespawnPlayer(client);
+		// if (!IsPlayerAlive(client))
+		// 	CS_RespawnPlayer(client);
 	} else {
 		ChangeClientTeam(client, team);
 	}
