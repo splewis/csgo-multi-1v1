@@ -29,7 +29,7 @@ public PrimaryMenu(client) {
 	AddMenuItem(menu, "weapon_aug", "AUG");
 	AddMenuItem(menu, "weapon_sg556", "SG553");
 	AddMenuItem(menu, "weapon_ssg08", "SSG08");
-	AddMenuItem(menu, "weapon_p90", "P90");
+	// AddMenuItem(menu, "weapon_p90", "P90");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 

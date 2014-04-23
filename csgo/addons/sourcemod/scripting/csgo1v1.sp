@@ -8,13 +8,15 @@
 #include "weaponmenu.sp"
 #include "stats.sp"
 #include "spawn_angles.sp"
+#include "boxes.sp"
 
 #pragma semicolon 1
 
 #define MAX_ARENAS 12
 
-new Handle:g_Enabled = INVALID_HANDLE;
-new Handle:g_RoundTimeVar = INVALID_HANDLE;
+new Handle:g_hRoundTimeVar = INVALID_HANDLE;
+new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
+
 new g_Arenas = 1;
 new g_Rankings[MAXPLAYERS+1] = -1;		// which arena each player is in
 new g_ArenaPlayer1[MAXPLAYERS+1] = -1;	// who is player 1 in each arena
@@ -45,43 +47,46 @@ public OnPluginStart() {
 	DB_Connect();
 
 	/** convars **/
-	g_Enabled = CreateConVar("sm_csgo1v1_enabled", "1", "Sets whether csgo1v1 is enabled");
-	g_RoundTimeVar = CreateConVar("sm_csgo1v1_roundtime", "40", "Roundtime (in seconds)");
+	g_hRoundTimeVar = CreateConVar("sm_csgo1v1_roundtime", "30", "Roundtime (in seconds)");
+	g_hDefaultRatingVar = CreateConVar("sm_csgo1v1_default_rating", "1450.0", "ELO rating a player starts with");
 
 	// Create and exec plugin's configuration file
 	AutoExecConfig(true, "csgo1v1");
 
-	if (GetConVarInt(g_Enabled) == 1) {
-		// Client commands
-		RegAdminCmd("sm_csgo1v1_spawn", Command_Spawn, ADMFLAG_ROOT, "Goes to a spawn index.");
+	// Client commands
+	RegAdminCmd("sm_csgo1v1_spawn", Command_Spawn, ADMFLAG_ROOT, "Goes to a spawn index.");
 
-		AddCommandListener(Command_Say, "say");
-		AddCommandListener(Command_Say, "say2");
-		AddCommandListener(Command_Say, "say_team");
-		AddCommandListener(OnJoinTeamCommand, "jointeam");
+	AddCommandListener(Command_Say, "say");
+	AddCommandListener(Command_Say, "say2");
+	AddCommandListener(Command_Say, "say_team");
+	AddCommandListener(OnJoinTeamCommand, "jointeam");
 
-		// Event hooks
-		HookEvent("player_team", OnPlayerTeam, EventHookMode_Pre);
-		HookEvent("round_start", OnRoundStart, EventHookMode_Post);
-		HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
-		HookEvent("player_death", OnPlayerDeath, EventHookMode_Post);
-		HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
-		HookEvent("player_connect_full", OnFullConnect);
-		SC_Initialize("csgo1v1",
-					  "spawn_menu", ADMFLAG_GENERIC,
-					  "spawn_add", ADMFLAG_GENERIC,
-					  "spawn_del", ADMFLAG_GENERIC,
-					  "spawn_show", ADMFLAG_GENERIC,
-					  "configs/csgo1v1",
-					  2*MAX_ARENAS);
+	// Event hooks
+	HookEvent("player_team", OnPlayerTeam, EventHookMode_Pre);
+	HookEvent("round_start", OnRoundStart, EventHookMode_Post);
+	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
+	HookEvent("player_death", OnPlayerDeath, EventHookMode_Post);
+	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
+	HookEvent("player_connect_full", OnFullConnect);
+	SC_Initialize("csgo1v1",
+				  "spawn_menu", ADMFLAG_GENERIC,
+				  "spawn_add", ADMFLAG_GENERIC,
+				  "spawn_del", ADMFLAG_GENERIC,
+				  "spawn_show", ADMFLAG_GENERIC,
+				  "configs/csgo1v1",
+				  2*MAX_ARENAS);
 
-	}
+
 }
 
 public OnMapStart() {
 	ServerCommand("exec sourcemod/csgo1v1.cfg");
 	SC_LoadMapConfig();
 	Angles_MapInit();
+	Boxes_MapInit();
+	if (!db_connected || db == INVALID_HANDLE) {
+		DB_Connect();
+	}
 	new numSpawns = GetArraySize(SC_GetSpawnsArray());
 	if (numSpawns < 2*MAX_ARENAS) {
 		LogMessage("Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
@@ -160,7 +165,7 @@ public Action:OnFullConnect(Handle:event, const String:name[], bool:dontBroadcas
 	if (IsClientInGame(client) && !IsFakeClient(client)) {
 		ids[client] = GetSteamAccountID(client);
 		AddWaiter(client);
-		DB_AddPlayer(client);
+		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
 	}
 	return Plugin_Continue;
 }
@@ -252,6 +257,7 @@ public Action:Command_Spawn(client, args) {
 }
 
 public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
+	Boxes_AddBoxes();
 	g_RoundFinished = false;
 	new Handle:spawns = SC_GetSpawnsArray();
 	new numArenas = GetArraySize(spawns) / 2;
@@ -283,7 +289,7 @@ public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 		}
 	}
 
-	GameRules_SetProp("m_iRoundTime", GetConVarInt(g_RoundTimeVar), 4, 0, true);
+	GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTimeVar), 4, 0, true);
 	CreateTimer(2.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
@@ -300,6 +306,8 @@ public SetupPlayer(client, Float:spawn[3], arena, other, spawnIndex) {
 		} else {
 			GetArrayArray(g_hAngles, 1, angles);
 		}
+	} else if (GetArraySize(g_hAngles) > 2) {
+		GetArrayArray(g_hAngles, spawnIndex, angles);
 	}
 
 	TeleportEntity(client, spawn, angles, NULL_VECTOR);

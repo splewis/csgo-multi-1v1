@@ -2,7 +2,7 @@
 new Handle:g_hAngles = INVALID_HANDLE;
 
 public Angles_MapInit() {
-	g_hAngles = CreateArray(2);
+	g_hAngles = CreateArray(3);
 	ParseMapConfig();
 }
 

@@ -3,6 +3,7 @@
 new Float:ratings[MAXPLAYERS+1];
 new ids[MAXPLAYERS+1];
 
+new bool:db_connected = false;
 new Handle:db = INVALID_HANDLE;
 new String:sqlBuffer[1024];
 
@@ -10,8 +11,10 @@ public DB_Connect() {
 	new String:error[255];
 	db = SQL_Connect("remote", true, error, sizeof(error));
 	if (db == INVALID_HANDLE) {
+		db_connected = false;
 		LogError("Could not connect: %s", error);
 	} else {
+		db_connected = true;
 		SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM stats WHERE wins+losses <= 5;")
 	}
 }
@@ -22,14 +25,14 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
 	}
 }
 
-public DB_AddPlayer(client) {
+public DB_AddPlayer(client, Float:default_rating) {
 	if (db != INVALID_HANDLE) {
 		new id = ids[client];
 		new String:name[100];
 		GetClientName(client, name, sizeof(name));
 		new String:sanitized_name[100];
 		SQL_EscapeString(db, name, sanitized_name, sizeof(name));
-		Format(sqlBuffer, sizeof(sqlBuffer), "INSERT IGNORE INTO stats (steamID,name) VALUES (%d, '%s');", id, sanitized_name);
+		Format(sqlBuffer, sizeof(sqlBuffer), "INSERT IGNORE INTO stats (steamID,name,rating) VALUES (%d, '%s', %f);", id, sanitized_name, default_rating);
 		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
 		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE stats SET name = '%s' WHERE steamID = %d", sanitized_name, id);
 		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
@@ -67,7 +70,11 @@ public Float:DB_GetRating(client) {
 }
 
 public DB_UpdateRating(winner, loser) {
+	if (winner == loser)
+		return;
+
 	if (db != INVALID_HANDLE) {
+
 		new Float:winner_rating = ratings[winner];
 		new Float:loser_rating = ratings[loser];
 
@@ -94,12 +101,9 @@ public DB_UpdateRating(winner, loser) {
 		new Float:pLoser = 1.0 - pWinner;
 
 
-		new Float:K = 24.0;
+		new Float:K = 12.0;
 		if (winner_rating > 2000 || loser_rating > 2000) {
-			K = 18.0;
-		}
-		if (winner_rating > 2400 || loser_rating > 2400) {
-			K = 12.0;
+			K = 8.0;
 		}
 
 		new Float:winner_delta = K * (1.0 - pWinner);
