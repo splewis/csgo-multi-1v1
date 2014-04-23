@@ -1,0 +1,78 @@
+"BoxLocations"
+{
+	"tspawn_a"
+	{
+			"location1"		"1050 -600 -250"
+			"location2"		"1600 -600 0"
+	}
+	"connector"
+	{
+			"location1"		"-520 -900 -250"
+			"location2"		"-800 -900 -100"
+	}
+	"window"
+	{
+			"location1"		"-1100 -400 -165"
+			"location2"		"-1300 -800 -70"
+	}
+	"vent"
+	{
+			"location1"		"-1330 -975 -170"
+			"location2"		"-1330 -975 -170"
+	}
+	"ctspawn_a"
+	{
+			"location1"		"-1200 -2200 -270"
+			"location2"		"-1700 -2200 -50"
+	}
+	"short_a"
+	{
+			"location1"		"70 -1300 -170"
+			"location2"		"70 -1700 -50"
+	}
+	"palace"
+	{
+			"location1"		"40 -2200 -30"
+			"location2"		"150 -2200 50"
+	}
+	"shop"
+	{
+			"location1"		"-1800 -510 -170"
+			"location2"		"-1800 -670 -50"
+	}
+	"mid_underpass"
+	{
+			"location1"		"-750 -540 -300"
+			"location2"		"-750 -830 -50"
+	}
+	"top_mid"
+	{
+			"location1"		"150 -90  0"
+			"location2"		"450 -90 -180"
+	}
+	"cat"
+	{
+			"location1"		"-1215 50  -200"
+			"location2"		"-1215 300 -30"
+	}
+	"CT apts"
+	{
+			"location1"		"-1500 736 -60"
+			"location2"		"-1500 736 30"
+	}
+	"B apts - underpass"
+	{
+			"location1"		"-780 350 -300"
+			"location2"		"-780 500 -150"
+	}
+	"mid window jump"
+	{
+			"location1"		"-800 -350 -160"
+			"location2"		"-900 -510 -60"
+	}
+	"palance entrance"
+	{
+			"location1"		"1250 -1300 -160"
+			"location2"		"1420 -1300 -60"
+	}
+}
