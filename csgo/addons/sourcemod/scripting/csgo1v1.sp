@@ -8,7 +8,6 @@
 #include "weaponmenu.sp"
 #include "stats.sp"
 #include "spawn_angles.sp"
-#include "boxes.sp"
 
 #pragma semicolon 1
 
@@ -83,7 +82,6 @@ public OnMapStart() {
 	ServerCommand("exec sourcemod/csgo1v1.cfg");
 	SC_LoadMapConfig();
 	Angles_MapInit();
-	Boxes_MapInit();
 	if (!db_connected || db == INVALID_HANDLE) {
 		DB_Connect();
 	}
@@ -257,7 +255,6 @@ public Action:Command_Spawn(client, args) {
 }
 
 public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
-	Boxes_AddBoxes();
 	g_RoundFinished = false;
 	new Handle:spawns = SC_GetSpawnsArray();
 	new numArenas = GetArraySize(spawns) / 2;
