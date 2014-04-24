@@ -95,7 +95,12 @@ public OnMapStart() {
 		LogMessage("Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
 	}
 	if (numSpawns < 2) {
+		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the csgo1v1 plugin to work properly");
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
+	}
+
+	if (!db_connected) {
+		DB_Connect();
 	}
 
 	g_LastWinner = -1;

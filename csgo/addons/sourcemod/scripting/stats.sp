@@ -14,8 +14,11 @@ public DB_Connect() {
 		db_connected = false;
 		LogError("Could not connect: %s", error);
 	} else {
+		SQL_LockDatabase(db);
+		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS csgo1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, name varchar(255) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1450.0);");
+		SQL_UnlockDatabase(db);
+		SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM csgo1v1_stats WHERE wins+losses <= 5;")
 		db_connected = true;
-		SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM stats WHERE wins+losses <= 5;")
 	}
 }
 
@@ -32,9 +35,9 @@ public DB_AddPlayer(client, Float:default_rating) {
 		GetClientName(client, name, sizeof(name));
 		new String:sanitized_name[100];
 		SQL_EscapeString(db, name, sanitized_name, sizeof(name));
-		Format(sqlBuffer, sizeof(sqlBuffer), "INSERT IGNORE INTO stats (steamID,name,rating) VALUES (%d, '%s', %f);", id, sanitized_name, default_rating);
+		Format(sqlBuffer, sizeof(sqlBuffer), "INSERT IGNORE INTO csgo1v1_stats (accountID,name,rating) VALUES (%d, '%s', %f);", id, sanitized_name, default_rating);
 		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
-		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE stats SET name = '%s' WHERE steamID = %d", sanitized_name, id);
+		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE csgo1v1_stats SET name = '%s' WHERE accountID = %d", sanitized_name, id);
 		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
 	}
 }
@@ -43,7 +46,7 @@ public DB_Increment(client, const String:field[]) {
 	if (db != INVALID_HANDLE) {
 		new id = ids[client];
 		if (id >= 1) {
-			Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE stats SET %s = %s + 1 WHERE steamID = %d", field, field, id);
+			Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE csgo1v1_stats SET %s = %s + 1 WHERE accountID = %d", field, field, id);
 			SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
 		}
 	}
@@ -52,7 +55,7 @@ public DB_Increment(client, const String:field[]) {
 public Float:DB_GetRating(client) {
 	new Float:rating = 0.0;
 	if (db != INVALID_HANDLE) {
-		Format(sqlBuffer, sizeof(sqlBuffer), "SELECT rating FROM stats WHERE steamID = %d", GetSteamAccountID(client));
+		Format(sqlBuffer, sizeof(sqlBuffer), "SELECT rating FROM csgo1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
 		new Handle:query = SQL_Query(db, sqlBuffer);
 
 		if (query == INVALID_HANDLE) {
@@ -132,7 +135,7 @@ public DB_UpdateRating(winner, loser) {
 
 DB_WriteRating(client) {
 	if (ratings[client] > 199.0) {
-		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE stats set rating = %f WHERE steamID = %d", ratings[client], ids[client]);
+		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE csgo1v1_stats set rating = %f WHERE accountID = %d", ratings[client], ids[client]);
 		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
 	}
 }
