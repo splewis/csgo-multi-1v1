@@ -4,11 +4,11 @@ import argparse
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('input_file_name')
-    parser.add_argument('output_file_name')
+    parser.add_argument('-o', '--output', 'output_file_name', default=None)
     args = parser.parse_args()
 
-    # input_file_name = "/home/splewis/Dropbox/Public/test.vmf"
-    # output_file_name = "/home/splewis/Dropbox/Public/test_output.spawns"
+    if parser.output_file_name is None:
+        parser.output_file_name = parser.input_file_name.strip('.vmf') + '.spawns'
 
     angles = []
     locations = []
@@ -20,7 +20,6 @@ def main():
             line = line.rstrip()
             if line == "entity":
                 name = content[n+2][14:-3]
-                print name
                 if name == 'info_player_terrorist' or name == 'info_player_counterterrorist':
                     angle = content[n+3][10:].rstrip()
                     location = content[n+5][10:].rstrip()
@@ -32,10 +31,8 @@ def main():
     f.write('\"SC_csgo1v1\"\n')
     f.write('{\n')
 
-    i = 0
-    for location in locations:
-        f.write("\t\"{0}\"      {1}\n".format(i, location))
-        i += 1
+    for i in range(len(locations)):
+        f.write("\t\"{0}\"      {1}\n".format(i, locations[i]))
 
     f.write('}\n')
     f.close()
