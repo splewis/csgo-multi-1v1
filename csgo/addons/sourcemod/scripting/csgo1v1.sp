@@ -1,3 +1,5 @@
+#define PLUGIN_VERSION "0.1.0"
+
 #include <sourcemod>
 #include <sdkhooks>
 #include <smlib>
@@ -15,6 +17,7 @@
 
 new Handle:g_hRoundTimeVar = INVALID_HANDLE;
 new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
+new Handle:g_hCvarVersion = INVALID_HANDLE;
 
 new g_Arenas = 1;
 new g_Rankings[MAXPLAYERS+1] = -1;		// which arena each player is in
@@ -34,7 +37,7 @@ new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false; 	// Flags the teamswitches as
 new bool:g_SittingOut[MAXPLAYERS+1] = false;
 
 public Plugin:myinfo = {
-	name = "CS:GO 1v1",
+	name = "csgo1v1",
 	author = "splewis",
 	description = "Multi-player 1v1 laddering",
 	version = "0.1",
@@ -48,6 +51,8 @@ public OnPluginStart() {
 	/** convars **/
 	g_hRoundTimeVar = CreateConVar("sm_csgo1v1_roundtime", "30", "Roundtime (in seconds)");
 	g_hDefaultRatingVar = CreateConVar("sm_csgo1v1_default_rating", "1450.0", "ELO rating a player starts with");
+	g_hCvarVersion = CreateConVar("sm_csgo1v1_version", PLUGIN_VERSION, "Current csgo1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
 
 	// Create and exec plugin's configuration file
 	AutoExecConfig(true, "csgo1v1");
@@ -146,11 +151,19 @@ public AddWaiter(client) {
 		g_Rankings[client] = -1;
 		g_numWaitingPlayers++;
 		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
-		PrintToChat(client, " \x01\x0B\x04You will be placed into an arena next round!");
+		PrintToChat(client, " \x01\x0B\x04Welcome to CS:GO 1v1! You will be placed into an arena next round!");
 		CreateTimer(1.0, Timer_PrintGunsMessage, client);
+		CreateTimer(30.0, Timer_PrintWelcomeMessage, client);
 		CreateTimer(60.0, Timer_PrintGunsMessage, client);
 		CreateTimer(180.0, Timer_PrintGunsMessage, client);
 	}
+}
+
+public Action:Timer_PrintWelcomeMessage(Handle:timer, any:client) {
+	if (IsValidClient(client) && !IsFakeClient(client)) {
+		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net");
+	}
+	return Plugin_Handled;
 }
 
 public Action:OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)  {
@@ -379,9 +392,11 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		new winner = g_ArenaWinners[arena];
 		new loser = g_ArenaLosers[arena];
 		if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-			DB_Increment(winner, "wins");
-			DB_Increment(loser, "losses");
-			DB_UpdateRating(winner, loser);
+			if (winner != loser) {
+				DB_Increment(winner, "wins");
+				DB_Increment(loser, "losses");
+				DB_UpdateRating(winner, loser);
+			}
 		}
 
 	}
@@ -403,8 +418,6 @@ public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		AddPlayer(g_ArenaLosers[numArenas - 1]);
 		AddPlayer(g_ArenaLosers[numArenas]);
 	}
-
-
 
 	for (new i = 1; i <= MaxClients; i++) {
 		g_isWaiting[i] = false;

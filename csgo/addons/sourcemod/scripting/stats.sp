@@ -70,9 +70,6 @@ public Float:DB_GetRating(client) {
 }
 
 public DB_UpdateRating(winner, loser) {
-	if (winner == loser)
-		return;
-
 	if (db != INVALID_HANDLE) {
 
 		new Float:winner_rating = ratings[winner];
