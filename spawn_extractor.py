@@ -19,10 +19,13 @@ def main():
             n += 1
             line = line.rstrip()
             if line == "entity":
-                angle = content[n+3][10:].rstrip()
-                location = content[n+5][10:].rstrip()
-                angles.append(angle)
-                locations.append(location)
+                name = content[n+2][14:-3]
+                print name
+                if name == 'info_player_terrorist' or name == 'info_player_counterterrorist':
+                    angle = content[n+3][10:].rstrip()
+                    location = content[n+5][10:].rstrip()
+                    angles.append(angle)
+                    locations.append(location)
 
 
     f = open(args.output_file_name, 'w')
