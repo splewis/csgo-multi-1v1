@@ -107,7 +107,7 @@ public DB_UpdateRating(winner, loser) {
 		}
 
 		new Float:winner_delta = K * (1.0 - pWinner);
-		new Float:loser_delta =  K * (0.0 - pLoser);
+		new Float:loser_delta  = K * (0.0 - pLoser);
 
 		new Float:winner_rating_new  = winner_rating + winner_delta;
 		new Float:loser_rating_new   = loser_rating  + loser_delta;
