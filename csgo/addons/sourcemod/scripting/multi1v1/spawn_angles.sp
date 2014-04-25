@@ -12,7 +12,7 @@ ParseMapConfig() {
 
 	decl String:cfgFile[PLATFORM_MAX_PATH], String:sMap[128];
 	GetCurrentMap(sMap, sizeof(sMap));
-	BuildPath(Path_SM, cfgFile, sizeof(cfgFile), "configs/csgo1v1/%s.angles", sMap);
+	BuildPath(Path_SM, cfgFile, sizeof(cfgFile), "configs/multi1v1/%s.angles", sMap);
 
 
 	if (!FileExists(cfgFile)) {

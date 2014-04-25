@@ -29,7 +29,7 @@ def main():
 
 
     f = open(args.output, 'w')
-    f.write('\"SC_csgo1v1\"\n')
+    f.write('\"multi1v1\"\n')
     f.write('{\n')
 
     for i in range(len(locations)):

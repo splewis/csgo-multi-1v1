@@ -6,10 +6,10 @@
 #include <cstrike>
 #include <clientprefs>
 #include "spawnpoints"
-#include "queue.sp"
-#include "weaponmenu.sp"
-#include "stats.sp"
-#include "spawn_angles.sp"
+#include "multi1v1/queue.sp"
+#include "multi1v1/weaponmenu.sp"
+#include "multi1v1/stats.sp"
+#include "multi1v1/spawn_angles.sp"
 
 #pragma semicolon 1
 
@@ -37,11 +37,11 @@ new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false; 	// Flags the teamswitches as
 new bool:g_SittingOut[MAXPLAYERS+1] = false;
 
 public Plugin:myinfo = {
-	name = "csgo1v1",
+	name = "CS:GO Multi-1v1",
 	author = "splewis",
-	description = "Multi-player 1v1 laddering",
+	description = "Multi-arena 1v1 laddering",
 	version = "0.1",
-	url = "https://github.com/splewis/csgo1v1"
+	url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
 public OnPluginStart() {
@@ -49,16 +49,16 @@ public OnPluginStart() {
 	DB_Connect();
 
 	/** convars **/
-	g_hRoundTimeVar = CreateConVar("sm_csgo1v1_roundtime", "30", "Roundtime (in seconds)");
-	g_hDefaultRatingVar = CreateConVar("sm_csgo1v1_default_rating", "1450.0", "ELO rating a player starts with");
-	g_hCvarVersion = CreateConVar("sm_csgo1v1_version", PLUGIN_VERSION, "Current csgo1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)");
+	g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1450.0", "ELO rating a player starts with");
+	g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
 
 	// Create and exec plugin's configuration file
-	AutoExecConfig(true, "csgo1v1");
+	AutoExecConfig(true, "multi1v1");
 
 	// Client commands
-	RegAdminCmd("sm_csgo1v1_spawn", Command_Spawn, ADMFLAG_GENERIC, "Goes to a spawn index. Only use this for checking spawn locations.");
+	RegAdminCmd("sm_multi1v1_spawn", Command_Spawn, ADMFLAG_GENERIC, "Goes to a spawn index. Only use this for checking spawn locations.");
 
 	AddCommandListener(Command_Say, "say");
 	AddCommandListener(Command_Say, "say2");
@@ -72,19 +72,19 @@ public OnPluginStart() {
 	HookEvent("player_death", Event_OnPlayerDeath);
 	HookEvent("round_end", Event_OnRoundEnd);
 	HookEvent("player_connect_full", Event_OnFullConnect);
-	SC_Initialize("csgo1v1",
+	SC_Initialize("multi1v1",
 				  "spawn_menu", ADMFLAG_GENERIC,
 				  "spawn_add", ADMFLAG_GENERIC,
 				  "spawn_del", ADMFLAG_GENERIC,
 				  "spawn_show", ADMFLAG_GENERIC,
-				  "configs/csgo1v1",
+				  "configs/multi1v1",
 				  2*MAX_ARENAS);
 
 
 }
 
 public OnMapStart() {
-	ServerCommand("exec sourcemod/csgo1v1.cfg");
+	ServerCommand("exec sourcemod/multi1v1.cfg");
 	SC_LoadMapConfig();
 	Angles_MapInit();
 	if (!g_dbConnected || db == INVALID_HANDLE) {
@@ -95,7 +95,7 @@ public OnMapStart() {
 		LogMessage("Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
 	}
 	if (numSpawns < 2) {
-		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the csgo1v1 plugin to work properly");
+		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the multi1v1 plugin to work properly");
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
 	}
 
@@ -166,7 +166,7 @@ public AddWaiter(client) {
 
 public Action:Timer_PrintWelcomeMessage(Handle:timer, any:client) {
 	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net");
+		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04multi1v1.splewis.net");
 	}
 	return Plugin_Handled;
 }
