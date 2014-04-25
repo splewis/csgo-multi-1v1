@@ -14,8 +14,5 @@ build: clean
 clean:
 	rm -rf *.smx *.zip
 
-push: build
-	scp -r csgo root@108.61.202.243:/root/Steam/csgoserver
-
 package: build
 	zip -r csgo1v1 csgo
