@@ -13,7 +13,7 @@
 
 #pragma semicolon 1
 
-#define MAX_ARENAS 12
+#define MAX_ARENAS 16
 
 new Handle:g_hRoundTimeVar = INVALID_HANDLE;
 new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
@@ -58,7 +58,7 @@ public OnPluginStart() {
 	AutoExecConfig(true, "csgo1v1");
 
 	// Client commands
-	RegAdminCmd("sm_csgo1v1_spawn", Command_Spawn, ADMFLAG_ROOT, "Goes to a spawn index.");
+	RegAdminCmd("sm_csgo1v1_spawn", Command_Spawn, ADMFLAG_GENERIC, "Goes to a spawn index. Only use this for checking spawn locations.");
 
 	AddCommandListener(Command_Say, "say");
 	AddCommandListener(Command_Say, "say2");
@@ -66,12 +66,12 @@ public OnPluginStart() {
 	AddCommandListener(OnJoinTeamCommand, "jointeam");
 
 	// Event hooks
-	HookEvent("player_team", OnPlayerTeam, EventHookMode_Pre);
-	HookEvent("round_start", OnRoundStart, EventHookMode_Post);
-	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Pre);
-	HookEvent("player_death", OnPlayerDeath, EventHookMode_Post);
-	HookEvent("round_end", OnRoundEnd, EventHookMode_Post);
-	HookEvent("player_connect_full", OnFullConnect);
+	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
+	HookEvent("round_start", Event_OnRoundStart);
+	HookEvent("player_spawn", Event_OnPlayerSpawn);
+	HookEvent("player_death", Event_OnPlayerDeath);
+	HookEvent("round_end", Event_OnRoundEnd);
+	HookEvent("player_connect_full", Event_OnFullConnect);
 	SC_Initialize("csgo1v1",
 				  "spawn_menu", ADMFLAG_GENERIC,
 				  "spawn_add", ADMFLAG_GENERIC,
@@ -87,7 +87,7 @@ public OnMapStart() {
 	ServerCommand("exec sourcemod/csgo1v1.cfg");
 	SC_LoadMapConfig();
 	Angles_MapInit();
-	if (!db_connected || db == INVALID_HANDLE) {
+	if (!g_dbConnected || db == INVALID_HANDLE) {
 		DB_Connect();
 	}
 	new numSpawns = GetArraySize(SC_GetSpawnsArray());
@@ -99,7 +99,7 @@ public OnMapStart() {
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
 	}
 
-	if (!db_connected) {
+	if (!g_dbConnected) {
 		DB_Connect();
 	}
 
@@ -171,29 +171,29 @@ public Action:Timer_PrintWelcomeMessage(Handle:timer, any:client) {
 	return Plugin_Handled;
 }
 
-public Action:OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)  {
+public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)  {
 	dontBroadcast = true;
 	return Plugin_Changed;
 }
 
-public Action:OnFullConnect(Handle:event, const String:name[], bool:dontBroadcast) {
+public Action:Event_OnFullConnect(Handle:event, const String:name[], bool:dontBroadcast) {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (IsClientInGame(client) && !IsFakeClient(client)) {
-		ids[client] = GetSteamAccountID(client);
+		g_ids[client] = GetSteamAccountID(client);
 		AddWaiter(client);
 		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
 	}
 	return Plugin_Continue;
 }
 
-public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
+public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
 		return;
 	Client_RemoveAllWeapons(client, "", true);
 	// TODO: try using Weapon_CreateForOwner or Client_GiveWeapon with same args to see if skins work better
 
-	if (StrEqual(primaryWeapon[client], "weapon_awp")) {
+	if (StrEqual(g_primaryWeapon[client], "weapon_awp")) {
 		new arena = g_Rankings[client];
 		new other = -1;
 		if (client != -1 && arena != -1) {
@@ -201,23 +201,23 @@ public OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
 			if (other == client)
 				other = g_ArenaPlayer2[arena];
 		}
-		if (other != -1 && StrEqual(primaryWeapon[other], "weapon_awp")) {
-			GivePlayerItem(client, primaryWeapon[client]);
+		if (other != -1 && StrEqual(g_primaryWeapon[other], "weapon_awp")) {
+			GivePlayerItem(client, g_primaryWeapon[client]);
 		} else {
-			GivePlayerItem(client, backupWeapon[client]);
+			GivePlayerItem(client, g_backupWeapon[client]);
 		}
 
 	} else {
-		GivePlayerItem(client, primaryWeapon[client]);
+		GivePlayerItem(client, g_primaryWeapon[client]);
 	}
 
 
-	GivePlayerItem(client, secondaryWeapon[client]);
+	GivePlayerItem(client, g_secondaryWeapon[client]);
 	GivePlayerItem(client, "weapon_knife");
 	CreateTimer(0.0, RemoveRadar, client);
 }
 
-public OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
+public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
 	new victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 	new arena = g_Rankings[victim];
@@ -272,7 +272,7 @@ public Action:Command_Spawn(client, args) {
 	return Plugin_Handled;
 }
 
-public OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
+public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = false;
 	new Handle:spawns = SC_GetSpawnsArray();
 	new numArenas = GetArraySize(spawns) / 2;
@@ -382,7 +382,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 	return Plugin_Continue;
 }
 
-public OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
+public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = true;
 	new numArenas = GetNumArenas();
 
@@ -512,11 +512,11 @@ public AddPlayer(client) {
 public ResetClientVariables(client) {
 	if (g_isWaiting[client])
 		g_numWaitingPlayers--;
-	ratings[client] = 0.0;
+	g_ratings[client] = 0.0;
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
-	primaryWeapon[client] = "weapon_ak47";
-	secondaryWeapon[client] = "weapon_glock";
+	g_primaryWeapon[client] = "weapon_ak47";
+	g_secondaryWeapon[client] = "weapon_glock";
 	g_RoundsLeader[client] = 0;
 }
 

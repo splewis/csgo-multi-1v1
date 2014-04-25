@@ -1,10 +1,13 @@
 #include <sourcemod>
 
 #define WEAPON_LENGTH 24
-new String:backupWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
-new String:primaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
-new String:secondaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
+new String:g_backupWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
+new String:g_primaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
+new String:g_secondaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
 
+/**
+ * Hook for player chat actions.
+ */
 public Action:Command_Say(client, const String:command[], argc) {
 	decl String:text[192];
 	if (GetCmdArgString(text, sizeof(text)) < 1)
@@ -17,6 +20,9 @@ public Action:Command_Say(client, const String:command[], argc) {
 	return Plugin_Continue;
 }
 
+/**
+ * Primary weapon choice menu.
+ */
 public PrimaryMenu(client) {
 	new Handle:menu = CreateMenu(Weapon_MenuHandler_Primary);
 	SetMenuTitle(menu, "Choose your primary weapon:");
@@ -29,10 +35,12 @@ public PrimaryMenu(client) {
 	AddMenuItem(menu, "weapon_aug", "AUG");
 	AddMenuItem(menu, "weapon_sg556", "SG553");
 	AddMenuItem(menu, "weapon_ssg08", "SSG08");
-	// AddMenuItem(menu, "weapon_p90", "P90");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
+/**
+ * Displays secondary menu to a player
+ */
 public SecondaryMenu(client) {
 	new Handle:menu = CreateMenu(Weapon_MenuHandler_Secondary);
 	SetMenuExitButton(menu, true);
@@ -48,16 +56,19 @@ public SecondaryMenu(client) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
+/**
+ * Primary weapon handler - updates primaryWeapon and sets the backup weapon if needed.
+ */
 public Weapon_MenuHandler_Primary(Handle:menu, MenuAction:action, param1, param2) {
 	if (action == MenuAction_Select) {
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
 
-		if (!StrEqual(primaryWeapon[param1], "weapon_awp")) {
-			backupWeapon[param1] = primaryWeapon[param1];
+		if (!StrEqual(g_primaryWeapon[param1], "weapon_awp")) {
+			g_backupWeapon[param1] = g_primaryWeapon[param1];
 		}
 
-		primaryWeapon[param1] = info;
+		g_primaryWeapon[param1] = info;
 		if (StrEqual(info, "weapon_awp")) {
 			PrintToChat(param1, "You will be able to AWP \x07only if your opponent is also AWPing. \x01Otherwise, you will get your current weapon.");
 		}
@@ -65,15 +76,21 @@ public Weapon_MenuHandler_Primary(Handle:menu, MenuAction:action, param1, param2
 	}
 }
 
+/**
+ * Secondary weapon handler - updates secondary weapon and informs player when they get the weapons.
+ */
 public Weapon_MenuHandler_Secondary(Handle:menu, MenuAction:action, param1, param2) {
 	if (action == MenuAction_Select) {
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
-		secondaryWeapon[param1] = info;
+		g_secondaryWeapon[param1] = info;
 		PrintToChat(param1, "You will get your new weapons next spawn.");
 	}
 }
 
+/**
+ * Generic chat message about what to type to get the guns menu.
+ */
 public Action:Timer_PrintGunsMessage(Handle:timer, any:client) {
 	if (IsValidClient(client) && !IsFakeClient(client)) {
 		PrintToChat(client, "Type \x04guns\x01 into chat to select new weapons.");

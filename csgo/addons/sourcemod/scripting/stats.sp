@@ -1,36 +1,48 @@
 #include <sourcemod>
 
-new Float:ratings[MAXPLAYERS+1];
-new ids[MAXPLAYERS+1];
 
-new bool:db_connected = false;
+new Float:g_ratings[MAXPLAYERS+1]; // current rating for a player
+new g_ids[MAXPLAYERS+1]; // steam account ID for a player - fetched on connection
+
+new bool:g_dbConnected = false;
 new Handle:db = INVALID_HANDLE;
 new String:sqlBuffer[1024];
 
+/**
+ * Attempts to connect to the database.
+ * Creates the csgo1v1_stats table if needed.
+ * 'Cleans' the database eliminating players with a very small number of wins+losses. (meant to reduce database size)
+ */
 public DB_Connect() {
 	new String:error[255];
 	db = SQL_Connect("remote", true, error, sizeof(error));
 	if (db == INVALID_HANDLE) {
-		db_connected = false;
+		g_dbConnected = false;
 		LogError("Could not connect: %s", error);
 	} else {
 		SQL_LockDatabase(db);
 		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS csgo1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, name varchar(255) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1450.0);");
 		SQL_UnlockDatabase(db);
 		SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM csgo1v1_stats WHERE wins+losses <= 5;")
-		db_connected = true;
+		g_dbConnected = true;
 	}
 }
 
+/**
+ * Generic SQL threaded query error callback.
+ */
 public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], any:data) {
 	if (!StrEqual("", error)) {
 		LogError("Last Connect SQL Error: %s", error);
 	}
 }
 
+/**
+ * Adds a player, updating their name if they already exist, to the database.
+ */
 public DB_AddPlayer(client, Float:default_rating) {
 	if (db != INVALID_HANDLE) {
-		new id = ids[client];
+		new id = g_ids[client];
 		new String:name[100];
 		GetClientName(client, name, sizeof(name));
 		new String:sanitized_name[100];
@@ -42,9 +54,12 @@ public DB_AddPlayer(client, Float:default_rating) {
 	}
 }
 
+/**
+ * Increments a named field in the database.
+ */
 public DB_Increment(client, const String:field[]) {
 	if (db != INVALID_HANDLE) {
-		new id = ids[client];
+		new id = g_ids[client];
 		if (id >= 1) {
 			Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE csgo1v1_stats SET %s = %s + 1 WHERE accountID = %d", field, field, id);
 			SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
@@ -52,6 +67,10 @@ public DB_Increment(client, const String:field[]) {
 	}
 }
 
+/**
+ * Reads a player rating from the database.
+ * Note that this is a *SLOW* operation and you should not do it during gameplay
+ */
 public Float:DB_GetRating(client) {
 	new Float:rating = 0.0;
 	if (db != INVALID_HANDLE) {
@@ -72,24 +91,27 @@ public Float:DB_GetRating(client) {
 	return rating;
 }
 
+/**
+ * Fetches, if needed, and calculates the relevent players' new ratings.
+ */
 public DB_UpdateRating(winner, loser) {
 	if (db != INVALID_HANDLE) {
 
-		new Float:winner_rating = ratings[winner];
-		new Float:loser_rating = ratings[loser];
+		new Float:winner_rating = g_ratings[winner];
+		new Float:loser_rating  = g_ratings[loser];
 
 		// go fetch the ratings if needed
 		if (winner_rating <= 0.0) {
 			SQL_LockDatabase(db);
 			winner_rating = DB_GetRating(winner);
-			ratings[winner] = winner_rating;
+			g_ratings[winner] = winner_rating;
 			SQL_UnlockDatabase(db);
 		}
 
 		if (loser_rating <= 0.0) {
 			SQL_LockDatabase(db);
 			loser_rating = DB_GetRating(loser);
-			ratings[loser] = loser_rating;
+			g_ratings[loser] = loser_rating;
 			SQL_UnlockDatabase(db);
 		}
 
@@ -97,21 +119,21 @@ public DB_UpdateRating(winner, loser) {
 			return;
 		}
 
+		// probability of each player winning
+		// the 400.0 is a standard value used to dictate the 'spread' of the rating distribution
 		new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 400.0));
 		new Float:pLoser = 1.0 - pWinner;
 
-
+		// constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2
 		new Float:K = 12.0;
-		if (winner_rating > 2000 || loser_rating > 2000) {
-			K = 8.0;
-		}
-
 		new Float:winner_delta = K * (1.0 - pWinner);
 		new Float:loser_delta  = K * (0.0 - pLoser);
 
 		new Float:winner_rating_new  = winner_rating + winner_delta;
 		new Float:loser_rating_new   = loser_rating  + loser_delta;
 
+		// lower bound on ratings, it's important this is greater than 0 so
+		// we can use <= 0 to detect failures to read the player rating
 		if (loser_rating_new <= 200.0) {
 			loser_rating_new = 200.0;
 		}
@@ -128,14 +150,17 @@ public DB_UpdateRating(winner, loser) {
 				int_loser, int_loser_d, winner, int_winner, int_winner_d);
 		}
 
-		ratings[winner] = winner_rating_new;
-		ratings[loser] = loser_rating_new;
+		g_ratings[winner] = winner_rating_new;
+		g_ratings[loser] = loser_rating_new;
 	}
 }
 
+/**
+ * Writes the rating for a player, if the rating is valid, back to the database.
+ */
 DB_WriteRating(client) {
-	if (ratings[client] > 199.0) {
-		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE csgo1v1_stats set rating = %f WHERE accountID = %d", ratings[client], ids[client]);
+	if (g_ratings[client] >= 200.0) {
+		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE csgo1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], g_ids[client]);
 		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
 	}
 }

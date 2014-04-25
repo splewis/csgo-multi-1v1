@@ -1,4 +1,8 @@
-#include <sourcemod>
+/**
+ * This code is largely thanks to Lordearon on the AlliedModders forum.
+ */
+
+ #include <sourcemod>
 
 new g_QueueSize = MAXPLAYERS+1;
 new g_ClientQueue[MAXPLAYERS+1];
