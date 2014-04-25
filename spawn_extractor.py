@@ -1,18 +1,19 @@
-import argparse
+#! /usr/bin/env python
 
+import argparse
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('input_file_name')
-    parser.add_argument('-o', '--output', 'output_file_name', default=None)
+    parser.add_argument('input')
+    parser.add_argument('-o', '--output', default=None)
     args = parser.parse_args()
 
-    if parser.output_file_name is None:
-        parser.output_file_name = parser.input_file_name.strip('.vmf') + '.spawns'
+    if args.output is None:
+        args.output = args.input.strip('.vmf') + '.spawns'
 
     angles = []
     locations = []
-    with open(args.input_file_name) as f:
+    with open(args.input) as f:
         content = f.readlines()
         n = 0
         for line in content:
@@ -27,7 +28,7 @@ def main():
                     locations.append(location)
 
 
-    f = open(args.output_file_name, 'w')
+    f = open(args.output, 'w')
     f.write('\"SC_csgo1v1\"\n')
     f.write('{\n')
 
