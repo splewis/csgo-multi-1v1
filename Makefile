@@ -11,9 +11,7 @@ build: clean
 	$(SMC) ${SRC} ${FLAGS} -o=${OUT}
 
 clean:
-	rm -rf *.smx *.zip
-	rm -rf csgo/addons/sourcemod/configs
-	rm -rf csgo/addons/sourcemod/plugins
+	rm -rf *.smx *.zip csgo/addons/sourcemod/configs csgo/addons/sourcemod/plugins
 
 package: build
 	zip -r multi1v1 csgo
