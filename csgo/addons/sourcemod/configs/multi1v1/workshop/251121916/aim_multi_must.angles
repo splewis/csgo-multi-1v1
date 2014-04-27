@@ -1,5 +1,5 @@
 "Angles_multi1v1"
 {
-	"even"		"0 -90 0"
-	"odd"		"0 90 0"
+	"even"		"0 90 0"
+	"odd"		"0 -90 0"
 }
