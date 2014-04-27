@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 import argparse
 
@@ -29,7 +29,7 @@ def main():
 
 
     f = open(args.output, 'w')
-    f.write('\"multi1v1\"\n')
+    f.write('\"SC_multi1v1\"\n')
     f.write('{\n')
 
     for i in range(len(locations)):
