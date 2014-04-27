@@ -105,10 +105,12 @@ public DB_UpdateRating(winner, loser) {
 		// go fetch the ratings if needed
 		if (winner_rating <= 0.0) {
 			DB_FetchRating(winner);
+			winner_rating = g_ratings[winner];
 		}
 
 		if (loser_rating <= 0.0) {
 			DB_FetchRating(loser);
+			loser_rating = g_ratings[loser];
 		}
 
 		if (winner_rating <= 0.0 || loser_rating <= 0.0) {
