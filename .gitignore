@@ -1,2 +1,4 @@
 *.smx
 *.zip
+csgo/addons/sourcemod/plugins
+csgo/addons/sourcemod/configs

@@ -3,16 +3,17 @@ SMC = spcomp
 FLAGS = "-O2 -t4"
 SRC = csgo/addons/sourcemod/scripting/multi1v1.sp
 OUT = csgo/addons/sourcemod/plugins/multi1v1
-CFG = csgo/cfg/sourcemod/multi1v1.cfg
 TRANS = csgo/addons/sourcemod/translations
-BINARY = csgo/addons/sourcemod/plugins/multi1v1.smx
 
 build: clean
+	python spawn_extractor.py
 	mkdir -p csgo/addons/sourcemod/plugins
 	$(SMC) ${SRC} ${FLAGS} -o=${OUT}
 
 clean:
 	rm -rf *.smx *.zip
+	rm -rf csgo/addons/sourcemod/configs
+	rm -rf csgo/addons/sourcemod/plugins
 
 package: build
 	zip -r multi1v1 csgo

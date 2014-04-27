@@ -2,14 +2,14 @@
 
 #include <sourcemod>
 #include <sdkhooks>
-#include <smlib>
+#include <sdktools>
 #include <cstrike>
 #include <clientprefs>
-#include "spawnpoints"
-#include "multi1v1/queue.sp"
-#include "multi1v1/weaponmenu.sp"
+#include <smlib>
 #include "multi1v1/stats.sp"
-#include "multi1v1/spawn_angles.sp"
+#include "multi1v1/spawns.sp"
+#include "multi1v1/weaponmenu.sp"
+#include "multi1v1/queue.sp"
 
 #pragma semicolon 1
 
@@ -72,29 +72,18 @@ public OnPluginStart() {
 	HookEvent("player_death", Event_OnPlayerDeath);
 	HookEvent("round_end", Event_OnRoundEnd);
 	HookEvent("player_connect_full", Event_OnFullConnect);
-	SC_Initialize("multi1v1",
-				  "spawn_menu", ADMFLAG_GENERIC,
-				  "spawn_add", ADMFLAG_GENERIC,
-				  "spawn_del", ADMFLAG_GENERIC,
-				  "spawn_show", ADMFLAG_GENERIC,
-				  "configs/multi1v1",
-				  2*MAX_ARENAS);
-
-
 }
 
 public OnMapStart() {
 	ServerCommand("exec sourcemod/multi1v1.cfg");
-	SC_LoadMapConfig();
-	Angles_MapInit();
+	Spawns_MapInit();
 	if (!g_dbConnected || db == INVALID_HANDLE) {
 		DB_Connect();
 	}
-	new numSpawns = GetArraySize(SC_GetSpawnsArray());
-	if (numSpawns < 2*MAX_ARENAS) {
-		LogMessage("Found %d spawns for this map, can support up to %d", numSpawns, 2*MAX_ARENAS);
+	if (g_numSpawns < 2*MAX_ARENAS) {
+		LogMessage("Found %d spawns for this map, can support up to %d", g_numSpawns, 2*MAX_ARENAS);
 	}
-	if (numSpawns < 2) {
+	if (g_numSpawns < 2) {
 		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the multi1v1 plugin to work properly");
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
 	}
@@ -124,11 +113,10 @@ public OnMapStart() {
 }
 
 public OnMapEnd() {
-	// SC_SaveMapConfig();
 }
 
 public Action:OnJoinTeamCommand(client, const String:command[], argc) {
-	if (GetNumArenas() < 1) {
+	if (g_maxArenas < 1) {
 		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the multi1v1 plugin to work properly");
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
 	}
@@ -172,8 +160,7 @@ public AddWaiter(client) {
 
 public Action:Timer_PrintWelcomeMessage(Handle:timer, any:client) {
 	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintToChat(client, " \x01\x0B\x05All server-performance related complaints should go to: \x04/dev/null");
-		// PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net");
+		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net");
 	}
 	return Plugin_Handled;
 }
@@ -198,9 +185,8 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
 		return;
-	Client_RemoveAllWeapons(client, "", true);
-	// TODO: try using Weapon_CreateForOwner or Client_GiveWeapon with same args to see if skins work better
 
+	Client_RemoveAllWeapons(client, "", true);
 	if (StrEqual(g_primaryWeapon[client], "weapon_awp")) {
 		new arena = g_Rankings[client];
 		new other = -1;
@@ -263,27 +249,21 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
 
 }
 
-public GetNumArenas() {
-	return GetArraySize(SC_GetSpawnsArray()) / 2;
-}
-
 public Action:Command_Spawn(client, args) {
 	new String:arg1[32];
 	GetCmdArg(1, arg1, sizeof(arg1));
-	new Handle:spawns = SC_GetSpawnsArray();
 	new index = StringToInt(arg1);
 	PrintToChat(client, "Moving to spawn \x04%d", index);
 
 	new Float:spawn[3];
-	GetArrayArray(spawns, index, spawn);
+	GetArrayArray(g_hSpawns, index, spawn);
 	SetupPlayer(client, spawn, 1, -1, index);
 	return Plugin_Handled;
 }
 
 public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = false;
-	new Handle:spawns = SC_GetSpawnsArray();
-	new numArenas = GetArraySize(spawns) / 2;
+	new numArenas = g_maxArenas;
 
 	for (new arena = 1; arena <= numArenas; arena++) {
 		g_ArenaWinners[arena] = -1;
@@ -300,13 +280,13 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 		new Float:spawn[3];
 
 		if (IsValidClient(p1)) {
-			GetArrayArray(spawns, spawned, spawn);
+			GetArrayArray(g_hSpawns, spawned, spawn);
 			SetupPlayer(p1, spawn, i, p2, spawned);
 			spawned++;
 		}
 
 		if (IsValidClient(p2)) {
-			GetArrayArray(spawns, spawned, spawn);
+			GetArrayArray(g_hSpawns, spawned, spawn);
 			SetupPlayer(p2, spawn, i, p1, spawned);
 			spawned++;
 		}
@@ -382,7 +362,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 	new bool:NormalFinish = AllDone && nPlayers >= 2;
 	new bool:WaitingPlayers = nPlayers < 2 && g_numWaitingPlayers > 0;
 
-	if ((NormalFinish || WaitingPlayers) && GetNumArenas() >= 1) {
+	if ((NormalFinish || WaitingPlayers) && g_maxArenas >= 1) {
 		CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
 		return Plugin_Stop;
 	}
@@ -392,7 +372,6 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 
 public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = true;
-	new numArenas = GetNumArenas();
 
 	// If time ran out and we have no winners/losers, set them
 	for (new arena = 1; arena <= g_Arenas; arena++) {
@@ -421,15 +400,15 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	AddPlayer(g_ArenaWinners[2]);
 
 	// middle arenas
-	for (new i = 2; i <= numArenas - 1; i++) {
+	for (new i = 2; i <= g_maxArenas - 1; i++) {
 		AddPlayer(g_ArenaLosers[i - 1]);
 		AddPlayer(g_ArenaWinners[i + 1]);
 	}
 
 	// bottom arena
-	if (numArenas >= 1) {
-		AddPlayer(g_ArenaLosers[numArenas - 1]);
-		AddPlayer(g_ArenaLosers[numArenas]);
+	if (g_maxArenas >= 1) {
+		AddPlayer(g_ArenaLosers[g_maxArenas - 1]);
+		AddPlayer(g_ArenaLosers[g_maxArenas]);
 	}
 
 	for (new i = 1; i <= MaxClients; i++) {
@@ -472,7 +451,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 
 	// Player placement logic for next round
 	g_Arenas = 0;
-	for (new arena = 1; arena <= numArenas; arena++) {
+	for (new arena = 1; arena <= g_maxArenas; arena++) {
 		new p1 = DeQueue();
 		new p2 = DeQueue();
 		g_ArenaPlayer1[arena] = p1;

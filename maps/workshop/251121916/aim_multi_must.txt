@@ -1,0 +1,4 @@
+{
+	"player1angles":	"0 90 0",
+	"player2angles":	"0 -90 0"
+}
