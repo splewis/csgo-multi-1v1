@@ -5,25 +5,33 @@ This is home of my work-in-progress CS:GO multi-1v1 arena plugin.
 
 Files/Libraries needed to compile:
 
--  Spawn point manager - https://forums.alliedmods.net/showthread.php?t=147542
--  SMLib - http://www.sourcemodplugins.org/smlib/
+- SMLib - http://www.sourcemodplugins.org/smlib/
 
 ### Building
 The build process is managed by the Makefile.
 
 		make          # builds the .smx file
-		make clean    # clears .smx files, .zip files
-		make package  # packages the essential plugin things into multi1v1-plugin and all server files to multi1v1-all
+		make clean    # clears .smx files, .zip files, map configs
+		make package  # packages the files to multi1v1.zip
+
+### Maps
+Because the plugin must spawn players into the appropriate arenas, it is imperative we know where the spawn points are.
+In addition, we have to know which spawns belong to which arena. Therefore, there are config files for each map that give this information.
+
+To make life simpler, the script spawn_extractor.py automatically parses all .vmf files in the maps directory and puts the spawn points into the
+output config directory. This command is built into the build process of the makefile.
+
+Guidelines for making a multi-1v1 map:
+- Create 1 arena and test it well, and only when are you happy copy it
+- Create at least 9 arenas, I'd recommend at least 12, however. Any more than 16 is overkill.
+- The players shouldn't be able to see each other on spawn
+- Each arena should have exactly 2 spawns - one for CT's and one for T's
+
 
 ### Installation
-If you only want the plugin, either download multi1v1-plugin.zip or build it yourself.
-It should contain the plugin binary, and the default config file.
-Extract both to the appropriate folders.
-
-
-Note that map-specific config files are in the addons/sourcemod/configs/multi1v1 folder.
-
-Also make sure to look at cfg/sourcemod/multi1v1.cfg if you want to edit any game settings.
+If you only want the plugin, either download multi1v1.zip or build it yourself.
+It should contain the plugin binary (plugins/multi1v1.smx), the default game config (cfg/sourcemod/mult1v1.cfg), and the map configs (configs/multi1v1).
+Extract these to the appropriate folders.
 
 
 ### Using the statistics database
