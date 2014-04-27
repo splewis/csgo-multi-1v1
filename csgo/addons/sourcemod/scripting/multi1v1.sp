@@ -120,6 +120,7 @@ public OnMapStart() {
 		g_PluginTeamSwitch[i] = false;
 		g_SittingOut[i] = false;
 	}
+	CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
 public OnMapEnd() {
@@ -127,6 +128,11 @@ public OnMapEnd() {
 }
 
 public Action:OnJoinTeamCommand(client, const String:command[], argc) {
+	if (GetNumArenas() < 1) {
+		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the multi1v1 plugin to work properly");
+		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
+	}
+
 	if (!IsValidClient(client))
 		return Plugin_Handled;
 
@@ -166,7 +172,8 @@ public AddWaiter(client) {
 
 public Action:Timer_PrintWelcomeMessage(Handle:timer, any:client) {
 	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04multi1v1.splewis.net");
+		PrintToChat(client, " \x01\x0B\x05All server-performance related complaints should go to: \x04/dev/null");
+		// PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net");
 	}
 	return Plugin_Handled;
 }
@@ -182,6 +189,7 @@ public Action:Event_OnFullConnect(Handle:event, const String:name[], bool:dontBr
 		g_ids[client] = GetSteamAccountID(client);
 		AddWaiter(client);
 		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
+		DB_FetchRating(client);
 	}
 	return Plugin_Continue;
 }
@@ -456,7 +464,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			}
 		} else {
 			g_Score = 1;
-			PrintToChatAll("The new leader is \x03%N\x01", leader);
+			PrintToChatAll("The new leader is \x06%N\x01", leader);
 		}
 	}
 	g_LastWinner = leader;
@@ -565,15 +573,16 @@ RespawnPlayer(client) {
 
 
 SwitchPlayerTeam(client, team) {
-	if (GetClientTeam(client) == team)
+	new previousTeam = GetClientTeam(client);
+	if (previousTeam == team)
 		return;
 
 	g_PluginTeamSwitch[client] = true;
 	if (team > CS_TEAM_SPECTATOR) {
 		CS_SwitchTeam(client, team);
 		CS_UpdateClientModel(client);
-		// if (!IsPlayerAlive(client))
-		// 	CS_RespawnPlayer(client);
+		if (!IsPlayerAlive(client) && (previousTeam == CS_TEAM_SPECTATOR || previousTeam == CS_TEAM_NONE))
+			CS_RespawnPlayer(client);
 	} else {
 		ChangeClientTeam(client, team);
 	}

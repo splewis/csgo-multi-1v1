@@ -71,9 +71,10 @@ public DB_Increment(client, const String:field[]) {
  * Reads a player rating from the database.
  * Note that this is a *SLOW* operation and you should not do it during gameplay
  */
-public Float:DB_GetRating(client) {
+public DB_FetchRating(client) {
 	new Float:rating = 0.0;
 	if (db != INVALID_HANDLE) {
+		SQL_LockDatabase(db);
 		Format(sqlBuffer, sizeof(sqlBuffer), "SELECT rating FROM multi1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
 		new Handle:query = SQL_Query(db, sqlBuffer);
 
@@ -87,8 +88,9 @@ public Float:DB_GetRating(client) {
 			}
 			CloseHandle(query);
 		}
+		SQL_UnlockDatabase(db);
 	}
-	return rating;
+	g_ratings[client] = rating;
 }
 
 /**
@@ -102,17 +104,11 @@ public DB_UpdateRating(winner, loser) {
 
 		// go fetch the ratings if needed
 		if (winner_rating <= 0.0) {
-			SQL_LockDatabase(db);
-			winner_rating = DB_GetRating(winner);
-			g_ratings[winner] = winner_rating;
-			SQL_UnlockDatabase(db);
+			DB_FetchRating(winner);
 		}
 
 		if (loser_rating <= 0.0) {
-			SQL_LockDatabase(db);
-			loser_rating = DB_GetRating(loser);
-			g_ratings[loser] = loser_rating;
-			SQL_UnlockDatabase(db);
+			DB_FetchRating(loser);
 		}
 
 		if (winner_rating <= 0.0 || loser_rating <= 0.0) {
