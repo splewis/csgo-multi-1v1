@@ -6,7 +6,6 @@ OUT = csgo/addons/sourcemod/plugins/multi1v1
 TRANS = csgo/addons/sourcemod/translations
 
 build: clean
-	python spawn_extractor.py
 	mkdir -p csgo/addons/sourcemod/plugins
 	$(SMC) ${SRC} ${FLAGS} -o=${OUT}
 

@@ -57,9 +57,6 @@ public OnPluginStart() {
 	// Create and exec plugin's configuration file
 	AutoExecConfig(true, "multi1v1");
 
-	// Client commands
-	RegAdminCmd("sm_multi1v1_spawn", Command_Spawn, ADMFLAG_GENERIC, "Goes to a spawn index. Only use this for checking spawn locations.");
-
 	AddCommandListener(Command_Say, "say");
 	AddCommandListener(Command_Say, "say2");
 	AddCommandListener(Command_Say, "say_team");
@@ -86,10 +83,6 @@ public OnMapStart() {
 	if (g_numSpawns < 2) {
 		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the multi1v1 plugin to work properly");
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
-	}
-
-	if (!g_dbConnected) {
-		DB_Connect();
 	}
 
 	g_LastWinner = -1;
@@ -144,13 +137,13 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 }
 
 public AddWaiter(client) {
+	PrintToChat(client, " \x01\x0B\x04Welcome to CS:GO 1v1! You will be placed into an arena next round!");
 	if (!g_isWaiting[client]) {
 		g_SittingOut[client] = false;
 		g_isWaiting[client] = true;
 		g_Rankings[client] = -1;
 		g_numWaitingPlayers++;
 		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
-		PrintToChat(client, " \x01\x0B\x04Welcome to CS:GO 1v1! You will be placed into an arena next round!");
 		CreateTimer(1.0, Timer_PrintGunsMessage, client);
 		CreateTimer(30.0, Timer_PrintWelcomeMessage, client);
 		CreateTimer(60.0, Timer_PrintGunsMessage, client);
@@ -174,7 +167,7 @@ public Action:Event_OnFullConnect(Handle:event, const String:name[], bool:dontBr
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	if (IsClientInGame(client) && !IsFakeClient(client)) {
 		g_ids[client] = GetSteamAccountID(client);
-		AddWaiter(client);
+		// AddWaiter(client);
 		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
 		DB_FetchRating(client);
 	}
@@ -249,18 +242,6 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
 
 }
 
-public Action:Command_Spawn(client, args) {
-	new String:arg1[32];
-	GetCmdArg(1, arg1, sizeof(arg1));
-	new index = StringToInt(arg1);
-	PrintToChat(client, "Moving to spawn \x04%d", index);
-
-	new Float:spawn[3];
-	GetArrayArray(g_hSpawns, index, spawn);
-	SetupPlayer(client, spawn, 1, -1, index);
-	return Plugin_Handled;
-}
-
 public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
 	g_RoundFinished = false;
 	new numArenas = g_maxArenas;
@@ -273,22 +254,16 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
-	new spawned = 0;
 	for (new i = 1; i <= numArenas; i++) {
 		new p1 = g_ArenaPlayer1[i];
 		new p2 = g_ArenaPlayer2[i];
-		new Float:spawn[3];
 
 		if (IsValidClient(p1)) {
-			GetArrayArray(g_hSpawns, spawned, spawn);
-			SetupPlayer(p1, spawn, i, p2, spawned);
-			spawned++;
+			SetupPlayer(p1, i, p2, true);
 		}
 
 		if (IsValidClient(p2)) {
-			GetArrayArray(g_hSpawns, spawned, spawn);
-			SetupPlayer(p2, spawn, i, p1, spawned);
-			spawned++;
+			SetupPlayer(p2, i, p1, false);
 		}
 	}
 
@@ -296,21 +271,19 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	CreateTimer(2.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
-public SetupPlayer(client, Float:spawn[3], arena, other, spawnIndex) {
+public SetupPlayer(client, arena, other, bool:onCT) {
 	RespawnPlayer(client);
-
 	new Float:angles[3];
-	angles[0] = 0.0;
-	angles[1] = 0.0;
-	angles[2] = 0.0;
-	if (GetArraySize(g_hAngles) == 2) {
-		if (spawnIndex % 2 == 0) {
-			GetArrayArray(g_hAngles, 0, angles);
-		} else {
-			GetArrayArray(g_hAngles, 1, angles);
-		}
-	} else if (GetArraySize(g_hAngles) > 2) {
-		GetArrayArray(g_hAngles, spawnIndex, angles);
+	new Float:spawn[3];
+
+	if (onCT) {
+		ChangeClientTeam(client, CS_TEAM_CT);
+		GetArrayArray(g_hCTSpawns, arena - 1, spawn);
+		GetArrayArray(g_hCTAngles, arena - 1, angles);
+	} else {
+		ChangeClientTeam(client, CS_TEAM_T);
+		GetArrayArray(g_hTSpawns, arena - 1, spawn);
+		GetArrayArray(g_hTAngles, arena - 1, angles);
 	}
 
 	TeleportEntity(client, spawn, angles, NULL_VECTOR);
@@ -560,8 +533,8 @@ SwitchPlayerTeam(client, team) {
 	if (team > CS_TEAM_SPECTATOR) {
 		CS_SwitchTeam(client, team);
 		CS_UpdateClientModel(client);
-		if (!IsPlayerAlive(client) && (previousTeam == CS_TEAM_SPECTATOR || previousTeam == CS_TEAM_NONE))
-			CS_RespawnPlayer(client);
+		// if (!IsPlayerAlive(client) && (previousTeam == CS_TEAM_SPECTATOR || previousTeam == CS_TEAM_NONE))
+			// CS_RespawnPlayer(client);
 	} else {
 		ChangeClientTeam(client, team);
 	}
