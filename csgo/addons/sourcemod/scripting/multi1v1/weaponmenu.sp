@@ -29,7 +29,8 @@ public PrimaryMenu(client) {
 	AddMenuItem(menu, "weapon_ak47", "AK47");
 	AddMenuItem(menu, "weapon_m4a1", "M4A4");
 	AddMenuItem(menu, "weapon_m4a1_silencer", "M4A1-S");
-	AddMenuItem(menu, "weapon_awp", "AWP");
+	AddMenuItem(menu, "weapon_awp", "AWP (if your opponent chooses the AWP too)");
+	AddMenuItem(menu, "none", "None (pistol round if your enemy chooses it too)");
 	AddMenuItem(menu, "weapon_famas", "Famas");
 	AddMenuItem(menu, "weapon_galilar", "Galil");
 	AddMenuItem(menu, "weapon_aug", "AUG");
@@ -64,7 +65,7 @@ public Weapon_MenuHandler_Primary(Handle:menu, MenuAction:action, param1, param2
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
 
-		if (!StrEqual(g_primaryWeapon[param1], "weapon_awp")) {
+		if (!StrEqual(g_primaryWeapon[param1], "weapon_awp") && !StrEqual(g_primaryWeapon[param1], "none")) {
 			g_backupWeapon[param1] = g_primaryWeapon[param1];
 		}
 
@@ -97,3 +98,14 @@ public Action:Timer_PrintGunsMessage(Handle:timer, any:client) {
 	}
 	return Plugin_Handled;
 }
+
+/**
+ * Generic chat message about what to type to get the guns menu using the hint text.
+ */
+public Action:Timer_PrintGunsHint(Handle:timer, any:client) {
+	if (IsValidClient(client) && !IsFakeClient(client)) {
+		PrintHintText(client, "Type guns into chat to select new weapons.");
+	}
+	return Plugin_Handled;
+}
+

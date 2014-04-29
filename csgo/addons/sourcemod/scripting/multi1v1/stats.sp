@@ -118,8 +118,7 @@ public DB_UpdateRating(winner, loser) {
 		}
 
 		// probability of each player winning
-		// the 400.0 is a standard value used to dictate the 'spread' of the rating distribution
-		new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 400.0));
+		new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 600.0));
 		new Float:pLoser = 1.0 - pWinner;
 
 		// constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2

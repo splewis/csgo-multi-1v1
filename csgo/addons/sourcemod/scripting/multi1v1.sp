@@ -68,7 +68,6 @@ public OnPluginStart() {
 	HookEvent("player_spawn", Event_OnPlayerSpawn);
 	HookEvent("player_death", Event_OnPlayerDeath);
 	HookEvent("round_end", Event_OnRoundEnd);
-	HookEvent("player_connect_full", Event_OnFullConnect);
 }
 
 public OnMapStart() {
@@ -137,8 +136,8 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 }
 
 public AddWaiter(client) {
-	PrintToChat(client, " \x01\x0B\x04Welcome to CS:GO 1v1! You will be placed into an arena next round!");
 	if (!g_isWaiting[client]) {
+		PrintToChat(client, " \x01\x0B\x04Welcome to CS:GO 1v1! You will be placed into an arena next round!");
 		g_SittingOut[client] = false;
 		g_isWaiting[client] = true;
 		g_Rankings[client] = -1;
@@ -146,6 +145,7 @@ public AddWaiter(client) {
 		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
 		CreateTimer(1.0, Timer_PrintGunsMessage, client);
 		CreateTimer(30.0, Timer_PrintWelcomeMessage, client);
+		CreateTimer(50.0, Timer_PrintGunsHint, client);
 		CreateTimer(60.0, Timer_PrintGunsMessage, client);
 		CreateTimer(180.0, Timer_PrintGunsMessage, client);
 	}
@@ -163,15 +163,16 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
 	return Plugin_Changed;
 }
 
-public Action:Event_OnFullConnect(Handle:event, const String:name[], bool:dontBroadcast) {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+/**
+ * Called once a client is authorized and fully in-game, and
+ * after all post-connection authorizations have been performed.
+ */
+public OnClientPostAdminCheck(client) {
 	if (IsClientInGame(client) && !IsFakeClient(client)) {
 		g_ids[client] = GetSteamAccountID(client);
-		// AddWaiter(client);
 		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
 		DB_FetchRating(client);
 	}
-	return Plugin_Continue;
 }
 
 public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -179,25 +180,43 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 	if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
 		return;
 
+	// Get the opponent the player will face off against for giving fair weapons later
+	new arena = g_Rankings[client];
+	new other = -1;
+	if (client != -1 && arena != -1) {
+		other = g_ArenaPlayer1[arena];
+		if (other == client)
+			other = g_ArenaPlayer2[arena];
+	}
+
 	Client_RemoveAllWeapons(client, "", true);
+
 	if (StrEqual(g_primaryWeapon[client], "weapon_awp")) {
-		new arena = g_Rankings[client];
-		new other = -1;
-		if (client != -1 && arena != -1) {
-			other = g_ArenaPlayer1[arena];
-			if (other == client)
-				other = g_ArenaPlayer2[arena];
-		}
+		// AWP case
 		if (other != -1 && StrEqual(g_primaryWeapon[other], "weapon_awp")) {
 			GivePlayerItem(client, g_primaryWeapon[client]);
 		} else {
 			GivePlayerItem(client, g_backupWeapon[client]);
 		}
 
+	} else if (StrEqual(g_primaryWeapon[client], "none")) {
+		// None (pistol round) case
+		if (other != -1 && StrEqual(g_primaryWeapon[other], "none")) {
+
+			// Take away kevlar/helmet
+ 			new g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
+ 			// new helmet = GetEntData(client, g_iPlayers_HelmetOffset);
+ 			SetEntData(client, g_iPlayers_HelmetOffset, 0);
+			SetEntProp(client, Prop_Data, "m_ArmorValue", 0);
+
+		} else {
+			GivePlayerItem(client, g_backupWeapon[client]);
+		}
+
 	} else {
+		// General case
 		GivePlayerItem(client, g_primaryWeapon[client]);
 	}
-
 
 	GivePlayerItem(client, g_secondaryWeapon[client]);
 	GivePlayerItem(client, "weapon_knife");
@@ -385,7 +404,6 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 	}
 
 	for (new i = 1; i <= MaxClients; i++) {
-		g_isWaiting[i] = false;
 		if (IsClientInGame(i) && !IsFakeClient(i) && FindInQueue(i) == -1)
 			AddPlayer(i);
 	}
@@ -465,6 +483,13 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 
 public AddPlayer(client) {
 	if (IsValidClient(client) && !g_SittingOut[client]) {
+
+		// if (GetClientTeam(client) == CS_TEAM_SPECTATOR && !g_isWaiting[client]) {
+			// PrintToChatAll("NOT add player %N", client);
+			// moved to spectator without the player selecting it, e.g. moved by an afk manager
+			// return;
+		// }
+
 		EnQueue(client);
 	}
 }
@@ -476,6 +501,7 @@ public ResetClientVariables(client) {
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
 	g_primaryWeapon[client] = "weapon_ak47";
+	g_backupWeapon[client] = "weapon_ak47";
 	g_secondaryWeapon[client] = "weapon_glock";
 	g_RoundsLeader[client] = 0;
 }
@@ -509,7 +535,7 @@ public UpdateArena(arena) {
 }
 
 public Action:RemoveRadar(Handle:timer, any:client) {
-	if (!IsFakeClient(client))
+	if (!IsFakeClient(client) && IsValidClient(client))
 		SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
 }
 
