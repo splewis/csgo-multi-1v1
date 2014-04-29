@@ -45,8 +45,9 @@ public Spawns_MapInit() {
 		}
 	}
 
-	g_numSpawns = t + ct;
-	g_maxArenas = g_numSpawns / 2;
+	new minSpawns = (ct < t) ? ct : t;
+	g_numSpawns = 2 * minSpawns;
+	g_maxArenas = minSpawns;
 }
 
 stock CloseHandleArray(Handle:adt_array) {
