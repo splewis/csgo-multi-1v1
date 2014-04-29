@@ -55,7 +55,7 @@ public OnPluginStart() {
 	SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
 
 	// Create and exec plugin's configuration file
-	AutoExecConfig(true, "multi1v1");
+	// AutoExecConfig(true, "multi1v1");
 
 	AddCommandListener(Command_Say, "say");
 	AddCommandListener(Command_Say, "say2");
@@ -76,8 +76,8 @@ public OnMapStart() {
 	if (!g_dbConnected || db == INVALID_HANDLE) {
 		DB_Connect();
 	}
-	if (g_numSpawns < 2*MAX_ARENAS) {
-		LogMessage("Found %d spawns for this map, can support up to %d", g_numSpawns, 2*MAX_ARENAS);
+	if (g_numSpawns < 18) {
+		LogMessage("Found %d spawns for this map, at least %d are recommended", g_numSpawns, 18);
 	}
 	if (g_numSpawns < 2) {
 		PrintToChatAll(" \x01\x0B\x02[FATAL] \x01You need to add more spawns for the multi1v1 plugin to work properly");

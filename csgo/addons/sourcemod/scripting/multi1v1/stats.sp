@@ -1,6 +1,5 @@
 #include <sourcemod>
 
-
 new Float:g_ratings[MAXPLAYERS+1]; // current rating for a player
 new g_ids[MAXPLAYERS+1]; // steam account ID for a player - fetched on connection
 
