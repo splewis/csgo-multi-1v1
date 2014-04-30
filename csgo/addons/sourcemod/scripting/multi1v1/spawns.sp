@@ -16,6 +16,11 @@ public Spawns_MapInit() {
 	g_hCTSpawns = CreateArray(3);
 	g_hCTAngles = CreateArray(3);
 
+	CloseHandleArray(g_hTSpawns);
+	CloseHandleArray(g_hTAngles);
+	CloseHandleArray(g_hCTSpawns);
+	CloseHandleArray(g_hCTAngles);
+
 	ClearArray(g_hTSpawns);
 	ClearArray(g_hTAngles);
 	ClearArray(g_hCTSpawns);

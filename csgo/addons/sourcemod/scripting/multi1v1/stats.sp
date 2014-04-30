@@ -3,6 +3,7 @@
 new Float:g_ratings[MAXPLAYERS+1]; // current rating for a player
 new g_ids[MAXPLAYERS+1]; // steam account ID for a player - fetched on connection
 
+new Handle:g_hUseDatabase = INVALID_HANDLE;
 new bool:g_dbConnected = false;
 new Handle:db = INVALID_HANDLE;
 new String:sqlBuffer[1024];
@@ -121,7 +122,7 @@ public DB_UpdateRating(winner, loser) {
 		new Float:pLoser = 1.0 - pWinner;
 
 		// constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2
-		new Float:K = 12.0;
+		new Float:K = 8.0;
 		new Float:winner_delta = K * (1.0 - pWinner);
 		new Float:loser_delta  = K * (0.0 - pLoser);
 

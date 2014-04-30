@@ -13,8 +13,6 @@
 
 #pragma semicolon 1
 
-#define MAX_ARENAS 16
-
 new Handle:g_hRoundTimeVar = INVALID_HANDLE;
 new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
 new Handle:g_hCvarVersion = INVALID_HANDLE;
@@ -46,10 +44,10 @@ public Plugin:myinfo = {
 
 public OnPluginStart() {
 	LoadTranslations("common.phrases");
-	DB_Connect();
 
 	/** convars **/
 	g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)");
+	g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
 	g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1450.0", "ELO rating a player starts with");
 	g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
 	SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
@@ -62,7 +60,7 @@ public OnPluginStart() {
 	AddCommandListener(Command_Say, "say_team");
 	AddCommandListener(OnJoinTeamCommand, "jointeam");
 
-	// Event hooks
+	/** Event hooks **/
 	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
 	HookEvent("round_start", Event_OnRoundStart);
 	HookEvent("player_spawn", Event_OnPlayerSpawn);
@@ -73,7 +71,7 @@ public OnPluginStart() {
 public OnMapStart() {
 	ServerCommand("exec sourcemod/multi1v1.cfg");
 	Spawns_MapInit();
-	if (!g_dbConnected || db == INVALID_HANDLE) {
+	if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
 		DB_Connect();
 	}
 	if (g_numSpawns < 18) {
@@ -105,6 +103,7 @@ public OnMapStart() {
 }
 
 public OnMapEnd() {
+
 }
 
 public Action:OnJoinTeamCommand(client, const String:command[], argc) {
@@ -119,17 +118,25 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 	decl String:arg[4];
 	GetCmdArg(1, arg, sizeof(arg));
 	new team_to = StringToInt(arg);
+	new team_from = GetClientTeam(client);
 
-	if (IsFakeClient(client) || g_PluginTeamSwitch[client]) {
+	if (IsFakeClient(client) || g_PluginTeamSwitch[client] || team_from == team_to) {
 		return Plugin_Continue;
+	} else if ((team_from == CS_TEAM_CT && team_to == CS_TEAM_T )
+			|| (team_from == CS_TEAM_T  && team_to == CS_TEAM_CT)) {
+		// ignore changes between T/CT
+		return Plugin_Handled;
 	} else if (team_to == CS_TEAM_SPECTATOR) {
+		// player voluntarily joining spec
 		g_SittingOut[client] = true;
-		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
+		SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
 		g_isWaiting[client] = false;
 		new arena = g_Rankings[client];
 		g_Rankings[client] = -1;
 		UpdateArena(arena);
 	} else {
+		// Player first joining the game, mark them as waiting to join
+
 		AddWaiter(client);
 	}
 	return Plugin_Handled;
@@ -142,7 +149,7 @@ public AddWaiter(client) {
 		g_isWaiting[client] = true;
 		g_Rankings[client] = -1;
 		g_numWaitingPlayers++;
-		ChangeClientTeam(client, CS_TEAM_SPECTATOR);
+		SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
 		CreateTimer(1.0, Timer_PrintGunsMessage, client);
 		CreateTimer(30.0, Timer_PrintWelcomeMessage, client);
 		CreateTimer(50.0, Timer_PrintGunsHint, client);
@@ -168,7 +175,7 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
  * after all post-connection authorizations have been performed.
  */
 public OnClientPostAdminCheck(client) {
-	if (IsClientInGame(client) && !IsFakeClient(client)) {
+	if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDatabase) != 0) {
 		g_ids[client] = GetSteamAccountID(client);
 		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
 		DB_FetchRating(client);
@@ -191,36 +198,25 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 
 	Client_RemoveAllWeapons(client, "", true);
 
-	if (StrEqual(g_primaryWeapon[client], "weapon_awp")) {
-		// AWP case
-		if (other != -1 && StrEqual(g_primaryWeapon[other], "weapon_awp")) {
-			GivePlayerItem(client, g_primaryWeapon[client]);
-		} else {
-			GivePlayerItem(client, g_backupWeapon[client]);
-		}
+	new RoundType:roundType = g_roundTypes[arena];
 
-	} else if (StrEqual(g_primaryWeapon[client], "none")) {
-		// None (pistol round) case
-		if (other != -1 && StrEqual(g_primaryWeapon[other], "none")) {
-
-			// Take away kevlar/helmet
- 			new g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
- 			// new helmet = GetEntData(client, g_iPlayers_HelmetOffset);
- 			SetEntData(client, g_iPlayers_HelmetOffset, 0);
-			SetEntProp(client, Prop_Data, "m_ArmorValue", 0);
-
-		} else {
-			GivePlayerItem(client, g_backupWeapon[client]);
-		}
-
-	} else {
-		// General case
+	if (roundType == RoundType_Rifle) {
 		GivePlayerItem(client, g_primaryWeapon[client]);
+	} else if (roundType == RoundType_Awp) {
+		GivePlayerItem(client, "weapon_awp");
+	} else {
+		RemoveVestHelm(client);
 	}
 
 	GivePlayerItem(client, g_secondaryWeapon[client]);
 	GivePlayerItem(client, "weapon_knife");
 	CreateTimer(0.0, RemoveRadar, client);
+}
+
+public RemoveVestHelm(client) {
+ 	new g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
+ 	SetEntData(client, g_iPlayers_HelmetOffset, 0);
+	SetEntProp(client, Prop_Data, "m_ArmorValue", 0);
 }
 
 public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -277,6 +273,8 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 		new p1 = g_ArenaPlayer1[i];
 		new p2 = g_ArenaPlayer2[i];
 
+		g_roundTypes[i] = GetRoundType(p1, p2);
+
 		if (IsValidClient(p1)) {
 			SetupPlayer(p1, i, p2, true);
 		}
@@ -296,11 +294,11 @@ public SetupPlayer(client, arena, other, bool:onCT) {
 	new Float:spawn[3];
 
 	if (onCT) {
-		ChangeClientTeam(client, CS_TEAM_CT);
+		SwitchPlayerTeam(client, CS_TEAM_CT);
 		GetArrayArray(g_hCTSpawns, arena - 1, spawn);
 		GetArrayArray(g_hCTAngles, arena - 1, angles);
 	} else {
-		ChangeClientTeam(client, CS_TEAM_T);
+		SwitchPlayerTeam(client, CS_TEAM_T);
 		GetArrayArray(g_hTSpawns, arena - 1, spawn);
 		GetArrayArray(g_hTAngles, arena - 1, angles);
 	}
@@ -376,7 +374,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		new winner = g_ArenaWinners[arena];
 		new loser = g_ArenaLosers[arena];
 		if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-			if (winner != loser) {
+			if (winner != loser && GetConVarInt(g_hUseDatabase) != 0) {
 				DB_Increment(winner, "wins");
 				DB_Increment(loser, "losses");
 				DB_UpdateRating(winner, loser);
@@ -407,18 +405,6 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		if (IsClientInGame(i) && !IsFakeClient(i) && FindInQueue(i) == -1)
 			AddPlayer(i);
 	}
-
-	// new qSize = GetQueueLength();
-	// if (qSize > 0 && qSize % 2 == 1) {
-	// 	ServerCommand("bot_quota %d", qSize + 1);
-	// 	for (new i = 1; i <= MaxClients; i++) {
-	// 		if (IsClientInGame(i) && IsFakeClient(i) && FindInQueue(i) == -1)
-	// 			AddPlayer(i);
-	// 	}
-	// } else {
-	// 	ServerCommand("bot_quota 0");
-	// 	ServerCommand("bot_kick");
-	// }
 
 	new leader = g_ClientQueue[g_QueueHead];
 	if (IsValidClient(leader) && GetQueueLength() >= 2) {
@@ -454,13 +440,13 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		if (realp1) {
 			g_isWaiting[p1] = false;
 			g_Rankings[p1] = arena;
-			SwitchPlayerTeam(p1, CS_TEAM_CT);
+			// SwitchPlayerTeam(p1, CS_TEAM_CT);
 		}
 
 		if (realp2) {
 			g_isWaiting[p2] = false;
 			g_Rankings[p2] = arena;
-			SwitchPlayerTeam(p2, CS_TEAM_T);
+			// SwitchPlayerTeam(p2, CS_TEAM_T);
 		}
 
 		if (realp1 || realp2) {
@@ -500,8 +486,10 @@ public ResetClientVariables(client) {
 	g_ratings[client] = 0.0;
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
+	g_AllowAWP[client] = true;
+	g_AllowPistol[client] = true;
+	g_Preference[client] = RoundType_Rifle;
 	g_primaryWeapon[client] = "weapon_ak47";
-	g_backupWeapon[client] = "weapon_ak47";
 	g_secondaryWeapon[client] = "weapon_glock";
 	g_RoundsLeader[client] = 0;
 }
@@ -511,7 +499,9 @@ public OnClientConnected(client) {
 }
 
 public OnClientDisconnect(client) {
-	DB_WriteRating(client);
+	if (GetConVarInt(g_hUseDatabase) != 0)
+		DB_WriteRating(client);
+
 	if (IsValidClient(client)) {
 		new arena = g_Rankings[client];
 		UpdateArena(arena);
@@ -535,7 +525,7 @@ public UpdateArena(arena) {
 }
 
 public Action:RemoveRadar(Handle:timer, any:client) {
-	if (!IsFakeClient(client) && IsValidClient(client))
+	if (IsValidClient(client) && !IsFakeClient(client))
 		SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
 }
 
@@ -559,8 +549,8 @@ SwitchPlayerTeam(client, team) {
 	if (team > CS_TEAM_SPECTATOR) {
 		CS_SwitchTeam(client, team);
 		CS_UpdateClientModel(client);
-		// if (!IsPlayerAlive(client) && (previousTeam == CS_TEAM_SPECTATOR || previousTeam == CS_TEAM_NONE))
-			// CS_RespawnPlayer(client);
+		if (!IsPlayerAlive(client))
+			CS_RespawnPlayer(client);
 	} else {
 		ChangeClientTeam(client, team);
 	}
