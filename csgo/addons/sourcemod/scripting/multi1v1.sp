@@ -483,6 +483,7 @@ public AddPlayer(client) {
 public ResetClientVariables(client) {
 	if (g_isWaiting[client])
 		g_numWaitingPlayers--;
+	g_ids[client] = 0;
 	g_ratings[client] = 0.0;
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;

@@ -50,6 +50,8 @@ public MenuHandler_AWP(Handle:menu, MenuAction:action, param1, param2) {
 			g_AllowAWP[client] = false;
 
 		PistolMenu(client);
+	} else if (action == MenuAction_End) {
+		CloseHandle(menu);
 	}
 }
 
@@ -72,16 +74,17 @@ public MenuHandler_Pistol(Handle:menu, MenuAction:action, param1, param2) {
 		else
 			g_AllowPistol[client] = false;
 
-		if (g_AllowPistol[client] || g_AllowAWP[client])
+		if (g_AllowPistol[client] || g_AllowAWP[client]) {
 			PreferenceMenu(client);
-		else
+		} else {
+			g_Preference[client] = RoundType_Rifle;
 			RifleChoiceMenu(client);
+		}
+	} else if (action == MenuAction_End) {
+		CloseHandle(menu);
 	}
 }
 
-/**
- * Primary weapon choice menu.
- */
 public PreferenceMenu(client) {
 	new Handle:menu = CreateMenu(MenuHandler_Preference);
 	SetMenuTitle(menu, "Choose your preference:");
@@ -108,6 +111,8 @@ public MenuHandler_Preference(Handle:menu, MenuAction:action, param1, param2) {
 			g_Preference[client] = RoundType_Pistol;
 
 		RifleChoiceMenu(client);
+	} else if (action == MenuAction_End) {
+		CloseHandle(menu);
 	}
 }
 
@@ -128,7 +133,22 @@ public RifleChoiceMenu(client) {
 }
 
 /**
- * Displays secondary menu to a player
+ * Rifle weapon handler - updates primaryWeapon.
+ */
+public MenuHandler_RifleChoice(Handle:menu, MenuAction:action, param1, param2) {
+	if (action == MenuAction_Select) {
+		new client = param1;
+		decl String:info[WEAPON_LENGTH];
+		GetMenuItem(menu, param2, info, sizeof(info));
+		g_primaryWeapon[client] = info;
+		PistolChoiceMenu(client);
+	} else if (action == MenuAction_End) {
+		CloseHandle(menu);
+	}
+}
+
+/**
+ * Displays pistol menu to a player
  */
 public PistolChoiceMenu(client) {
 	new Handle:menu = CreateMenu(MenuHandler_PistolChoice);
@@ -146,20 +166,7 @@ public PistolChoiceMenu(client) {
 }
 
 /**
- * Primary weapon handler - updates primaryWeapon.
- */
-public MenuHandler_RifleChoice(Handle:menu, MenuAction:action, param1, param2) {
-	if (action == MenuAction_Select) {
-		new client = param1;
-		decl String:info[WEAPON_LENGTH];
-		GetMenuItem(menu, param2, info, sizeof(info));
-		g_primaryWeapon[client] = info;
-		PistolChoiceMenu(client);
-	}
-}
-
-/**
- * Secondary weapon handler - updates secondary weapon.
+ * Pistol choice handler - updates secondary weapon.
  */
 public MenuHandler_PistolChoice(Handle:menu, MenuAction:action, param1, param2) {
 	if (action == MenuAction_Select) {
@@ -218,4 +225,3 @@ public RoundType:GetRoundType(client1, client2) {
 
 	return roundType;
 }
-

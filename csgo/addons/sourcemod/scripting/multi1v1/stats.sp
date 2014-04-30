@@ -42,7 +42,7 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
  */
 public DB_AddPlayer(client, Float:default_rating) {
 	if (db != INVALID_HANDLE) {
-		new id = g_ids[client];
+		new id = GetAccountID(client);
 		new String:name[100];
 		GetClientName(client, name, sizeof(name));
 		new String:sanitized_name[100];
@@ -59,12 +59,18 @@ public DB_AddPlayer(client, Float:default_rating) {
  */
 public DB_Increment(client, const String:field[]) {
 	if (db != INVALID_HANDLE) {
-		new id = g_ids[client];
+		new id = GetAccountID(client);
 		if (id >= 1) {
 			Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE multi1v1_stats SET %s = %s + 1 WHERE accountID = %d", field, field, id);
 			SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
 		}
 	}
+}
+
+public GetAccountID(client) {
+	if (g_ids[client] == 0)
+		g_ids[client] = GetSteamAccountID(client);
+	return g_ids[client];
 }
 
 /**
@@ -157,7 +163,7 @@ public DB_UpdateRating(winner, loser) {
  */
 DB_WriteRating(client) {
 	if (g_ratings[client] >= 200.0) {
-		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], g_ids[client]);
+		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], GetAccountID(client));
 		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
 	}
 }
