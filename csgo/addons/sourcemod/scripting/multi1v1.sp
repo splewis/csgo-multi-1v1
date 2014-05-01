@@ -205,7 +205,7 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 	} else if (roundType == RoundType_Awp) {
 		GivePlayerItem(client, "weapon_awp");
 	} else {
-		RemoveVestHelm(client);
+		RemoveHelmet(client);
 	}
 
 	GivePlayerItem(client, g_secondaryWeapon[client]);
@@ -213,10 +213,10 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 	CreateTimer(0.0, RemoveRadar, client);
 }
 
-public RemoveVestHelm(client) {
+public RemoveHelmet(client) {
  	new g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
  	SetEntData(client, g_iPlayers_HelmetOffset, 0);
-	SetEntProp(client, Prop_Data, "m_ArmorValue", 0);
+	// SetEntProp(client, Prop_Data, "m_ArmorValue", 0);
 }
 
 public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -487,8 +487,8 @@ public ResetClientVariables(client) {
 	g_ratings[client] = 0.0;
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
-	g_AllowAWP[client] = true;
-	g_AllowPistol[client] = true;
+	g_AllowAWP[client] = false;
+	g_AllowPistol[client] = false;
 	g_Preference[client] = RoundType_Rifle;
 	g_primaryWeapon[client] = "weapon_ak47";
 	g_secondaryWeapon[client] = "weapon_glock";
