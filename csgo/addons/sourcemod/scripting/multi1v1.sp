@@ -16,6 +16,7 @@
 new Handle:g_hRoundTimeVar = INVALID_HANDLE;
 new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
 new Handle:g_hCvarVersion = INVALID_HANDLE;
+new Handle:g_hUseDatabase = INVALID_HANDLE;
 
 new g_Arenas = 1;
 new g_Rankings[MAXPLAYERS+1] = -1;		// which arena each player is in
@@ -23,12 +24,15 @@ new g_ArenaPlayer1[MAXPLAYERS+1] = -1;	// who is player 1 in each arena
 new g_ArenaPlayer2[MAXPLAYERS+1] = -1;	// who is player 2 in each arena
 new g_ArenaWinners[MAXPLAYERS+1] = -1; 	// who won each arena
 new g_ArenaLosers[MAXPLAYERS+1] = -1;	// who lost each arena
+new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
 
+new g_TotalRounds = 0;
 new g_LastWinner = -1;
 new g_Score = 0;
 new g_HighestScore = 0;
 new g_RoundsLeader[MAXPLAYERS+1] = 0;
 
+new bool:g_InWarmup = true;
 new bool:g_RoundFinished = false;
 new g_numWaitingPlayers = 0;
 new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false; 	// Flags the teamswitches as being done by the plugin
@@ -38,7 +42,7 @@ public Plugin:myinfo = {
 	name = "CS:GO Multi-1v1",
 	author = "splewis",
 	description = "Multi-arena 1v1 laddering",
-	version = "0.1",
+	version = PLUGIN_VERSION,
 	url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
@@ -55,6 +59,13 @@ public OnPluginStart() {
 	// Create and exec plugin's configuration file
 	// AutoExecConfig(true, "multi1v1");
 
+	g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Protected);
+	g_hAllowAWPCookie = RegClientCookie("multi1v1_allowawp", "Multi-1v1 allow AWP rounds", CookieAccess_Protected);
+	g_hPreferenceCookie = RegClientCookie("multi1v1_preference", "Multi-1v1 round-type preference", CookieAccess_Protected);
+	g_hRifleCookie = RegClientCookie("multi1v1_rifle", "Multi-1v1 rifle choice", CookieAccess_Protected);
+	g_hPistolCookie = RegClientCookie("multi1v1_pistol", "Multi-1v1 pistol choice", CookieAccess_Protected);
+	g_hSetCookies = RegClientCookie("multi1v1_setprefs", "Multi-1v1 if prefs are saved", CookieAccess_Protected);
+
 	AddCommandListener(Command_Say, "say");
 	AddCommandListener(Command_Say, "say2");
 	AddCommandListener(Command_Say, "say_team");
@@ -69,6 +80,7 @@ public OnPluginStart() {
 }
 
 public OnMapStart() {
+	g_InWarmup = true;
 	ServerCommand("exec sourcemod/multi1v1.cfg");
 	Spawns_MapInit();
 	if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
@@ -136,7 +148,6 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 		UpdateArena(arena);
 	} else {
 		// Player first joining the game, mark them as waiting to join
-
 		AddWaiter(client);
 	}
 	return Plugin_Handled;
@@ -176,18 +187,13 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
  */
 public OnClientPostAdminCheck(client) {
 	if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDatabase) != 0) {
-		g_ids[client] = GetSteamAccountID(client);
+		__ids[client] = GetSteamAccountID(client);
 		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
 		DB_FetchRating(client);
 	}
 }
 
-public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
-		return;
-
-	// Get the opponent the player will face off against for giving fair weapons later
+public GetOpponent(client) {
 	new arena = g_Rankings[client];
 	new other = -1;
 	if (client != -1 && arena != -1) {
@@ -195,28 +201,44 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 		if (other == client)
 			other = g_ArenaPlayer2[arena];
 	}
+	return other;
+}
+
+public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
+		return;
 
 	Client_RemoveAllWeapons(client, "", true);
 
-	new RoundType:roundType = g_roundTypes[arena];
+	new arena = g_Rankings[client];
+	new RoundType:roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
 
 	if (roundType == RoundType_Rifle) {
-		GivePlayerItem(client, g_primaryWeapon[client]);
+		if (GivePlayerItem(client, g_primaryWeapon[client]) == -1)
+			GivePlayerItem(client, "weapon_ak47");
 	} else if (roundType == RoundType_Awp) {
 		GivePlayerItem(client, "weapon_awp");
-	} else {
+	} else if (roundType == RoundType_Pistol) {
 		RemoveHelmet(client);
 	}
 
-	GivePlayerItem(client, g_secondaryWeapon[client]);
+	if (GivePlayerItem(client, g_secondaryWeapon[client]) == -1)
+		GivePlayerItem(client, "weapon_glock");
+
 	GivePlayerItem(client, "weapon_knife");
+
+	if (g_LetTimeExpire[client] && g_TotalRounds >= 3) {
+		PrintHintText(client, "You let time run out last round. You will be punished and get 1HP next round.");
+		SetEntityHealth(client, 1);
+	}
+
 	CreateTimer(0.0, RemoveRadar, client);
 }
 
 public RemoveHelmet(client) {
  	new g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
  	SetEntData(client, g_iPlayers_HelmetOffset, 0);
-	// SetEntProp(client, Prop_Data, "m_ArmorValue", 0);
 }
 
 public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -284,6 +306,10 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 		}
 	}
 
+	for (new i = 1; i <= MAXPLAYERS; i++) {
+		g_LetTimeExpire[i] = false;
+	}
+
 	GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTimeVar), 4, 0, true);
 	CreateTimer(2.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
@@ -312,7 +338,7 @@ public SetupPlayer(client, arena, other, bool:onCT) {
 	CS_SetClientContributionScore(client, score);
 	CS_SetMVPCount(client, g_RoundsLeader[client]);
 
-	decl String:buffer[20];
+	decl String:buffer[32];
 	Format(buffer, sizeof(buffer), "Arena %d", arena);
 	CS_SetClientClanTag(client, buffer);
 
@@ -323,11 +349,15 @@ public SetupPlayer(client, arena, other, bool:onCT) {
 	}
 }
 
-
+/**
+ * Timer for checking round end conditions, since rounds typically won't end naturally.
+ */
 public Action:Timer_CheckRoundComplete(Handle:timer) {
+	// This is a check in case the round ended naturally, we won't force another end
 	if (g_RoundFinished)
 		return Plugin_Stop;
 
+	// check every arena, if it is still ongoing mark AllDone as false
 	new nPlayers = 0;
 	new bool:AllDone = true;
 	for (new arena = 1; arena <= g_Arenas; arena++) {
@@ -338,11 +368,13 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 		if (hasp2)
 			nPlayers++;
 
+		// If we don't have 2 players, mark the lone one as winner
 		if (!hasp1)
 			g_ArenaWinners[arena] = g_ArenaPlayer2[arena];
 		if (!hasp2)
 			g_ArenaWinners[arena] = g_ArenaPlayer1[arena];
 
+		// this arena has 2 players and hasn't been decided yet
 		if (g_ArenaWinners[arena] == -1 && hasp1 && hasp2) {
 			AllDone = false;
 			break;
@@ -350,8 +382,9 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 	}
 
 	new bool:NormalFinish = AllDone && nPlayers >= 2;
-	new bool:WaitingPlayers = nPlayers < 2 && g_numWaitingPlayers > 0;
+	new bool:WaitingPlayers = nPlayers < 2 && g_numWaitingPlayers > 0;  // so the round ends for the first players that join
 
+	// check if there are enough arenas, otherwise round will constantly end
 	if ((NormalFinish || WaitingPlayers) && g_maxArenas >= 1) {
 		CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
 		return Plugin_Stop;
@@ -361,6 +394,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 }
 
 public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
+	g_TotalRounds++;
 	g_RoundFinished = true;
 
 	// If time ran out and we have no winners/losers, set them
@@ -370,6 +404,10 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		if (g_ArenaWinners[arena] == -1) {
 			g_ArenaWinners[arena] = p1;
 			g_ArenaLosers[arena] = p2;
+			if (IsValidClient(p1) && !IsFakeClient(p1) && IsValidClient(p2) && !IsFakeClient(p2)) {
+				g_LetTimeExpire[p1] = true;
+				g_LetTimeExpire[p2] = true;
+			}
 		}
 		new winner = g_ArenaWinners[arena];
 		new loser = g_ArenaLosers[arena];
@@ -383,6 +421,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 
 	}
 
+	// Here we add each player to the queue in their new ranking
 	InitQueue();
 
 	//  top arena
@@ -406,6 +445,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 			AddPlayer(i);
 	}
 
+	// Set leader and scoring information
 	new leader = g_ClientQueue[g_QueueHead];
 	if (IsValidClient(leader) && GetQueueLength() >= 2) {
 		g_RoundsLeader[leader]++;
@@ -483,8 +523,8 @@ public AddPlayer(client) {
 public ResetClientVariables(client) {
 	if (g_isWaiting[client])
 		g_numWaitingPlayers--;
-	g_ids[client] = 0;
-	g_ratings[client] = 0.0;
+	DB_ResetClientVariables(client);
+	g_LetTimeExpire[client] = false;
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
 	g_AllowAWP[client] = false;
@@ -497,6 +537,36 @@ public ResetClientVariables(client) {
 
 public OnClientConnected(client) {
 	ResetClientVariables(client);
+}
+
+public OnClientCookiesCached(client) {
+	if (IsFakeClient(client))
+		return;
+
+	decl String:sCookieValue[WEAPON_LENGTH];
+	GetClientCookie(client, g_hSetCookies, sCookieValue, sizeof(sCookieValue));
+	if (!StrEqual(sCookieValue, "yes"))
+		return;
+
+	GetClientCookie(client, g_hAllowAWPCookie, sCookieValue, sizeof(sCookieValue));
+	g_AllowAWP[client] = StrEqual(sCookieValue, "yes") ? true : false;
+
+	GetClientCookie(client, g_hAllowPistolCookie, sCookieValue, sizeof(sCookieValue));
+	g_AllowPistol[client] = StrEqual(sCookieValue, "yes") ? true : false;
+
+	GetClientCookie(client, g_hPreferenceCookie, sCookieValue, sizeof(sCookieValue));
+	if (StrEqual(sCookieValue, "awp"))
+		g_Preference[client] = RoundType_Awp;
+	else if (StrEqual(sCookieValue, "pistol"))
+		g_Preference[client] = RoundType_Pistol;
+	else
+		g_Preference[client] = RoundType_Rifle;
+
+	GetClientCookie(client, g_hRifleCookie, sCookieValue, sizeof(sCookieValue));
+	strcopy(g_primaryWeapon[client], sizeof(sCookieValue), sCookieValue);
+
+	GetClientCookie(client, g_hPistolCookie, sCookieValue, sizeof(sCookieValue));
+	strcopy(g_secondaryWeapon[client], sizeof(sCookieValue), sCookieValue);
 }
 
 public OnClientDisconnect(client) {

@@ -1,9 +1,16 @@
 #include <sourcemod>
 
-#define WEAPON_LENGTH 24
+#define WEAPON_LENGTH 32
 new String:g_primaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
 new String:g_secondaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
 new RoundType:g_roundTypes[MAXPLAYERS + 1];
+
+new Handle:g_hAllowPistolCookie = INVALID_HANDLE;
+new Handle:g_hAllowAWPCookie = INVALID_HANDLE;
+new Handle:g_hPreferenceCookie = INVALID_HANDLE;
+new Handle:g_hRifleCookie = INVALID_HANDLE;
+new Handle:g_hPistolCookie = INVALID_HANDLE;
+new Handle:g_hSetCookies = INVALID_HANDLE;
 
 enum RoundType {
 	RoundType_Rifle = 0,
@@ -31,6 +38,12 @@ public Action:Command_Say(client, const String:command[], argc) {
 	return Plugin_Continue;
 }
 
+public SafeSetCookie(client, Handle:cookie, String:value[]) {
+	if (AreClientCookiesCached(client)) {
+		SetClientCookie(client, cookie, value);
+	}
+}
+
 public AWPMenu(client) {
 	new Handle:menu = CreateMenu(MenuHandler_AWP);
 	SetMenuTitle(menu, "Allow AWP rounds?");
@@ -44,11 +57,13 @@ public MenuHandler_AWP(Handle:menu, MenuAction:action, param1, param2) {
 		new client = param1;
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
-		if (StrEqual("yes", info))
+		if (StrEqual("yes", info)) {
 			g_AllowAWP[client] = true;
-		else
+		} else {
 			g_AllowAWP[client] = false;
+		}
 
+		SafeSetCookie(client, g_hAllowAWPCookie, info);
 		PistolMenu(client);
 	} else if (action == MenuAction_End) {
 		CloseHandle(menu);
@@ -69,15 +84,19 @@ public MenuHandler_Pistol(Handle:menu, MenuAction:action, param1, param2) {
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
 
-		if (StrEqual("yes", info))
+		if (StrEqual("yes", info)) {
 			g_AllowPistol[client] = true;
-		else
+		} else {
 			g_AllowPistol[client] = false;
+		}
+
+		SafeSetCookie(client, g_hAllowPistolCookie, info);
 
 		if (g_AllowPistol[client] || g_AllowAWP[client]) {
 			PreferenceMenu(client);
 		} else {
 			g_Preference[client] = RoundType_Rifle;
+			SafeSetCookie(client, g_hPreferenceCookie, "rifle");
 			RifleChoiceMenu(client);
 		}
 	} else if (action == MenuAction_End) {
@@ -110,6 +129,7 @@ public MenuHandler_Preference(Handle:menu, MenuAction:action, param1, param2) {
 		else
 			g_Preference[client] = RoundType_Pistol;
 
+		SafeSetCookie(client, g_hPreferenceCookie, info);
 		RifleChoiceMenu(client);
 	} else if (action == MenuAction_End) {
 		CloseHandle(menu);
@@ -141,6 +161,7 @@ public MenuHandler_RifleChoice(Handle:menu, MenuAction:action, param1, param2) {
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
 		g_primaryWeapon[client] = info;
+		SafeSetCookie(client, g_hRifleCookie, info);
 		PistolChoiceMenu(client);
 	} else if (action == MenuAction_End) {
 		CloseHandle(menu);
@@ -161,7 +182,7 @@ public PistolChoiceMenu(client) {
 	AddMenuItem(menu, "weapon_cz75a", "CZ75");
 	AddMenuItem(menu, "weapon_deagle", "Deagle");
 	AddMenuItem(menu, "weapon_fiveseven", "Five-Seven");
-	AddMenuItem(menu, "weapon_tec9", "Tec-9");
+	AddMenuItem(menu, "weapon_tec9", "Tec9");
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -174,6 +195,8 @@ public MenuHandler_PistolChoice(Handle:menu, MenuAction:action, param1, param2) 
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
 		g_secondaryWeapon[client] = info;
+		SafeSetCookie(client, g_hPistolCookie, info);
+		SafeSetCookie(client, g_hSetCookies, "yes");
 	} else if (action == MenuAction_End) {
 		CloseHandle(menu);
 	}

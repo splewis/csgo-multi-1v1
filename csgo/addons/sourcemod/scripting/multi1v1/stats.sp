@@ -1,12 +1,20 @@
 #include <sourcemod>
 
-new Float:g_ratings[MAXPLAYERS+1]; // current rating for a player
-new g_ids[MAXPLAYERS+1]; // steam account ID for a player - fetched on connection
-
-new Handle:g_hUseDatabase = INVALID_HANDLE;
 new bool:g_dbConnected = false;
 new Handle:db = INVALID_HANDLE;
-new String:sqlBuffer[1024];
+
+// Internal variables for this file
+new Float:__ratings[MAXPLAYERS+1]; // current rating for a player
+new __ids[MAXPLAYERS+1]; // steam account ID for a player - fetched on connection
+new String:__sqlbuffer[1024];
+
+/**
+ *
+ */
+public DB_ResetClientVariables(client) {
+	__ids[client] = 0;
+	__ratings[client] = 0.0;
+}
 
 /**
  * Attempts to connect to the database.
@@ -47,10 +55,10 @@ public DB_AddPlayer(client, Float:default_rating) {
 		GetClientName(client, name, sizeof(name));
 		new String:sanitized_name[100];
 		SQL_EscapeString(db, name, sanitized_name, sizeof(name));
-		Format(sqlBuffer, sizeof(sqlBuffer), "INSERT IGNORE INTO multi1v1_stats (accountID,name,rating) VALUES (%d, '%s', %f);", id, sanitized_name, default_rating);
-		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
-		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE multi1v1_stats SET name = '%s' WHERE accountID = %d", sanitized_name, id);
-		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "INSERT IGNORE INTO multi1v1_stats (accountID,name,rating) VALUES (%d, '%s', %f);", id, sanitized_name, default_rating);
+		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "UPDATE multi1v1_stats SET name = '%s' WHERE accountID = %d", sanitized_name, id);
+		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
 	}
 }
 
@@ -61,16 +69,16 @@ public DB_Increment(client, const String:field[]) {
 	if (db != INVALID_HANDLE) {
 		new id = GetAccountID(client);
 		if (id >= 1) {
-			Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE multi1v1_stats SET %s = %s + 1 WHERE accountID = %d", field, field, id);
-			SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
+			Format(__sqlbuffer, sizeof(__sqlbuffer), "UPDATE multi1v1_stats SET %s = %s + 1 WHERE accountID = %d", field, field, id);
+			SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
 		}
 	}
 }
 
 public GetAccountID(client) {
-	if (g_ids[client] == 0)
-		g_ids[client] = GetSteamAccountID(client);
-	return g_ids[client];
+	if (__ids[client] == 0)
+		__ids[client] = GetSteamAccountID(client);
+	return __ids[client];
 }
 
 /**
@@ -81,8 +89,8 @@ public DB_FetchRating(client) {
 	new Float:rating = 0.0;
 	if (db != INVALID_HANDLE) {
 		SQL_LockDatabase(db);
-		Format(sqlBuffer, sizeof(sqlBuffer), "SELECT rating FROM multi1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
-		new Handle:query = SQL_Query(db, sqlBuffer);
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "SELECT rating FROM multi1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
+		new Handle:query = SQL_Query(db, __sqlbuffer);
 
 		if (query == INVALID_HANDLE) {
 			new String:error[255]
@@ -96,7 +104,7 @@ public DB_FetchRating(client) {
 		}
 		SQL_UnlockDatabase(db);
 	}
-	g_ratings[client] = rating;
+	__ratings[client] = rating;
 }
 
 /**
@@ -105,18 +113,18 @@ public DB_FetchRating(client) {
 public DB_UpdateRating(winner, loser) {
 	if (db != INVALID_HANDLE) {
 
-		new Float:winner_rating = g_ratings[winner];
-		new Float:loser_rating  = g_ratings[loser];
+		new Float:winner_rating = __ratings[winner];
+		new Float:loser_rating  = __ratings[loser];
 
 		// go fetch the ratings if needed
 		if (winner_rating <= 0.0) {
 			DB_FetchRating(winner);
-			winner_rating = g_ratings[winner];
+			winner_rating = __ratings[winner];
 		}
 
 		if (loser_rating <= 0.0) {
 			DB_FetchRating(loser);
-			loser_rating = g_ratings[loser];
+			loser_rating = __ratings[loser];
 		}
 
 		if (winner_rating <= 0.0 || loser_rating <= 0.0) {
@@ -124,7 +132,7 @@ public DB_UpdateRating(winner, loser) {
 		}
 
 		// probability of each player winning
-		new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 600.0));
+		new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 800.0));
 		new Float:pLoser = 1.0 - pWinner;
 
 		// constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2
@@ -153,8 +161,11 @@ public DB_UpdateRating(winner, loser) {
 				int_loser, int_loser_d, winner, int_winner, int_winner_d);
 		}
 
-		g_ratings[winner] = winner_rating_new;
-		g_ratings[loser] = loser_rating_new;
+		__ratings[winner] = winner_rating_new;
+		__ratings[loser] = loser_rating_new;
+		DB_WriteRating(winner);
+		DB_WriteRating(loser);
+
 	}
 }
 
@@ -162,8 +173,8 @@ public DB_UpdateRating(winner, loser) {
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
 DB_WriteRating(client) {
-	if (g_ratings[client] >= 200.0) {
-		Format(sqlBuffer, sizeof(sqlBuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], GetAccountID(client));
-		SQL_TQuery(db, SQLErrorCheckCallback, sqlBuffer);
+	if (__ratings[client] >= 200.0) {
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", __ratings[client], GetAccountID(client));
+		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
 	}
 }
