@@ -1,10 +1,15 @@
 #include <sourcemod>
+#include "roundTypes.sp"
 
+new Handle:g_hUseDatabase = INVALID_HANDLE;
 new bool:g_dbConnected = false;
 new Handle:db = INVALID_HANDLE;
 
 // Internal variables for this file
 new Float:__ratings[MAXPLAYERS+1]; // current rating for a player
+new Float:__pistolRatings[MAXPLAYERS+1];
+new Float:__rifleRatings[MAXPLAYERS+1];
+new Float:__awpRatings[MAXPLAYERS+1];
 new __ids[MAXPLAYERS+1]; // steam account ID for a player - fetched on connection
 new String:__sqlbuffer[1024];
 
@@ -14,6 +19,9 @@ new String:__sqlbuffer[1024];
 public DB_ResetClientVariables(client) {
 	__ids[client] = 0;
 	__ratings[client] = 0.0;
+	__pistolRatings[client] = 0.0;
+	__awpRatings[client] = 0.0;
+	__rifleRatings[client] = 0.0;
 }
 
 /**
@@ -29,7 +37,7 @@ public DB_Connect() {
 		LogError("Could not connect: %s", error);
 	} else {
 		SQL_LockDatabase(db);
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, name varchar(255) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1450.0);");
+		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, name varchar(255) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1450.0, pistolRating FLOAT NOT NULL default 1450.0, rifleRating FLOAT NOT NULL default 1450.0, awpRating FLOAT NOT NULL default 1450.0);");
 		SQL_UnlockDatabase(db);
 		SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM multi1v1_stats WHERE wins+losses <= 5;")
 		g_dbConnected = true;
@@ -51,6 +59,7 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
 public DB_AddPlayer(client, Float:default_rating) {
 	if (db != INVALID_HANDLE) {
 		new id = GetAccountID(client);
+		__ids[client] = id;
 		new String:name[100];
 		GetClientName(client, name, sizeof(name));
 		new String:sanitized_name[100];
@@ -65,7 +74,7 @@ public DB_AddPlayer(client, Float:default_rating) {
 /**
  * Increments a named field in the database.
  */
-public DB_Increment(client, const String:field[]) {
+public __Increment(client, const String:field[]) {
 	if (db != INVALID_HANDLE) {
 		new id = GetAccountID(client);
 		if (id >= 1) {
@@ -73,6 +82,12 @@ public DB_Increment(client, const String:field[]) {
 			SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
 		}
 	}
+}
+
+public DB_RoundUpdate(winner, loser, RoundType:roundType) {
+	__Increment(winner, "wins");
+	__Increment(loser, "losses");
+	__UpdateRating(winner, loser, roundType);
 }
 
 public GetAccountID(client) {
@@ -85,11 +100,15 @@ public GetAccountID(client) {
  * Reads a player rating from the database.
  * Note that this is a *SLOW* operation and you should not do it during gameplay
  */
-public DB_FetchRating(client) {
+public DB_FetchRatings(client) {
 	new Float:rating = 0.0;
+	new Float:pistolRating = 0.0;
+	new Float:awpRating = 0.0;
+	new Float:rifleRating = 0.0;
+
 	if (db != INVALID_HANDLE) {
 		SQL_LockDatabase(db);
-		Format(__sqlbuffer, sizeof(__sqlbuffer), "SELECT rating FROM multi1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "SELECT rating, pistolRating, awpRating, rifleRating FROM multi1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
 		new Handle:query = SQL_Query(db, __sqlbuffer);
 
 		if (query == INVALID_HANDLE) {
@@ -99,61 +118,57 @@ public DB_FetchRating(client) {
 		} else {
 			while (SQL_FetchRow(query))	{
 				rating = SQL_FetchFloat(query, 0);
+				pistolRating = SQL_FetchFloat(query, 1);
+				awpRating = SQL_FetchFloat(query, 2);
+				rifleRating = SQL_FetchFloat(query, 3);
 			}
 			CloseHandle(query);
 		}
 		SQL_UnlockDatabase(db);
 	}
 	__ratings[client] = rating;
+	__pistolRatings[client] = pistolRating;
+	__awpRatings[client] = awpRating;
+	__rifleRatings[client] = rifleRating;
+}
+
+public Float:ELORatingDelta(Float:winner_rating, Float:loser_rating) {
+	// probability of each player winning
+	new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 800.0));
+
+	// constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2
+	new Float:K = 8.0;
+	new Float:winner_delta = K * (1.0 - pWinner);
+
+	return winner_delta;
 }
 
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-public DB_UpdateRating(winner, loser) {
+public __UpdateRating(winner, loser, RoundType:roundType) {
 	if (db != INVALID_HANDLE) {
 
-		new Float:winner_rating = __ratings[winner];
-		new Float:loser_rating  = __ratings[loser];
-
 		// go fetch the ratings if needed
-		if (winner_rating <= 0.0) {
-			DB_FetchRating(winner);
-			winner_rating = __ratings[winner];
+		if (__ratings[winner] <= 0.0) {
+			DB_FetchRatings(winner);
 		}
 
-		if (loser_rating <= 0.0) {
-			DB_FetchRating(loser);
-			loser_rating = __ratings[loser];
+		if (__ratings[loser] <= 0.0) {
+			DB_FetchRatings(loser);
 		}
 
-		if (winner_rating <= 0.0 || loser_rating <= 0.0) {
+		if (__ratings[winner] <= 0.0 || __ratings[loser] <= 0.0) {
 			return;
 		}
 
-		// probability of each player winning
-		new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 800.0));
-		new Float:pLoser = 1.0 - pWinner;
-
-		// constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2
-		new Float:K = 8.0;
-		new Float:winner_delta = K * (1.0 - pWinner);
-		new Float:loser_delta  = K * (0.0 - pLoser);
-
-		new Float:winner_rating_new  = winner_rating + winner_delta;
-		new Float:loser_rating_new   = loser_rating  + loser_delta;
-
-		// lower bound on ratings, it's important this is greater than 0 so
-		// we can use <= 0 to detect failures to read the player rating
-		if (loser_rating_new <= 200.0) {
-			loser_rating_new = 200.0;
-		}
+		new Float:rating_delta = ELORatingDelta(__ratings[winner], __ratings[loser]);
 
 		if (IsValidClient(winner) && IsValidClient(loser)) {
-			new int_winner_d = RoundToNearest(FloatAbs(winner_delta));
-			new int_loser_d = RoundToNearest(FloatAbs(loser_delta));
-			new int_loser = RoundToNearest(loser_rating_new);
-			new int_winner = RoundToNearest(winner_rating_new);
+			new int_winner_d = RoundToNearest(FloatAbs(rating_delta));
+			new int_loser_d = RoundToNearest(FloatAbs(rating_delta));
+			new int_loser = RoundToNearest(__ratings[loser]);
+			new int_winner = RoundToNearest(__ratings[winner]);
 
 			PrintToChat(winner, " \x01\x0B\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
 				int_winner, int_winner_d, loser, int_loser, int_loser_d);
@@ -161,10 +176,25 @@ public DB_UpdateRating(winner, loser) {
 				int_loser, int_loser_d, winner, int_winner, int_winner_d);
 		}
 
-		__ratings[winner] = winner_rating_new;
-		__ratings[loser] = loser_rating_new;
-		DB_WriteRating(winner);
-		DB_WriteRating(loser);
+		__ratings[winner] += rating_delta;
+		__ratings[loser] -= rating_delta;
+
+		if (roundType == RoundType_Pistol) {
+			rating_delta = ELORatingDelta(__pistolRatings[winner], __pistolRatings[loser]);
+			__pistolRatings[winner] += rating_delta;
+			__pistolRatings[loser] -= rating_delta;
+		} else if (roundType == RoundType_Awp) {
+			rating_delta = ELORatingDelta(__awpRatings[winner], __awpRatings[loser]);
+			__awpRatings[winner] += rating_delta;
+			__awpRatings[loser] -= rating_delta;
+		} else if (roundType == RoundType_Rifle) {
+			rating_delta = ELORatingDelta(__rifleRatings[winner], __rifleRatings[loser]);
+			__rifleRatings[winner] += rating_delta;
+			__rifleRatings[loser] -= rating_delta;
+		}
+
+		DB_WriteRatings(winner);
+		DB_WriteRatings(loser);
 
 	}
 }
@@ -172,9 +202,44 @@ public DB_UpdateRating(winner, loser) {
 /**
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
-DB_WriteRating(client) {
+DB_WriteRatings(client) {
 	if (__ratings[client] >= 200.0) {
 		Format(__sqlbuffer, sizeof(__sqlbuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", __ratings[client], GetAccountID(client));
 		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
 	}
+	if (__pistolRatings[client] >= 200.0) {
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "UPDATE multi1v1_stats set pistolRating = %f WHERE accountID = %d", __pistolRatings[client], GetAccountID(client));
+		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
+	}
+	if (__awpRatings[client] >= 200.0) {
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "UPDATE multi1v1_stats set awpRating = %f WHERE accountID = %d", __awpRatings[client], GetAccountID(client));
+		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
+	}
+	if (__rifleRatings[client] >= 200.0) {
+		Format(__sqlbuffer, sizeof(__sqlbuffer), "UPDATE multi1v1_stats set rifleRating = %f WHERE accountID = %d", __rifleRatings[client], GetAccountID(client));
+		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
+	}
+}
+
+public Action:Command_Stats(client, args) {
+	if (!g_dbConnected || GetConVarInt(g_hUseDatabase) == 0)
+		return Plugin_Handled;
+
+	new String:arg1[32];
+	if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
+		new target = FindTarget(client, arg1);
+		if (target != -1) {
+			ShowStatsForPlayer(client, target);
+		}
+	} else {
+		ShowStatsForPlayer(client, client);
+	}
+
+	return Plugin_Handled;
+}
+
+public ShowStatsForPlayer(client, target) {
+	decl String:url[255];
+	Format(url, sizeof(url), "http://csgo1v1.splewis.net/redirect_stats/%d", GetAccountID(target));
+	ShowMOTDPanel(client, "Multi-1v1 Stats", url, MOTDPANEL_TYPE_URL);
 }

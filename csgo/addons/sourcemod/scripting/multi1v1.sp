@@ -16,7 +16,6 @@
 new Handle:g_hRoundTimeVar = INVALID_HANDLE;
 new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
 new Handle:g_hCvarVersion = INVALID_HANDLE;
-new Handle:g_hUseDatabase = INVALID_HANDLE;
 
 new g_Arenas = 1;
 new g_Rankings[MAXPLAYERS+1] = -1;		// which arena each player is in
@@ -49,7 +48,7 @@ public Plugin:myinfo = {
 public OnPluginStart() {
 	LoadTranslations("common.phrases");
 
-	/** convars **/
+	/** ConVars **/
 	g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)");
 	g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
 	g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1450.0", "ELO rating a player starts with");
@@ -59,6 +58,7 @@ public OnPluginStart() {
 	// Create and exec plugin's configuration file
 	// AutoExecConfig(true, "multi1v1");
 
+	/** Cookies **/
 	g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Protected);
 	g_hAllowAWPCookie = RegClientCookie("multi1v1_allowawp", "Multi-1v1 allow AWP rounds", CookieAccess_Protected);
 	g_hPreferenceCookie = RegClientCookie("multi1v1_preference", "Multi-1v1 round-type preference", CookieAccess_Protected);
@@ -70,6 +70,9 @@ public OnPluginStart() {
 	AddCommandListener(Command_Say, "say2");
 	AddCommandListener(Command_Say, "say_team");
 	AddCommandListener(OnJoinTeamCommand, "jointeam");
+
+	/** Player commands */
+	RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
 
 	/** Event hooks **/
 	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
@@ -94,6 +97,7 @@ public OnMapStart() {
 		LogError("You need to add more spawns for the plugin to work properly - use spawn_menu to add them.");
 	}
 
+	g_TotalRounds = 0;
 	g_LastWinner = -1;
 	g_Score = 0;
 	g_HighestScore = 0;
@@ -153,6 +157,22 @@ public Action:OnJoinTeamCommand(client, const String:command[], argc) {
 	return Plugin_Handled;
 }
 
+/**
+ * Hook for player chat actions.
+ */
+public Action:Command_Say(client, const String:command[], argc) {
+	decl String:text[192];
+	if (GetCmdArgString(text, sizeof(text)) < 1)
+		return Plugin_Continue;
+
+	StripQuotes(text);
+	if (strcmp(text[0], "guns", false) == 0 || strcmp(text[0], "!guns", false) == 0) {
+		AWPMenu(client);
+		return Plugin_Handled;
+	}
+	return Plugin_Continue;
+}
+
 public AddWaiter(client) {
 	if (!g_isWaiting[client]) {
 		PrintToChat(client, " \x01\x0B\x04Welcome to CS:GO 1v1! You will be placed into an arena next round!");
@@ -171,7 +191,7 @@ public AddWaiter(client) {
 
 public Action:Timer_PrintWelcomeMessage(Handle:timer, any:client) {
 	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net");
+		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net \x05and by using \x04!stats \05or \x04/stats \x05in chat");
 	}
 	return Plugin_Handled;
 }
@@ -187,9 +207,8 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
  */
 public OnClientPostAdminCheck(client) {
 	if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDatabase) != 0) {
-		__ids[client] = GetSteamAccountID(client);
 		DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
-		DB_FetchRating(client);
+		DB_FetchRatings(client);
 	}
 }
 
@@ -229,6 +248,7 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 	GivePlayerItem(client, "weapon_knife");
 
 	if (g_LetTimeExpire[client] && g_TotalRounds >= 3) {
+		PrintToChat(client, " \x01\x0B\x04You let time run out last round. You will be punished and get \x031HP \x04next round.");
 		PrintHintText(client, "You let time run out last round. You will be punished and get 1HP next round.");
 		SetEntityHealth(client, 1);
 	}
@@ -353,6 +373,10 @@ public SetupPlayer(client, arena, other, bool:onCT) {
  * Timer for checking round end conditions, since rounds typically won't end naturally.
  */
 public Action:Timer_CheckRoundComplete(Handle:timer) {
+
+	// GameRules_SetProp("m_bWarmupPeriod", true, _, _, true);
+	// LogMessage("GameRules_GetProp warmup: %d", GameRules_GetProp("m_bWarmupPeriod"));
+
 	// This is a check in case the round ended naturally, we won't force another end
 	if (g_RoundFinished)
 		return Plugin_Stop;
@@ -413,9 +437,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		new loser = g_ArenaLosers[arena];
 		if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
 			if (winner != loser && GetConVarInt(g_hUseDatabase) != 0) {
-				DB_Increment(winner, "wins");
-				DB_Increment(loser, "losses");
-				DB_UpdateRating(winner, loser);
+				DB_RoundUpdate(winner, loser, g_roundTypes[arena]);
 			}
 		}
 
@@ -571,7 +593,7 @@ public OnClientCookiesCached(client) {
 
 public OnClientDisconnect(client) {
 	if (GetConVarInt(g_hUseDatabase) != 0)
-		DB_WriteRating(client);
+		DB_WriteRatings(client);
 
 	if (IsValidClient(client)) {
 		new arena = g_Rankings[client];

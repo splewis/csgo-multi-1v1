@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include "roundTypes.sp"
 
 #define WEAPON_LENGTH 32
 new String:g_primaryWeapon[MAXPLAYERS + 1][WEAPON_LENGTH];
@@ -12,31 +13,9 @@ new Handle:g_hRifleCookie = INVALID_HANDLE;
 new Handle:g_hPistolCookie = INVALID_HANDLE;
 new Handle:g_hSetCookies = INVALID_HANDLE;
 
-enum RoundType {
-	RoundType_Rifle = 0,
-	RoundType_Awp = 1,
-	RoundType_Pistol = 2
-};
-
 new bool:g_AllowAWP[MAXPLAYERS+1];
 new bool:g_AllowPistol[MAXPLAYERS+1];
 new RoundType:g_Preference[MAXPLAYERS+1];
-
-
-/**
- * Hook for player chat actions.
- */
-public Action:Command_Say(client, const String:command[], argc) {
-	decl String:text[192];
-	if (GetCmdArgString(text, sizeof(text)) < 1)
-		return Plugin_Continue;
-	StripQuotes(text);
-	if (strcmp(text[0], "guns", false) == 0 || strcmp(text[0], "!guns", false) == 0) {
-		AWPMenu(client);
-		return Plugin_Handled;
-	}
-	return Plugin_Continue;
-}
 
 public SafeSetCookie(client, Handle:cookie, String:value[]) {
 	if (AreClientCookiesCached(client)) {
