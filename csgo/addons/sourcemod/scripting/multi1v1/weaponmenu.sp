@@ -17,6 +17,48 @@ new bool:g_AllowAWP[MAXPLAYERS+1];
 new bool:g_AllowPistol[MAXPLAYERS+1];
 new RoundType:g_Preference[MAXPLAYERS+1];
 
+/**
+ * Opens up the weapon menu for a client.
+ */
+public GiveWeaponMenu(client) {
+	AWPMenu(client);
+}
+
+/**
+ * Returns an appropriate round type for a pair of clients.
+ */
+public RoundType:GetRoundType(any:client1, any:client2) {
+	if (!IsValidClient(client1) || !IsValidClient(client2) || IsFakeClient(client1) || IsFakeClient(client2))
+		return RoundType_Rifle;
+
+	new RoundType:roundType = RoundType_Rifle;
+	new RoundType:pref1 = g_Preference[client1];
+	new RoundType:pref2 = g_Preference[client2];
+
+	if (pref1 == pref2) {
+		roundType = pref1;
+	} else {
+		// create array of "allowed" round types
+		new Handle:types = CreateArray();
+		if (g_AllowAWP[client1] && g_AllowAWP[client2])
+			PushArrayCell(types, RoundType_Awp);
+		if (g_AllowPistol[client1] && g_AllowPistol[client2])
+			PushArrayCell(types, RoundType_Pistol);
+		PushArrayCell(types, RoundType_Rifle);
+
+		// pick a random value from the allowed round types
+		new len = GetArraySize(types);
+		new index = GetRandomInt(0, len - 1);
+		roundType = GetArrayCell(types, index);
+		CloseHandle(types);
+	}
+
+	return roundType;
+}
+
+/**
+ * Sets a cookie, checking if it isn't cached yet.
+ */
 public SafeSetCookie(client, Handle:cookie, String:value[]) {
 	if (AreClientCookiesCached(client)) {
 		SetClientCookie(client, cookie, value);
@@ -94,7 +136,6 @@ public PreferenceMenu(client) {
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-
 public MenuHandler_Preference(Handle:menu, MenuAction:action, param1, param2) {
 	if (action == MenuAction_Select) {
 		new client = param1;
@@ -150,7 +191,7 @@ public MenuHandler_RifleChoice(Handle:menu, MenuAction:action, param1, param2) {
 /**
  * Displays pistol menu to a player
  */
-public PistolChoiceMenu(client) {
+public PistolChoiceMenu(any:client) {
 	new Handle:menu = CreateMenu(MenuHandler_PistolChoice);
 	SetMenuExitButton(menu, true);
 	SetMenuTitle(menu, "Choose your favorite pistol:");
@@ -170,7 +211,7 @@ public PistolChoiceMenu(client) {
  */
 public MenuHandler_PistolChoice(Handle:menu, MenuAction:action, param1, param2) {
 	if (action == MenuAction_Select) {
-		new client = param1;
+		new any:client = param1;
 		decl String:info[WEAPON_LENGTH];
 		GetMenuItem(menu, param2, info, sizeof(info));
 		g_secondaryWeapon[client] = info;
@@ -199,31 +240,4 @@ public Action:Timer_PrintGunsHint(Handle:timer, any:client) {
 		PrintHintText(client, "Type guns into chat to select new weapons.");
 	}
 	return Plugin_Handled;
-}
-
-public RoundType:GetRoundType(client1, client2) {
-	if (!IsValidClient(client1) || !IsValidClient(client2))
-		return RoundType_Rifle;
-
-	new RoundType:roundType = RoundType_Rifle;
-	new RoundType:pref1 = g_Preference[client1];
-	new RoundType:pref2 = g_Preference[client2];
-
-	if (pref1 == pref2) {
-		roundType = pref1;
-	} else {
-		new Handle:types = CreateArray();
-		if (g_AllowAWP[client1] && g_AllowAWP[client2])
-			PushArrayCell(types, RoundType_Awp);
-		if (g_AllowPistol[client1] && g_AllowPistol[client2])
-			PushArrayCell(types, RoundType_Pistol);
-		PushArrayCell(types, RoundType_Rifle);
-
-		new len = GetArraySize(types);
-		new index = GetRandomInt(0, len - 1);
-		roundType = GetArrayCell(types, index);
-		CloseHandle(types);
-	}
-
-	return roundType;
 }
