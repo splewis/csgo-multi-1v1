@@ -253,25 +253,3 @@ public MenuHandler_FlashChoice(Handle:menu, MenuAction:action, param1, param2) {
 		CloseHandle(menu);
 	}
 }
-
-
-
-/**
- * Generic chat message about what to type to get the guns menu.
- */
-public Action:Timer_PrintGunsMessage(Handle:timer, any:client) {
-	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintToChat(client, " \x01\x0B\x05Type \x04guns \x05into chat to select new weapons.");
-	}
-	return Plugin_Handled;
-}
-
-/**
- * Generic chat message about what to type to get the guns menu using the hint text.
- */
-public Action:Timer_PrintGunsHint(Handle:timer, any:client) {
-	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintHintText(client, "Type guns into chat to select new weapons.");
-	}
-	return Plugin_Handled;
-}

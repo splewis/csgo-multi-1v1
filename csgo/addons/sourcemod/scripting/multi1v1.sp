@@ -72,10 +72,6 @@ public OnPluginStart() {
 	AddCommandListener(Command_Say, "say_team");
 	AddCommandListener(OnJoinTeamCommand, "jointeam");
 
-	/** Player commands **/
-	RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
-	RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
-
 	/** Event hooks **/
 	HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
 	HookEvent("player_spawn", Event_OnPlayerSpawn);
@@ -175,32 +171,8 @@ public AddWaiter(client) {
 		g_Rankings[client] = -1;
 		g_numWaitingPlayers++;
 		SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
-		CreateTimer(1.0, Timer_PrintGunsMessage, client);
-		CreateTimer(30.0, Timer_PrintWelcomeMessage, client);
-		CreateTimer(50.0, Timer_PrintGunsHint, client);
-		CreateTimer(60.0, Timer_PrintGunsMessage, client);
-		CreateTimer(180.0, Timer_PrintGunsMessage, client);
-		CreateTimer(80.0, Timer_DonationMessage, client);
-		CreateTimer(150.0, Timer_DonationMessage, client);
-		CreateTimer(240.0, Timer_DonationMessage, client);
-		CreateTimer(400.0, Timer_DonationMessage, client);
 	}
 }
-
-public Action:Timer_PrintWelcomeMessage(Handle:timer, any:client) {
-	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintToChat(client, " \x01\x0B\x05You can check out your stats at \x04csgo1v1.splewis.net \x05and by using \x04!stats \05or \x04/stats \x05in chat");
-	}
-	return Plugin_Handled;
-}
-
-public Action:Timer_DonationMessage(Handle:timer, any:client) {
-	if (IsValidClient(client) && !IsFakeClient(client)) {
-		PrintToChat(client, " \x01\x0B\x05Did you know you can donate for a reserved slot? Check out \x04csgo1v1.splewis.net \x05for details");
-	}
-	return Plugin_Handled;
-}
-
 
 public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast) {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -692,20 +664,10 @@ SwitchPlayerTeam(client, team) {
 	g_PluginTeamSwitch[client] = false;
 }
 
-
-/***************************
- * Stocks                  *
- *  &                      *
- * SMLib Functions (berni) *
-****************************/
-
 /**
- * Function to identify if a client is valid and in game
- *
- * @param	client		Vector to be evaluated
- * @return 				true if valid client, false if not
+ * Function to identify if a client is valid and in game.
  */
-stock bool:IsValidClient(client) {
+bool:IsValidClient(client) {
 	if (client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
 		return true;
 	return false;

@@ -220,26 +220,3 @@ DB_WriteRatings(client) {
 		SQL_TQuery(db, SQLErrorCheckCallback, __sqlbuffer);
 	}
 }
-
-public Action:Command_Stats(client, args) {
-	if (!g_dbConnected || GetConVarInt(g_hUseDatabase) == 0)
-		return Plugin_Handled;
-
-	new String:arg1[32];
-	if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
-		new target = FindTarget(client, arg1);
-		if (target != -1) {
-			ShowStatsForPlayer(client, target);
-		}
-	} else {
-		ShowStatsForPlayer(client, client);
-	}
-
-	return Plugin_Handled;
-}
-
-public ShowStatsForPlayer(client, target) {
-	decl String:url[255];
-	Format(url, sizeof(url), "http://csgo1v1.splewis.net/redirect_stats/%d", GetAccountID(target));
-	ShowMOTDPanel(client, "Multi-1v1 Stats", url, MOTDPANEL_TYPE_URL);
-}
