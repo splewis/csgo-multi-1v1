@@ -24,6 +24,7 @@ new g_ArenaPlayer2[MAXPLAYERS+1] = -1;	// who is player 2 in each arena
 new g_ArenaWinners[MAXPLAYERS+1] = -1; 	// who won each arena
 new g_ArenaLosers[MAXPLAYERS+1] = -1;	// who lost each arena
 new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
+new bool:g_PlacedPlayer[MAXPLAYERS+1] = false;
 
 new g_TotalRounds = 0;
 new g_LastWinner = -1;
@@ -63,6 +64,7 @@ public OnPluginStart() {
 	g_hPreferenceCookie = RegClientCookie("multi1v1_preference", "Multi-1v1 round-type preference", CookieAccess_Protected);
 	g_hRifleCookie = RegClientCookie("multi1v1_rifle", "Multi-1v1 rifle choice", CookieAccess_Protected);
 	g_hPistolCookie = RegClientCookie("multi1v1_pistol", "Multi-1v1 pistol choice", CookieAccess_Protected);
+	g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 pistol choice", CookieAccess_Protected);
 	g_hSetCookies = RegClientCookie("multi1v1_setprefs", "Multi-1v1 if prefs are saved", CookieAccess_Protected);
 
 	AddCommandListener(Command_Say, "say");
@@ -103,8 +105,11 @@ public OnMapStart() {
 		g_ArenaPlayer2[i] = -1;
 		g_ArenaWinners[i] = -1;
 		g_ArenaLosers[i] = -1;
+		g_isWaiting[i] = false;
 		g_PluginTeamSwitch[i] = false;
 		g_SittingOut[i] = false;
+		g_LetTimeExpire[i] = false;
+		g_PlacedPlayer[i] = false;
 	}
 	GameRules_SetProp("m_bWarmupPeriod", false, _, _, true);
 	GameRules_SetPropFloat("m_fWarmupPeriodEnd", GetGameTime(), _, true);
@@ -162,6 +167,7 @@ public Action:Command_Say(client, const String:command[], argc) {
 }
 
 public AddWaiter(client) {
+	g_PlacedPlayer[client] = true;
 	if (!g_isWaiting[client]) {
 		PrintToChat(client, " \x01\x0B\x04Welcome to CS:GO 1v1! You will be placed into an arena next round!");
 		g_SittingOut[client] = false;
@@ -196,7 +202,11 @@ public Action:Timer_DonationMessage(Handle:timer, any:client) {
 }
 
 
-public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast)  {
+public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast) {
+	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	if (!g_PlacedPlayer[client]) {
+		AddWaiter(client);
+	}
 	dontBroadcast = true;
 	return Plugin_Changed;
 }
@@ -232,6 +242,9 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 	new arena = g_Rankings[client];
 	new RoundType:roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
 
+	if (arena == -1)
+		LogError("player %N should not be here: waiting=%d, arena=-1", client, g_isWaiting[client]);
+
 	if (roundType == RoundType_Rifle) {
 		if (GivePlayerItem(client, g_primaryWeapon[client]) == -1)
 			GivePlayerItem(client, "weapon_ak47");
@@ -244,11 +257,16 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 	if (GivePlayerItem(client, g_secondaryWeapon[client]) == -1)
 		GivePlayerItem(client, "weapon_glock");
 
+	new other = GetOpponent(client);
+	if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
+		GivePlayerItem(client, "weapon_flashbang");
+	}
+
 	GivePlayerItem(client, "weapon_knife");
 
 	if (g_LetTimeExpire[client] && g_TotalRounds >= 3) {
-		PrintToChat(client, " \x01\x0B\x04You let time run out last round. You will be punished and get \x031HP \x04this round.");
-		SetEntityHealth(client, 1);
+		// PrintToChat(client, " \x01\x0B\x04You let time run out last round. You will be punished and get \x031HP \x04this round.");
+		// SetEntityHealth(client, 1);
 		g_LetTimeExpire[client] = false;
 	}
 
@@ -278,7 +296,6 @@ public RemoveVestHelm(client) {
 	if (removeKevlar) {
 		Client_SetArmor(client, 0);
 	}
-
 }
 
 public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -334,7 +351,6 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 	for (new i = 1; i <= numArenas; i++) {
 		new p1 = g_ArenaPlayer1[i];
 		new p2 = g_ArenaPlayer2[i];
-		g_roundTypes[i] = GetRoundType(p1, p2);
 		if (IsValidClient(p1)) {
 			SetupPlayer(p1, i, p2, true);
 		}
@@ -370,6 +386,10 @@ public SetupPlayer(client, arena, other, bool:onCT) {
 		SwitchPlayerTeam(client, CS_TEAM_T);
 		GetArrayArray(g_hTSpawns, arena - 1, spawn);
 		GetArrayArray(g_hTAngles, arena - 1, angles);
+	}
+	if (IsOnTeam(client)) {
+		ForcePlayerSuicide(client);
+		CS_RespawnPlayer(client);
 	}
 	TeleportEntity(client, spawn, angles, NULL_VECTOR);
 
@@ -517,6 +537,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 		new p2 = DeQueue();
 		g_ArenaPlayer1[arena] = p1;
 		g_ArenaPlayer2[arena] = p2;
+		g_roundTypes[arena] = GetRoundType(p1, p2);
 
 		new bool:realp1 = IsValidClient(p1);
 		new bool:realp2 = IsValidClient(p2);
@@ -569,11 +590,13 @@ public ResetClientVariables(client) {
 	if (g_isWaiting[client])
 		g_numWaitingPlayers--;
 	DB_ResetClientVariables(client);
+	g_PlacedPlayer[client] = false;
 	g_LetTimeExpire[client] = false;
 	g_SittingOut[client] = false;
 	g_isWaiting[client] = false;
 	g_AllowAWP[client] = false;
 	g_AllowPistol[client] = false;
+	g_GiveFlash[client] = false;
 	g_Preference[client] = RoundType_Rifle;
 	g_primaryWeapon[client] = "weapon_ak47";
 	g_secondaryWeapon[client] = "weapon_glock";
@@ -613,6 +636,9 @@ public OnClientCookiesCached(client) {
 
 	GetClientCookie(client, g_hPistolCookie, sCookieValue, sizeof(sCookieValue));
 	strcopy(g_secondaryWeapon[client], sizeof(sCookieValue), sCookieValue);
+
+	GetClientCookie(client, g_hFlashCookie, sCookieValue, sizeof(sCookieValue));
+	g_GiveFlash[client] = StrEqual(sCookieValue, "yes");
 }
 
 public OnClientDisconnect(client) {

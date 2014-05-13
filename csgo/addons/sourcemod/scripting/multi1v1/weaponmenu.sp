@@ -11,10 +11,12 @@ new Handle:g_hAllowAWPCookie = INVALID_HANDLE;
 new Handle:g_hPreferenceCookie = INVALID_HANDLE;
 new Handle:g_hRifleCookie = INVALID_HANDLE;
 new Handle:g_hPistolCookie = INVALID_HANDLE;
+new Handle:g_hFlashCookie = INVALID_HANDLE;
 new Handle:g_hSetCookies = INVALID_HANDLE;
 
 new bool:g_AllowAWP[MAXPLAYERS+1];
 new bool:g_AllowPistol[MAXPLAYERS+1];
+new bool:g_GiveFlash[MAXPLAYERS+1];
 new RoundType:g_Preference[MAXPLAYERS+1];
 
 /**
@@ -40,10 +42,12 @@ public RoundType:GetRoundType(any:client1, any:client2) {
 	} else {
 		// create array of "allowed" round types
 		new Handle:types = CreateArray();
-		if (g_AllowAWP[client1] && g_AllowAWP[client2])
+		if (g_AllowAWP[client1] && g_AllowAWP[client2]) {
 			PushArrayCell(types, RoundType_Awp);
-		if (g_AllowPistol[client1] && g_AllowPistol[client2])
+		}
+		if (g_AllowPistol[client1] && g_AllowPistol[client2]) {
 			PushArrayCell(types, RoundType_Pistol);
+		}
 		PushArrayCell(types, RoundType_Rifle);
 
 		// pick a random value from the allowed round types
@@ -216,11 +220,41 @@ public MenuHandler_PistolChoice(Handle:menu, MenuAction:action, param1, param2) 
 		GetMenuItem(menu, param2, info, sizeof(info));
 		g_secondaryWeapon[client] = info;
 		SafeSetCookie(client, g_hPistolCookie, info);
+		FlashbangChoiceMenu(client);
+	} else if (action == MenuAction_End) {
+		CloseHandle(menu);
+	}
+}
+
+/**
+ * Displays flashbang menu to a player
+ */
+public FlashbangChoiceMenu(any:client) {
+	new Handle:menu = CreateMenu(MenuHandler_FlashChoice);
+	SetMenuExitButton(menu, true);
+	SetMenuTitle(menu, "Give players flashbangs?");
+	AddMenuItem(menu, "yes", "Yes");
+	AddMenuItem(menu, "no", "No");
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+/**
+ * Pistol choice handler - updates secondary weapon.
+ */
+public MenuHandler_FlashChoice(Handle:menu, MenuAction:action, param1, param2) {
+	if (action == MenuAction_Select) {
+		new any:client = param1;
+		decl String:info[WEAPON_LENGTH];
+		GetMenuItem(menu, param2, info, sizeof(info));
+		g_GiveFlash[client] = StrEqual(info, "yes");
+		SafeSetCookie(client, g_hFlashCookie, info);
 		SafeSetCookie(client, g_hSetCookies, "yes");
 	} else if (action == MenuAction_End) {
 		CloseHandle(menu);
 	}
 }
+
+
 
 /**
  * Generic chat message about what to type to get the guns menu.
