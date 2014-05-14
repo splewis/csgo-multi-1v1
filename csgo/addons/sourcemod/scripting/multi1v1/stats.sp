@@ -37,7 +37,7 @@ public DB_Connect() {
 		LogError("Could not connect: %s", error);
 	} else {
 		SQL_LockDatabase(db);
-		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, name varchar(255) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, pistolRating FLOAT NOT NULL default 1500.0, rifleRating FLOAT NOT NULL default 1500.0, awpRating FLOAT NOT NULL default 1500.0);");
+		SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, pistolRating FLOAT NOT NULL default 1500.0, rifleRating FLOAT NOT NULL default 1500.0, awpRating FLOAT NOT NULL default 1500.0);");
 		SQL_UnlockDatabase(db);
 		SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM multi1v1_stats WHERE wins+losses <= 5;")
 		g_dbConnected = true;
@@ -85,9 +85,11 @@ public __Increment(client, const String:field[]) {
 }
 
 public DB_RoundUpdate(winner, loser, RoundType:roundType) {
-	__Increment(winner, "wins");
-	__Increment(loser, "losses");
-	__UpdateRating(winner, loser, roundType);
+	if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
+		__Increment(winner, "wins");
+		__Increment(loser, "losses");
+		__UpdateRating(winner, loser, roundType);
+	}
 }
 
 public GetAccountID(client) {
