@@ -2,7 +2,10 @@
  * This code is largely thanks to Lordearon on the AlliedModders forum.
  */
 
- #include <sourcemod>
+// TODO: this entire structure can probably be done more simply with a ADT array
+
+#pragma semicolon 1
+#include <sourcemod>
 
 new g_QueueSize = MAXPLAYERS+1;
 new g_ClientQueue[MAXPLAYERS+1];
@@ -19,8 +22,7 @@ public InitQueue() {
  * Push a Client into the Queue (don't add a client if already in queue)
  */
 public EnQueue(client) {
-	//if (g_QueueTail + 1) mod g_QueueSize equals head, then the queue is full. - not sure if possible, so ignoring
-	if(FindInQueue(client) != -1)
+	if (FindInQueue(client) != -1)
 		return -1;
 
 	g_ClientQueue[g_QueueTail] = client;
@@ -32,7 +34,7 @@ public EnQueue(client) {
  * Finds a client in the Queue
  */
 public FindInQueue(client) {
-	new i = g_QueueHead
+	new i = g_QueueHead;
 	new bool:found = false;
 
 	while (i != g_QueueTail && !found) {
