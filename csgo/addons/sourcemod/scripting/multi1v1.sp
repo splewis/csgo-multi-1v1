@@ -128,9 +128,9 @@ public OnPluginStart() {
     LoadTranslations("common.phrases");
 
     /** ConVars **/
-    g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)");
+    g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
-    g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with");
+    g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, 300.0, true, 10000.0);
     g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
 
@@ -164,6 +164,7 @@ public OnMapStart() {
         DB_Connect();
     }
     Spawns_MapInit();
+    g_Arenas = 1;
     g_TotalRounds = 0;
     g_LastWinner = -1;
     g_Score = 0;
@@ -172,17 +173,10 @@ public OnMapStart() {
     g_numWaitingPlayers = 0;
     for (new i = 0; i <= MAXPLAYERS; i++) {
         g_RoundsLeader[i] = 0;
-        g_Rankings[i] = -1;
-        g_Arenas = 1;
-        g_Rankings[i] = -1;
         g_ArenaPlayer1[i] = -1;
         g_ArenaPlayer2[i] = -1;
         g_ArenaWinners[i] = -1;
         g_ArenaLosers[i] = -1;
-        g_isWaiting[i] = false;
-        g_PluginTeamSwitch[i] = false;
-        g_SittingOut[i] = false;
-        g_LetTimeExpire[i] = false;
     }
     GameRules_SetProp("m_bWarmupPeriod", false, _, _, true);
     GameRules_SetPropFloat("m_fWarmupPeriodEnd", GetGameTime(), _, true);
@@ -766,12 +760,17 @@ public AddPlayer(client) {
 }
 
 /**
- *
+ * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
     if (g_isWaiting[client])
         g_numWaitingPlayers--;
-    DB_ResetClientVariables(client);
+    g_playerIDs[client] = 0;
+    g_ratings[client] = 0.0;
+    g_pistolRatings[client] = 0.0;
+    g_awpRatings[client] = 0.0;
+    g_rifleRatings[client] = 0.0;
+    g_Rankings[client] = -1;
     g_LetTimeExpire[client] = false;
     g_SittingOut[client] = false;
     g_isWaiting[client] = false;
@@ -785,7 +784,8 @@ public ResetClientVariables(client) {
 }
 
 /**
- *
+ * Updates an arena in case a player disconnects.
+ * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
 public UpdateArena(arena) {
     if (arena != -1) {
@@ -797,17 +797,17 @@ public UpdateArena(arena) {
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
             g_ArenaLosers[arena] = p2;
-            PrintHintText(p1, "Your opponent left");
+            PrintToChat(p1, " \x01\x0B\x03Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
             g_ArenaLosers[arena] = p1;
-            PrintHintText(p2, "Your opponent left");
+            PrintToChat(p2, " \x01\x0B\x03Your opponent left!");
         }
     }
 }
 
 /**
- *
+ * Switches a client to a new team.
  */
 SwitchPlayerTeam(client, team) {
     new previousTeam = GetClientTeam(client);
@@ -825,7 +825,7 @@ SwitchPlayerTeam(client, team) {
 }
 
 /**
- *
+ * Returns if a player is on an active/player team.
  */
 bool:IsOnTeam(client) {
     new client_team = GetClientTeam(client);

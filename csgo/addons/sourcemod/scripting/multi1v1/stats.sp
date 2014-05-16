@@ -1,15 +1,4 @@
 /**
- *
- */
-public DB_ResetClientVariables(client) {
-    g_playerIDs[client] = 0;
-    g_ratings[client] = 0.0;
-    g_pistolRatings[client] = 0.0;
-    g_awpRatings[client] = 0.0;
-    g_rifleRatings[client] = 0.0;
-}
-
-/**
  * Attempts to connect to the database.
  * Creates the multi1v1_stats table if needed.
  * 'Cleans' the database eliminating players with a very small number of wins+losses. (meant to reduce database size)
@@ -57,33 +46,6 @@ public DB_AddPlayer(client, Float:default_rating) {
 }
 
 /**
- * Increments a named field in the database.
- */
-static Increment(client, const String:field[]) {
-    if (db != INVALID_HANDLE) {
-        new id = GetAccountID(client);
-        if (id >= 1) {
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats SET %s = %s + 1 WHERE accountID = %d", field, field, id);
-            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-        }
-    }
-}
-
-public DB_RoundUpdate(winner, loser, RoundType:roundType) {
-    if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-        Increment(winner, "wins");
-        Increment(loser, "losses");
-        UpdateRatings(winner, loser, roundType);
-    }
-}
-
-public GetAccountID(client) {
-    if (g_playerIDs[client] == 0)
-        g_playerIDs[client] = GetSteamAccountID(client);
-    return g_playerIDs[client];
-}
-
-/**
  * Reads a player rating from the database.
  * Note that this is a *SLOW* operation and you should not do it during gameplay
  */
@@ -117,6 +79,55 @@ public DB_FetchRatings(client) {
     g_pistolRatings[client] = pistolRating;
     g_awpRatings[client] = awpRating;
     g_rifleRatings[client] = rifleRating;
+}
+
+/**
+ * Writes the rating for a player, if the rating is valid, back to the database.
+ */
+public DB_WriteRatings(client) {
+    if (g_ratings[client] >= 200.0) {
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], GetAccountID(client));
+        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+    }
+    if (g_pistolRatings[client] >= 200.0) {
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set pistolRating = %f WHERE accountID = %d", g_pistolRatings[client], GetAccountID(client));
+        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+    }
+    if (g_awpRatings[client] >= 200.0) {
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set awpRating = %f WHERE accountID = %d", g_awpRatings[client], GetAccountID(client));
+        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+    }
+    if (g_rifleRatings[client] >= 200.0) {
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set rifleRating = %f WHERE accountID = %d", g_rifleRatings[client], GetAccountID(client));
+        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+    }
+}
+
+public GetAccountID(client) {
+    if (g_playerIDs[client] == 0)
+        g_playerIDs[client] = GetSteamAccountID(client);
+    return g_playerIDs[client];
+}
+
+public DB_RoundUpdate(winner, loser, RoundType:roundType) {
+    if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
+        Increment(winner, "wins");
+        Increment(loser, "losses");
+        UpdateRatings(winner, loser, roundType);
+    }
+}
+
+/**
+ * Increments a named field in the database.
+ */
+static Increment(client, const String:field[]) {
+    if (db != INVALID_HANDLE) {
+        new id = GetAccountID(client);
+        if (id >= 1) {
+            Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats SET %s = %s + 1 WHERE accountID = %d", field, field, id);
+            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+        }
+    }
 }
 
 static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating) {
@@ -183,27 +194,5 @@ static UpdateRatings(winner, loser, RoundType:roundType) {
         DB_WriteRatings(winner);
         DB_WriteRatings(loser);
 
-    }
-}
-
-/**
- * Writes the rating for a player, if the rating is valid, back to the database.
- */
-DB_WriteRatings(client) {
-    if (g_ratings[client] >= 200.0) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], GetAccountID(client));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-    }
-    if (g_pistolRatings[client] >= 200.0) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set pistolRating = %f WHERE accountID = %d", g_pistolRatings[client], GetAccountID(client));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-    }
-    if (g_awpRatings[client] >= 200.0) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set awpRating = %f WHERE accountID = %d", g_awpRatings[client], GetAccountID(client));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-    }
-    if (g_rifleRatings[client] >= 200.0) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set rifleRating = %f WHERE accountID = %d", g_rifleRatings[client], GetAccountID(client));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
