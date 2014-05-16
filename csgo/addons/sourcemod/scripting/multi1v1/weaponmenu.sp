@@ -1,30 +1,3 @@
-#include <sourcemod>
-#include "roundTypes.sp"
-#pragma semicolon 1
-
-#define WEAPON_LENGTH 32
-
-/** Weapon cookies **/
-new Handle:g_hAllowPistolCookie = INVALID_HANDLE;
-new Handle:g_hAllowAWPCookie = INVALID_HANDLE;
-new Handle:g_hPreferenceCookie = INVALID_HANDLE;
-new Handle:g_hRifleCookie = INVALID_HANDLE;
-new Handle:g_hPistolCookie = INVALID_HANDLE;
-new Handle:g_hFlashCookie = INVALID_HANDLE;
-new Handle:g_hSetCookies = INVALID_HANDLE;
-
-/** Global client variables for menu choices **/
-new bool:g_AllowAWP[MAXPLAYERS+1];
-new bool:g_AllowPistol[MAXPLAYERS+1];
-new bool:g_GiveFlash[MAXPLAYERS+1];
-new RoundType:g_Preference[MAXPLAYERS+1];
-new String:g_primaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
-new String:g_secondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
-
-/** Global arena round-type array **/
-new RoundType:g_roundTypes[MAXPLAYERS+1];
-
-
 /**
  * Opens up the weapon menu for a client.
  */

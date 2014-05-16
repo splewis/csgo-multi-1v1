@@ -7,31 +7,70 @@
 #include <cstrike>
 #include <clientprefs>
 #include <smlib>
-#include "multi1v1/common.sp"
-#include "multi1v1/queue.sp"
-#include "multi1v1/spawns.sp"
-#include "multi1v1/stats.sp"
-#include "multi1v1/weaponmenu.sp"
 
-/** ConVar Handles **/
-new Handle:g_hRoundTimeVar = INVALID_HANDLE;
-new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
+
+
+/***********************
+ *                     *
+ *  Global Variables   *
+ *                     *
+ ***********************/
+
+#define WEAPON_LENGTH 32  // length of a weapon name string
+
+/** Assertions/debug info **/
+new String:assertBuffer[1024];
+#if !defined ASSERTIONS
+#define ASSERTIONS 1
+#endif
+#if !defined ASSERT_MODE
+#define ASSERT_MODE LogError
+#endif
+
+/** Saved data for database interaction - be careful when using these, they may not
+  *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
+  *  using one of these directly.
+  */
+new Float:g_ratings[MAXPLAYERS+1];
+new Float:g_pistolRatings[MAXPLAYERS+1];
+new Float:g_rifleRatings[MAXPLAYERS+1];
+new Float:g_awpRatings[MAXPLAYERS+1];
+new g_playerIDs[MAXPLAYERS+1];
+new String:g_sqlBuffer[1024];
+
+/** Database interactions **/
+new bool:g_dbConnected = false;
+new Handle:db = INVALID_HANDLE;
+
+/** ConVar handles **/
 new Handle:g_hCvarVersion = INVALID_HANDLE;
+new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
+new Handle:g_hRoundTimeVar = INVALID_HANDLE;
+new Handle:g_hUseDatabase = INVALID_HANDLE;
 
 /** Client arrays **/
 new g_Rankings[MAXPLAYERS+1] = -1;      // which arena each player is in
 new g_RoundsLeader[MAXPLAYERS+1] = 0;   // number of rounds each player has been the winner
 new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false;  // Flags the teamswitches as being done by the plugin
+new bool:g_isWaiting[MAXPLAYERS+1] = false;
 new bool:g_SittingOut[MAXPLAYERS+1] = false;
+new bool:g_AllowAWP[MAXPLAYERS+1];
+new bool:g_AllowPistol[MAXPLAYERS+1];
+new bool:g_GiveFlash[MAXPLAYERS+1];
+new RoundType:g_Preference[MAXPLAYERS+1];
+new String:g_primaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
+new String:g_secondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 
 /** Arena arrays **/
 new g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
 new g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
 new g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
 new g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
+new RoundType:g_roundTypes[MAXPLAYERS+1];
 new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
 
-/** Global variables **/
+/** Overall global variables **/
+new g_maxArenas = 0; // maximum number of arenas the map can support
 new g_Arenas = 1; // number of active arenas
 new g_TotalRounds = 0; // rounds played on this map so far
 new g_LastWinner = -1; // winner of the previous round
@@ -39,12 +78,44 @@ new g_Score = 0; // the streak of the current winner
 new g_HighestScore = 0; // the longest streak on the map so far
 new bool:g_RoundFinished = false;
 new g_numWaitingPlayers = 0;
+new Handle:g_hQueue = INVALID_HANDLE;
+
+/** The different round types **/
+enum RoundType {
+    RoundType_Rifle = 0,
+    RoundType_Awp = 1,
+    RoundType_Pistol = 2
+};
+
+/** Weapon menu choice cookies **/
+new Handle:g_hAllowPistolCookie = INVALID_HANDLE;
+new Handle:g_hAllowAWPCookie = INVALID_HANDLE;
+new Handle:g_hPreferenceCookie = INVALID_HANDLE;
+new Handle:g_hRifleCookie = INVALID_HANDLE;
+new Handle:g_hPistolCookie = INVALID_HANDLE;
+new Handle:g_hFlashCookie = INVALID_HANDLE;
+new Handle:g_hSetCookies = INVALID_HANDLE;
+
+/** Handles to arrays of vectors of spawns/angles **/
+new Handle:g_hTSpawns = INVALID_HANDLE;
+new Handle:g_hTAngles = INVALID_HANDLE;
+new Handle:g_hCTSpawns = INVALID_HANDLE;
+new Handle:g_hCTAngles = INVALID_HANDLE;
+
+/** multi1v1 function includes **/
+#include "multi1v1/queue.sp"
+#include "multi1v1/spawns.sp"
+#include "multi1v1/stats.sp"
+#include "multi1v1/weaponmenu.sp"
+
+
 
 /***********************
  *                     *
  * Sourcemod functions *
  *                     *
  ***********************/
+
 public Plugin:myinfo = {
     name = "CS:GO Multi-1v1",
     author = "splewis",
@@ -190,7 +261,7 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
     GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTimeVar), 4, 0, true);
 
     for (new i = 1; i <= MaxClients; i++) {
-        if (IsValidClient(i) && !IsFakeClient(i) && __ratings[i] < 200.0) {
+        if (IsValidClient(i) && !IsFakeClient(i) && g_ratings[i] < 200.0) {
             DB_FetchRatings(i);
         }
     }
@@ -278,7 +349,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     }
 
     // Here we add each player to the queue in their new ranking
-    InitQueue();
+    Queue_Init(g_hQueue);
 
     //  top arena
     AddPlayer(g_ArenaWinners[1]);
@@ -298,16 +369,16 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 
     // Add anyone that got missed
     for (new i = 1; i <= MaxClients; i++) {
-        if (IsClientInGame(i) && FindInQueue(i) == -1)
+        if (IsClientInGame(i) && Queue_Find(g_hQueue, i) == -1)
             AddPlayer(i);
     }
 
     // Set leader and scoring information
-    new leader = g_ClientQueue[g_QueueHead];
-    if (IsValidClient(leader) && GetQueueLength() >= 2) {
+    new leader = Queue_Peek(g_hQueue);
+    if (IsValidClient(leader) && Queue_Length(g_hQueue) >= 2) {
         g_RoundsLeader[leader]++;
         CS_SetMVPCount(leader, g_RoundsLeader[leader]);
-        if (g_LastWinner == leader && GetQueueLength() >= 2) {
+        if (g_LastWinner == leader && Queue_Length(g_hQueue) >= 2) {
             g_Score++;
             if (g_Score > g_HighestScore) {
                 g_HighestScore = g_Score;
@@ -325,8 +396,8 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     // Player placement logic for this round
     g_Arenas = 0;
     for (new arena = 1; arena <= g_maxArenas; arena++) {
-        new p1 = DeQueue();
-        new p2 = DeQueue();
+        new p1 = Queue_Dequeue(g_hQueue);
+        new p2 = Queue_Dequeue(g_hQueue);
         g_ArenaPlayer1[arena] = p1;
         g_ArenaPlayer2[arena] = p2;
         g_roundTypes[arena] = GetRoundType(p1, p2);
@@ -351,8 +422,8 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 
     // clear the queue
     g_numWaitingPlayers = 0;
-    while (!IsQueueEmpty()) {
-        new client = DeQueue();
+    while (!Queue_IsEmpty(g_hQueue)) {
+        new client = Queue_Dequeue(g_hQueue);
         // remark them as waiting
         g_Rankings[client] = -1;
         g_isWaiting[client] = true;
@@ -460,7 +531,7 @@ public OnClientDisconnect(client) {
 
     new arena = g_Rankings[client];
     UpdateArena(arena);
-    DropFromQueue(client);
+    Queue_Drop(g_hQueue, client);
     ResetClientVariables(client);
 }
 
@@ -499,6 +570,7 @@ public OnClientCookiesCached(client) {
     GetClientCookie(client, g_hFlashCookie, sCookieValue, sizeof(sCookieValue));
     g_GiveFlash[client] = StrEqual(sCookieValue, "yes");
 }
+
 
 
 /***********************
@@ -565,6 +637,7 @@ public Action:Command_Say(client, const String:command[], argc) {
     }
     return Plugin_Continue;
 }
+
 
 
 /***********************
@@ -662,7 +735,6 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
             AllDone = false;
             break;
         }
-
     }
 
     new bool:NormalFinish = AllDone && nPlayers >= 2;
@@ -689,7 +761,7 @@ public AddPlayer(client) {
         //  return;
         // }
 
-        EnQueue(client);
+        Queue_Enqueue(g_hQueue, client);
     }
 }
 
@@ -758,4 +830,43 @@ SwitchPlayerTeam(client, team) {
 bool:IsOnTeam(client) {
     new client_team = GetClientTeam(client);
     return (client_team == CS_TEAM_CT) || (client_team == CS_TEAM_T);
+}
+
+/**
+ * Generic assertion function. Change the ASSERT_FUNCTION if you want.
+ */
+public Assert(bool:value, const String:msg[] , any:...) {
+    if (ASSERTIONS && !value) {
+        VFormat(assertBuffer, sizeof(assertBuffer), msg, 3);
+        ASSERT_MODE (assertBuffer);
+    }
+}
+
+/**
+ * Removes the radar element from a client's HUD.
+ */
+public Action:RemoveRadar(Handle:timer, any:client) {
+    if (IsValidClient(client) && !IsFakeClient(client))
+        SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
+}
+
+/**
+ * Function to identify if a client is valid and in game.
+ */
+bool:IsValidClient(client) {
+    if (client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
+        return true;
+    return false;
+}
+
+/**
+ * Closes an adt array.
+ */
+CloseHandleArray(Handle:array) {
+    new iSize = GetArraySize(array);
+    new Handle:hZone;
+    for (new i = 0 ; i < iSize; i++) {
+        hZone = GetArrayCell(array, i);
+        CloseHandle(hZone);
+    }
 }

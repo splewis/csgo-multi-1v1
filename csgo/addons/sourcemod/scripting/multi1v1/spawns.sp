@@ -1,15 +1,3 @@
-#include <sourcemod>
-#include "common.sp"
-#pragma semicolon 1
-
-new g_maxArenas = 0; // maximum number of arenas the map can support
-
-// Handles to arrays of vectors of spawns/angles:
-new Handle:g_hTSpawns = INVALID_HANDLE;
-new Handle:g_hTAngles = INVALID_HANDLE;
-new Handle:g_hCTSpawns = INVALID_HANDLE;
-new Handle:g_hCTAngles = INVALID_HANDLE;
-
 /**
  * Loads the spawn positions from the map and updates global spawn arrays.
  */

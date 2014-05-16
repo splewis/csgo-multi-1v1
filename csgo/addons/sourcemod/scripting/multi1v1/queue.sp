@@ -1,110 +1,68 @@
 /**
- * This code is largely thanks to Lordearon on the AlliedModders forum.
+ * Initializes the queue.
  */
-
-// TODO: this entire structure can probably be done more simply with a ADT array
-
-#pragma semicolon 1
-#include <sourcemod>
-
-new g_QueueSize = MAXPLAYERS+1;
-new g_ClientQueue[MAXPLAYERS+1];
-new g_QueueHead = 0;
-new g_QueueTail = 0;
-new g_isWaiting[MAXPLAYERS+1] = false;
-
-public InitQueue() {
-	g_QueueHead = 0;
-	g_QueueTail = 0;
+public Queue_Init(& Handle:queueHandle) {
+	queueHandle = CreateArray();
+	CloseHandleArray(queueHandle);
+	ClearArray(queueHandle);
 }
 
 /**
- * Push a Client into the Queue (don't add a client if already in queue)
+ * Push a Client into the Queue (don't add a client if already in queue).
  */
-public EnQueue(client) {
-	if (FindInQueue(client) != -1)
+public Queue_Enqueue(Handle:queueHandle, any:client) {
+	if (Queue_Find(queueHandle, client) != -1)
 		return -1;
-
-	g_ClientQueue[g_QueueTail] = client;
-	g_QueueTail = (g_QueueTail + 1) % g_QueueSize;
+	PushArrayCell(queueHandle, client);
 	return 0;
 }
 
 /**
- * Finds a client in the Queue
+ * Finds a client in the Queue and returns their index.
  */
-public FindInQueue(client) {
-	new i = g_QueueHead;
-	new bool:found = false;
-
-	while (i != g_QueueTail && !found) {
-		if (client == g_ClientQueue[i]) {
-			found = true;
-		} else {
-			i = (i + 1) % g_QueueSize;
-		}
-	}
-	return found ? i : -1;
+public any:Queue_Find(Handle:queueHandle, any:client) {
+	return FindValueInArray(queueHandle, client);
 }
 
 /**
- * Drops a client from the Queue
+ * Drops a client from the Queue.
  */
-public DropFromQueue(client) {
-	// find client cur position in queue
-	new cur = FindInQueue(client);
+public Queue_Drop(Handle:queueHandle, any:client) {
+	new index = Queue_Find(queueHandle, client);
+	if (index != -1)
+		RemoveFromArray(queueHandle, index);
+}
 
-	if (cur == -1) {
+/**
+ * Get queue length, does not validate clients in queue.
+ */
+public any:Queue_Length(Handle:queueHandle) {
+	return GetArraySize(queueHandle);
+}
+
+/**
+ * Test if queue is empty.
+ */
+public bool:Queue_IsEmpty(Handle:queueHandle) {
+	return Queue_Length(queueHandle) == 0;
+}
+
+/**
+ * Peeks the head of the queue.
+ */
+public any:Queue_Peek(Handle:queueHandle) {
+	if (Queue_IsEmpty(queueHandle))
 		return -1;
-	} else if (cur == g_QueueHead) {
-		g_QueueHead = (cur + 1) % g_QueueSize;
-	} else {
-		// shift all clients forward in queue
-		new next, prev = cur == 0 ? g_QueueSize : cur - 1;
-		while (cur != g_QueueTail) {
-			next = (cur + 1) % g_QueueSize;
-			if (next != g_QueueTail) {
-				// move next client forward to cur
-				g_ClientQueue[cur] = g_ClientQueue[next];
-			}
-			prev = cur;
-			cur = next;
-		}
-		// tail needs to update as well
-		g_QueueTail = prev;
-	}
-	return 0;
+	return GetArrayCell(queueHandle, 0);
 }
 
 /**
- * Get queue length, does not validate clients in queue
+ * Fetch next client from queue.
  */
-public GetQueueLength() {
-	new i = g_QueueHead, count = 0;
-	while (i != g_QueueTail) {
-		count++;
-		i = (i + 1) % g_QueueSize;
-	}
-	return count;
-}
-
-/**
- * Test if queue is empty
-*/
-public IsQueueEmpty() {
-	return g_QueueTail == g_QueueHead;
-}
-
-/**
- * Fetch next client from queue
- */
-public DeQueue() {
-	// check if queue is empty
-	if (g_QueueTail == g_QueueHead)
+public any:Queue_Dequeue(Handle:queueHandle) {
+	if (Queue_IsEmpty(queueHandle))
 		return -1;
-
-	// head advances on dequeue
-	new client = g_ClientQueue[g_QueueHead];
-	g_QueueHead = (g_QueueHead + 1) % g_QueueSize;
-	return client;
+	new val = Queue_Peek(queueHandle);
+	RemoveFromArray(queueHandle, 0);
+	return val;
 }
