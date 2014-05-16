@@ -625,9 +625,14 @@ public Action:Command_Say(client, const String:command[], argc) {
         return Plugin_Continue;
 
     StripQuotes(text);
-    if (strcmp(text[0], "guns", false) == 0 || strcmp(text[0], "!guns", false) == 0) {
-        GiveWeaponMenu(client);
-        return Plugin_Handled;
+
+    new String:gunsChatCommands[][] = { "gun", "guns", "!guns", "/guns" };
+
+    for (new i = 0; i < 4; i++) {
+        if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
+            GiveWeaponMenu(client);
+            return Plugin_Handled;
+        }
     }
     return Plugin_Continue;
 }
