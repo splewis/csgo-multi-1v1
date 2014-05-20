@@ -11,9 +11,9 @@ public DB_Connect() {
         LogError("Could not connect: %s", error);
     } else {
         SQL_LockDatabase(db);
-        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, pistolRating FLOAT NOT NULL default 1500.0, rifleRating FLOAT NOT NULL default 1500.0, awpRating FLOAT NOT NULL default 1500.0);");
+        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, pistolRating FLOAT NOT NULL default 1500.0, rifleRating FLOAT NOT NULL default 1500.0, awpRating FLOAT NOT NULL default 1500.0);");
         SQL_UnlockDatabase(db);
-        SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM multi1v1_stats WHERE wins+losses <= 5;");
+        SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM multi1v1_stats WHERE wins+losses < %d;", GetConVarInt(g_hMinRoundsVar));
         g_dbConnected = true;
     }
 }
@@ -34,12 +34,18 @@ public DB_AddPlayer(client, Float:default_rating) {
     if (db != INVALID_HANDLE) {
         new id = GetAccountID(client);
         g_playerIDs[client] = id;
-        new String:name[100];
+
+        decl String:name[64];
         GetClientName(client, name, sizeof(name));
-        new String:sanitized_name[100];
+        decl String:sanitized_name[64];
         SQL_EscapeString(db, name, sanitized_name, sizeof(name));
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO multi1v1_stats (accountID,name,rating) VALUES (%d, '%s', %f);", id, sanitized_name, default_rating);
+
+        decl String:auth[64];
+        GetClientAuthString(client, auth, sizeof(auth));
+
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO multi1v1_stats (accountID,auth,name,rating) VALUES (%d, %s, '%s', %f);", id, auth, sanitized_name, default_rating);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats SET name = '%s' WHERE accountID = %d", sanitized_name, id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }

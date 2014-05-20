@@ -68,6 +68,7 @@ Schema:
 
 		CREATE TABLE IF NOT EXISTS multi1v1_stats (
 			accountID INT NOT NULL PRIMARY KEY default 0,
+			auth varchar(64) NOT NULL default '',
 			name varchar(64) NOT NULL default '',
 			wins INT NOT NULL default 0,
 			losses INT NOT NULL default 0,

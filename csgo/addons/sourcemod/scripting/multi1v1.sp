@@ -45,6 +45,7 @@ new Handle:g_hCvarVersion = INVALID_HANDLE;
 new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
 new Handle:g_hRoundTimeVar = INVALID_HANDLE;
 new Handle:g_hUseDatabase = INVALID_HANDLE;
+new Handle:g_hMinRoundsVar = INVALID_HANDLE;
 
 /** Client arrays **/
 new g_Rankings[MAXPLAYERS+1] = -1;      // which arena each player is in
@@ -128,6 +129,7 @@ public OnPluginStart() {
     g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
     g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, 300.0, true, 10000.0);
+    g_hMinRoundsVar = CreateConVar("sm_multi1v1_minrounds", "10", "Minimim number of wins+losses to not be purged from the database");
     g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
 
