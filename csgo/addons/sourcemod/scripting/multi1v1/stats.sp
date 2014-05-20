@@ -109,11 +109,11 @@ public GetAccountID(client) {
     return g_playerIDs[client];
 }
 
-public DB_RoundUpdate(winner, loser, RoundType:roundType) {
+public DB_RoundUpdate(winner, loser, RoundType:roundType, bool:forceLoss) {
     if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
         Increment(winner, "wins");
         Increment(loser, "losses");
-        UpdateRatings(winner, loser, roundType);
+        UpdateRatings(winner, loser, roundType, forceLoss);
     }
 }
 
@@ -145,7 +145,7 @@ static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-static UpdateRatings(winner, loser, RoundType:roundType) {
+static UpdateRatings(winner, loser, RoundType:roundType, bool:forceLoss=false) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (g_ratings[winner] <= 0.0) {
@@ -160,6 +160,12 @@ static UpdateRatings(winner, loser, RoundType:roundType) {
             return;
         }
 
+        if (forceLoss) {
+            ForceLoss(winner);
+            ForceLoss(loser);
+            return;
+        }
+
         new Float:rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser]);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
@@ -168,9 +174,9 @@ static UpdateRatings(winner, loser, RoundType:roundType) {
             new int_loser = RoundToNearest(g_ratings[loser]);
             new int_winner = RoundToNearest(g_ratings[winner]);
 
-            PrintToChat(winner, " \x01\x0B\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
+            PrintToChat(winner, "\x01\x0B\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
                 int_winner, int_winner_d, loser, int_loser, int_loser_d);
-            PrintToChat(loser,  " \x01\x0B\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
+            PrintToChat(loser,  "\x01\x0B\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
                 int_loser, int_loser_d, winner, int_winner, int_winner_d);
         }
 
@@ -195,4 +201,12 @@ static UpdateRatings(winner, loser, RoundType:roundType) {
         DB_WriteRatings(loser);
 
     }
+}
+
+static ForceLoss(client) {
+    new Float:rating = g_ratings[client];
+    new Float:delta = ELORatingDelta(rating, rating);
+    PrintToChat(client, "\x01\x0B\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client]), RoundToNearest(delta));
+    g_ratings[client] -= delta;
+    DB_WriteRatings(client);
 }

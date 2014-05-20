@@ -50,8 +50,6 @@ new Handle:g_hUseDatabase = INVALID_HANDLE;
 new g_Rankings[MAXPLAYERS+1] = -1;      // which arena each player is in
 new g_RoundsLeader[MAXPLAYERS+1] = 0;   // number of rounds each player has been the winner
 new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false;  // Flags the teamswitches as being done by the plugin
-new bool:g_isWaiting[MAXPLAYERS+1] = false;
-new bool:g_SittingOut[MAXPLAYERS+1] = false;
 new bool:g_AllowAWP[MAXPLAYERS+1];
 new bool:g_AllowPistol[MAXPLAYERS+1];
 new bool:g_GiveFlash[MAXPLAYERS+1];
@@ -75,8 +73,8 @@ new g_LastWinner = -1; // winner of the previous round
 new g_Score = 0; // the streak of the current winner
 new g_HighestScore = 0; // the longest streak on the map so far
 new bool:g_RoundFinished = false;
-new g_numWaitingPlayers = 0;
-new Handle:g_hQueue = INVALID_HANDLE;
+new Handle:g_RankingQueue = INVALID_HANDLE;
+new Handle:g_WaitingQueue = INVALID_HANDLE;
 
 /** The different round types **/
 enum RoundType {
@@ -169,20 +167,20 @@ public OnMapStart() {
     g_Score = 0;
     g_HighestScore = 0;
     g_RoundFinished = false;
-    g_numWaitingPlayers = 0;
     for (new i = 0; i <= MAXPLAYERS; i++) {
-        g_RoundsLeader[i] = 0;
         g_ArenaPlayer1[i] = -1;
         g_ArenaPlayer2[i] = -1;
         g_ArenaWinners[i] = -1;
         g_ArenaLosers[i] = -1;
     }
+    g_WaitingQueue = Queue_Init();
     GameRules_SetProp("m_bWarmupPeriod", false, _, _, true);
     GameRules_SetPropFloat("m_fWarmupPeriodEnd", GetGameTime(), _, true);
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
 public OnMapEnd() {
+    Queue_Destroy(g_WaitingQueue);
 }
 
 /**
@@ -324,7 +322,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         if (g_ArenaWinners[arena] == -1) {
             g_ArenaWinners[arena] = p1;
             g_ArenaLosers[arena] = p2;
-            if (IsValidClient(p1) && !IsFakeClient(p1) && IsValidClient(p2) && !IsFakeClient(p2)) {
+            if (IsValidClient(p1) && !IsFakeClient(p1) && IsValidClient(p2) && !IsFakeClient(p2) && IsOnTeam(p1) && IsOnTeam(p2)) {
                 g_LetTimeExpire[p1] = true;
                 g_LetTimeExpire[p2] = true;
             }
@@ -333,14 +331,14 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         new loser = g_ArenaLosers[arena];
         if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
             if (winner != loser && GetConVarInt(g_hUseDatabase) != 0) {
-                DB_RoundUpdate(winner, loser, g_roundTypes[arena]);
+                DB_RoundUpdate(winner, loser, g_roundTypes[arena], g_LetTimeExpire[winner]);
             }
         }
 
     }
 
     // Here we add each player to the queue in their new ranking
-    g_hQueue = Queue_Init();
+    g_RankingQueue = Queue_Init();
 
     //  top arena
     AddPlayer(g_ArenaWinners[1]);
@@ -353,29 +351,27 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     }
 
     // bottom arena
-    if (g_maxArenas >= 1) {
-        AddPlayer(g_ArenaLosers[g_maxArenas - 1]);
-        AddPlayer(g_ArenaLosers[g_maxArenas]);
+    if (g_Arenas >= 1) {
+        AddPlayer(g_ArenaLosers[g_Arenas - 1]);
+        AddPlayer(g_ArenaLosers[g_Arenas]);
     }
 
-    // Add anyone that got missed
-    for (new i = 1; i <= MaxClients; i++) {
-        if (IsClientInGame(i) && Queue_Find(g_hQueue, i) == -1)
-            AddPlayer(i);
+    while (Queue_Length(g_RankingQueue) < 2*g_maxArenas && Queue_Length(g_WaitingQueue) > 0) {
+        AddPlayer(Queue_Dequeue(g_WaitingQueue));
     }
 
     // Set leader and scoring information
-    new leader = Queue_Peek(g_hQueue);
-    if (IsValidClient(leader) && Queue_Length(g_hQueue) >= 2) {
+    new leader = Queue_Peek(g_RankingQueue);
+    if (IsValidClient(leader) && Queue_Length(g_RankingQueue) >= 2) {
         g_RoundsLeader[leader]++;
         CS_SetMVPCount(leader, g_RoundsLeader[leader]);
-        if (g_LastWinner == leader && Queue_Length(g_hQueue) >= 2) {
+        if (g_LastWinner == leader && Queue_Length(g_RankingQueue) >= 2) {
             g_Score++;
             if (g_Score > g_HighestScore) {
                 g_HighestScore = g_Score;
-                PrintToChatAll(" \x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
+                PrintToChatAll("\x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
             } else {
-                PrintToChatAll(" \x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
+                PrintToChatAll("\x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
             }
         } else {
             g_Score = 1;
@@ -387,8 +383,8 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     // Player placement logic for this round
     g_Arenas = 0;
     for (new arena = 1; arena <= g_maxArenas; arena++) {
-        new p1 = Queue_Dequeue(g_hQueue);
-        new p2 = Queue_Dequeue(g_hQueue);
+        new p1 = Queue_Dequeue(g_RankingQueue);
+        new p2 = Queue_Dequeue(g_RankingQueue);
         g_ArenaPlayer1[arena] = p1;
         g_ArenaPlayer2[arena] = p2;
         g_roundTypes[arena] = GetRoundType(p1, p2);
@@ -397,12 +393,10 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         new bool:realp2 = IsValidClient(p2);
 
         if (realp1) {
-            g_isWaiting[p1] = false;
             g_Rankings[p1] = arena;
         }
 
         if (realp2) {
-            g_isWaiting[p2] = false;
             g_Rankings[p2] = arena;
         }
 
@@ -411,17 +405,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         }
     }
 
-    // clear the queue
-    g_numWaitingPlayers = 0;
-    while (!Queue_IsEmpty(g_hQueue)) {
-        // remark the client as waiting
-        new client = Queue_Dequeue(g_hQueue);
-        g_Rankings[client] = -1;
-        g_isWaiting[client] = true;
-        g_numWaitingPlayers++;
-        PrintToChat(client, "Sorry, all the arenas are currenly \x07full.");
-    }
-    Queue_Destroy(g_hQueue);
+    Queue_Destroy(g_RankingQueue);
 }
 
 /**
@@ -499,7 +483,8 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 
     GivePlayerItem(client, "weapon_knife");
 
-    if (g_LetTimeExpire[client] && g_TotalRounds >= 3) {
+    if (g_LetTimeExpire[client] && g_TotalRounds >= 0) {
+        PrintToChat(client, "Stop letting time run out.");
         // PrintToChat(client, " \x01\x0B\x04You let time run out last round. You will be punished and get \x031HP \x04this round.");
         // SetEntityHealth(client, 1);
         g_LetTimeExpire[client] = false;
@@ -566,25 +551,21 @@ public Action:Command_TeamJoin(client, const String:command[], argc) {
         return Plugin_Handled;
     } else if (team_to == CS_TEAM_SPECTATOR) {
         // player voluntarily joining spec
-        g_SittingOut[client] = true;
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
-        g_isWaiting[client] = false;
+        CS_SetClientClanTag(client, "");
         new arena = g_Rankings[client];
         g_Rankings[client] = -1;
         UpdateArena(arena);
     } else {
         // Player first joining the game, mark them as waiting to join
-        AddWaiter(client);
+        JoinGame(client);
     }
     return Plugin_Handled;
 }
 
-public AddWaiter(client) {
-    if (!g_isWaiting[client] && IsValidClient(client)) {
-        g_SittingOut[client] = false;
-        g_isWaiting[client] = true;
-        g_Rankings[client] = -1;
-        g_numWaitingPlayers++;
+public JoinGame(client) {
+    if (IsValidClient(client)) {
+        Queue_Enqueue(g_WaitingQueue, client);
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
     }
 }
@@ -710,9 +691,8 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
     }
 
     new bool:NormalFinish = AllDone && nPlayers >= 2;
-    new bool:WaitingPlayers = nPlayers < 2 && g_numWaitingPlayers > 0;  // so the round ends for the first players that join
+    new bool:WaitingPlayers = nPlayers < 2 && Queue_Length(g_WaitingQueue) > 0;  // so the round ends for the first players that join
 
-    // check if there are enough arenas, otherwise round will constantly end
     if (NormalFinish || WaitingPlayers) {
         // TODO: try putting a mp_restartgame 1 or something like that here
         CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
@@ -726,15 +706,8 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
  *
  */
 public AddPlayer(client) {
-    if (IsValidClient(client) && !g_SittingOut[client] && !IsFakeClient(client)) {
-
-        // if (GetClientTeam(client) == CS_TEAM_SPECTATOR && !g_isWaiting[client]) {
-        //  PrintToChatAll("NOT add player %N", client);
-        //  // moved to spectator without the player selecting it, e.g. moved by an afk manager
-        //  return;
-        // }
-
-        Queue_Enqueue(g_hQueue, client);
+    if (IsValidClient(client) && !IsFakeClient(client) && Queue_Length(g_RankingQueue) < 2*g_maxArenas) {
+        Queue_Enqueue(g_RankingQueue, client);
     }
 }
 
@@ -742,8 +715,6 @@ public AddPlayer(client) {
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
-    if (g_isWaiting[client])
-        g_numWaitingPlayers--;
     g_playerIDs[client] = 0;
     g_ratings[client] = 0.0;
     g_pistolRatings[client] = 0.0;
@@ -751,8 +722,6 @@ public ResetClientVariables(client) {
     g_rifleRatings[client] = 0.0;
     g_Rankings[client] = -1;
     g_LetTimeExpire[client] = false;
-    g_SittingOut[client] = false;
-    g_isWaiting[client] = false;
     g_AllowAWP[client] = false;
     g_AllowPistol[client] = false;
     g_GiveFlash[client] = false;
@@ -776,11 +745,11 @@ public UpdateArena(arena) {
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
             g_ArenaLosers[arena] = p2;
-            PrintToChat(p1, " \x01\x0B\x03Your opponent left!");
+            PrintToChat(p1, "\x01\x0B\x09Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
             g_ArenaLosers[arena] = p1;
-            PrintToChat(p2, " \x01\x0B\x03Your opponent left!");
+            PrintToChat(p2, "\x01\x0B\x09Your opponent left!");
         }
     }
 }
