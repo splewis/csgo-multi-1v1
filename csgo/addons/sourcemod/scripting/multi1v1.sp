@@ -146,7 +146,7 @@ public OnPluginStart() {
     AddCommandListener(Command_Say, "say");
     AddCommandListener(Command_Say, "say2");
     AddCommandListener(Command_Say, "say_team");
-    AddCommandListener(OnJoinTeamCommand, "jointeam");
+    AddCommandListener(Command_TeamJoin, "jointeam");
 
     /** Event hooks **/
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
@@ -253,6 +253,8 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
 
     GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTimeVar), 4, 0, true);
 
+    // Fetch all the ratings
+    // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
     for (new i = 1; i <= MaxClients; i++) {
         if (IsValidClient(i) && !IsFakeClient(i) && g_ratings[i] < 200.0) {
             DB_FetchRatings(i);
@@ -412,12 +414,12 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     // clear the queue
     g_numWaitingPlayers = 0;
     while (!Queue_IsEmpty(g_hQueue)) {
+        // remark the client as waiting
         new client = Queue_Dequeue(g_hQueue);
-        // TODO: tell the client why they can't get in
-        // remark them as waiting
         g_Rankings[client] = -1;
         g_isWaiting[client] = true;
         g_numWaitingPlayers++;
+        PrintToChat(client, "Sorry, all the arenas are currenly \x07full.");
     }
     Queue_Destroy(g_hQueue);
 }
@@ -545,16 +547,18 @@ public OnClientCookiesCached(client) {
 /**
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
-public Action:OnJoinTeamCommand(client, const String:command[], argc) {
+public Action:Command_TeamJoin(client, const String:command[], argc) {
     if (!IsValidClient(client))
         return Plugin_Handled;
+
 
     decl String:arg[4];
     GetCmdArg(1, arg, sizeof(arg));
     new team_to = StringToInt(arg);
     new team_from = GetClientTeam(client);
 
-    if (IsFakeClient(client) || g_PluginTeamSwitch[client] || team_from == team_to) {
+    // Note that if a player selects auto-select they will have team_to and team_from equal to CS_TEAM_NONE but will get auto-moved
+    if (IsFakeClient(client) || g_PluginTeamSwitch[client] || (team_from == team_to && team_from != CS_TEAM_NONE)) {
         return Plugin_Continue;
     } else if ((team_from == CS_TEAM_CT && team_to == CS_TEAM_T )
             || (team_from == CS_TEAM_T  && team_to == CS_TEAM_CT)) {
@@ -615,7 +619,7 @@ public Action:Command_Say(client, const String:command[], argc) {
  *************************/
 
 /**
- *
+ * Tries to get the player's opponent in their arena.
  */
 public GetOpponent(client) {
     new arena = g_Rankings[client];
@@ -629,7 +633,7 @@ public GetOpponent(client) {
 }
 
 /**
- *
+ * Removes helmet and kevlar if the client has an upgraded pistol.
  */
 public RemoveVestHelm(client) {
     if (!IsValidClient(client))
