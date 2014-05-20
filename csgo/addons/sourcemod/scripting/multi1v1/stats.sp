@@ -43,7 +43,7 @@ public DB_AddPlayer(client, Float:default_rating) {
         decl String:auth[64];
         GetClientAuthString(client, auth, sizeof(auth));
 
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO multi1v1_stats (accountID,auth,name,rating) VALUES (%d, %s, '%s', %f);", id, auth, sanitized_name, default_rating);
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO multi1v1_stats (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);", id, auth, sanitized_name, default_rating);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats SET name = '%s' WHERE accountID = %d", sanitized_name, id);
