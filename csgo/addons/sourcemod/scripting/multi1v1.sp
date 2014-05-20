@@ -17,14 +17,12 @@
  ***********************/
 
 #define WEAPON_LENGTH 32  // length of a weapon name string
+#define HIDE_RADAR_BIT 1<<12
 
 /** Assertions/debug info **/
 new String:assertBuffer[1024];
-#if !defined ASSERTIONS
-#define ASSERTIONS 1
-#endif
 #if !defined ASSERT_MODE
-#define ASSERT_MODE LogError
+#define ASSERT_MODE LogError  // ThrowError is a good value for testing
 #endif
 
 /** Saved data for database interaction - be careful when using these, they may not
@@ -283,11 +281,7 @@ public SetupPlayer(client, arena, other, bool:onCT) {
         GetArrayArray(g_hTAngles, arena - 1, angles);
     }
 
-    // Force the player to respawn (needed for first round the player joins)
-    if (IsOnTeam(client) && !IsPlayerAlive(client)) {
-        CS_RespawnPlayer(client);
-    }
-    Assert(IsOnTeam(client), "%N should have been put on a team but was not");
+    CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);
 
     new score = 0;
@@ -343,7 +337,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     }
 
     // Here we add each player to the queue in their new ranking
-    Queue_Init(g_hQueue);
+    g_hQueue = Queue_Init();
 
     //  top arena
     AddPlayer(g_ArenaWinners[1]);
@@ -418,11 +412,13 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
     g_numWaitingPlayers = 0;
     while (!Queue_IsEmpty(g_hQueue)) {
         new client = Queue_Dequeue(g_hQueue);
+        // TODO: tell the client why they can't get in
         // remark them as waiting
         g_Rankings[client] = -1;
         g_isWaiting[client] = true;
         g_numWaitingPlayers++;
     }
+    Queue_Destroy(g_hQueue);
 }
 
 /**
@@ -525,7 +521,6 @@ public OnClientDisconnect(client) {
 
     new arena = g_Rankings[client];
     UpdateArena(arena);
-    Queue_Drop(g_hQueue, client);
     ResetClientVariables(client);
 }
 
@@ -741,6 +736,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 
     // check if there are enough arenas, otherwise round will constantly end
     if (NormalFinish || WaitingPlayers) {
+        // TODO: try putting a mp_restartgame 1 or something like that here
         CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
     }
@@ -841,7 +837,7 @@ bool:IsOnTeam(client) {
  * Generic assertion function. Change the ASSERT_FUNCTION if you want.
  */
 public Assert(bool:value, const String:msg[] , any:...) {
-    if (ASSERTIONS && !value) {
+    if (!value) {
         VFormat(assertBuffer, sizeof(assertBuffer), msg, 3);
         ASSERT_MODE (assertBuffer);
     }
@@ -851,8 +847,10 @@ public Assert(bool:value, const String:msg[] , any:...) {
  * Removes the radar element from a client's HUD.
  */
 public Action:RemoveRadar(Handle:timer, any:client) {
-    if (IsValidClient(client) && !IsFakeClient(client))
-        SetEntProp(client, Prop_Send, "m_iHideHUD", 1 << 12);
+    if (IsValidClient(client) && !IsFakeClient(client)) {
+        new flags = GetEntProp(client, Prop_Send, "m_iHideHUD");
+        SetEntProp(client, Prop_Send, "m_iHideHUD", flags | (HIDE_RADAR_BIT));
+    }
 }
 
 /**

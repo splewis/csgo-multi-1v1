@@ -1,20 +1,18 @@
 /**
- * Initializes the queue.
+ * Initializes the queue. The handle returned by this must be closed or destroyed later.
  */
-public Queue_Init(& Handle:queueHandle) {
-	queueHandle = CreateArray();
-	CloseHandleArray(queueHandle);
+public Handle:Queue_Init() {
+	new Handle:queueHandle = CreateArray();
 	ClearArray(queueHandle);
+	return queueHandle;
 }
 
 /**
  * Push a Client into the Queue (don't add a client if already in queue).
  */
 public Queue_Enqueue(Handle:queueHandle, any:client) {
-	if (Queue_Find(queueHandle, client) != -1)
-		return -1;
-	PushArrayCell(queueHandle, client);
-	return 0;
+	if (Queue_Find(queueHandle, client) == -1)
+		PushArrayCell(queueHandle, client);
 }
 
 /**
@@ -65,4 +63,11 @@ public any:Queue_Dequeue(Handle:queueHandle) {
 	new val = Queue_Peek(queueHandle);
 	RemoveFromArray(queueHandle, 0);
 	return val;
+}
+
+/**
+ * Frees the handle used by the queue.
+ */
+public Queue_Destroy(Handle:queueHandle) {
+	CloseHandle(queueHandle);
 }
