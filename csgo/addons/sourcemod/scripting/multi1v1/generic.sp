@@ -127,6 +127,6 @@ public SetCookieBool(any:client, Handle:cookie, bool:value) {
 /**
  * Gets a cookie that represents a boolean.
  */
-public GetCookieBool(any:client, Handle:cookie, bool:value) {
+public bool:GetCookieBool(any:client, Handle:cookie) {
     return GetCookieInt(client, cookie) != 0;
 }

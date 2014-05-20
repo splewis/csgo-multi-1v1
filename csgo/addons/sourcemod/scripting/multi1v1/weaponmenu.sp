@@ -40,22 +40,13 @@ public RoundType:GetRoundType(any:client1, any:client2) {
 }
 
 /**
- * Sets a cookie, checking if it isn't cached yet.
- */
-public SafeSetCookie(client, Handle:cookie, String:value[]) {
-    if (AreClientCookiesCached(client)) {
-        SetClientCookie(client, cookie, value);
-    }
-}
-
-/**
  * Displays the AWP menu to the client.
  */
 public AWPMenu(client) {
     new Handle:menu = CreateMenu(MenuHandler_AWP);
     SetMenuTitle(menu, "Allow AWP rounds?");
-    AddMenuItem(menu, "yes", "Yes");
-    AddMenuItem(menu, "no", "No");
+    AddMenuBool(menu ,true, "Yes");
+    AddMenuBool(menu, false, "No");
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -65,15 +56,9 @@ public AWPMenu(client) {
 public MenuHandler_AWP(Handle:menu, MenuAction:action, param1, param2) {
     if (action == MenuAction_Select) {
         new client = param1;
-        decl String:info[WEAPON_LENGTH];
-        GetMenuItem(menu, param2, info, sizeof(info));
-        if (StrEqual("yes", info)) {
-            g_AllowAWP[client] = true;
-        } else {
-            g_AllowAWP[client] = false;
-        }
-
-        SafeSetCookie(client, g_hAllowAWPCookie, info);
+        new bool:choice = GetMenuBool(menu, param2);
+        g_AllowAWP[client] = choice;
+        SetCookieBool(client, g_hAllowAWPCookie, choice);
         PistolMenu(client);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
@@ -86,8 +71,8 @@ public MenuHandler_AWP(Handle:menu, MenuAction:action, param1, param2) {
 public PistolMenu(client) {
     new Handle:menu = CreateMenu(MenuHandler_Pistol);
     SetMenuTitle(menu, "Allow pistol rounds?");
-    AddMenuItem(menu, "yes", "Yes");
-    AddMenuItem(menu, "no", "No");
+    AddMenuBool(menu, true, "Yes");
+    AddMenuBool(menu, false, "No");
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -97,22 +82,15 @@ public PistolMenu(client) {
 public MenuHandler_Pistol(Handle:menu, MenuAction:action, param1, param2) {
     if (action == MenuAction_Select) {
         new client = param1;
-        decl String:info[WEAPON_LENGTH];
-        GetMenuItem(menu, param2, info, sizeof(info));
-
-        if (StrEqual("yes", info)) {
-            g_AllowPistol[client] = true;
-        } else {
-            g_AllowPistol[client] = false;
-        }
-
-        SafeSetCookie(client, g_hAllowPistolCookie, info);
+        new bool:choice = GetMenuBool(menu, param2);
+        g_AllowPistol[client] = choice;
+        SetCookieBool(client, g_hAllowPistolCookie, choice);
 
         if (g_AllowPistol[client] || g_AllowAWP[client]) {
             PreferenceMenu(client);
         } else {
             g_Preference[client] = RoundType_Rifle;
-            SafeSetCookie(client, g_hPreferenceCookie, "rifle");
+            SetCookieInt(client, g_hPreferenceCookie, RoundType_Rifle);
             RifleChoiceMenu(client);
         }
     } else if (action == MenuAction_End) {
@@ -126,11 +104,11 @@ public MenuHandler_Pistol(Handle:menu, MenuAction:action, param1, param2) {
 public PreferenceMenu(client) {
     new Handle:menu = CreateMenu(MenuHandler_Preference);
     SetMenuTitle(menu, "Choose your preference:");
-    AddMenuItem(menu, "rifle", "Rifle Rounds");
+    AddMenuInt(menu, RoundType_Rifle, "Rifle Rounds");
     if (g_AllowAWP[client])
-        AddMenuItem(menu, "awp", "AWP Rounds");
+        AddMenuInt(menu, RoundType_Awp, "AWP Rounds");
     if (g_AllowPistol[client])
-        AddMenuItem(menu, "pistol", "Pistol Rounds");
+        AddMenuInt(menu, RoundType_Pistol, "Pistol Rounds");
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -140,17 +118,9 @@ public PreferenceMenu(client) {
 public MenuHandler_Preference(Handle:menu, MenuAction:action, param1, param2) {
     if (action == MenuAction_Select) {
         new client = param1;
-        decl String:info[WEAPON_LENGTH];
-        GetMenuItem(menu, param2, info, sizeof(info));
-
-        if (StrEqual("rifle", info))
-            g_Preference[client] = RoundType_Rifle;
-        else if (StrEqual("awp", info))
-            g_Preference[client] = RoundType_Awp;
-        else
-            g_Preference[client] = RoundType_Pistol;
-
-        SafeSetCookie(client, g_hPreferenceCookie, info);
+        new RoundType:choice = GetMenuInt(menu, param2);
+        g_Preference[client] = choice;
+        SetCookieInt(client, g_hPreferenceCookie, choice);
         RifleChoiceMenu(client);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
@@ -182,7 +152,7 @@ public MenuHandler_RifleChoice(Handle:menu, MenuAction:action, param1, param2) {
         decl String:info[WEAPON_LENGTH];
         GetMenuItem(menu, param2, info, sizeof(info));
         g_primaryWeapon[client] = info;
-        SafeSetCookie(client, g_hRifleCookie, info);
+        SetClientCookie(client, g_hRifleCookie, info);
         PistolChoiceMenu(client);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
@@ -216,7 +186,7 @@ public MenuHandler_PistolChoice(Handle:menu, MenuAction:action, param1, param2) 
         decl String:info[WEAPON_LENGTH];
         GetMenuItem(menu, param2, info, sizeof(info));
         g_secondaryWeapon[client] = info;
-        SafeSetCookie(client, g_hPistolCookie, info);
+        SetClientCookie(client, g_hPistolCookie, info);
         FlashbangChoiceMenu(client);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
@@ -230,8 +200,8 @@ public FlashbangChoiceMenu(any:client) {
     new Handle:menu = CreateMenu(MenuHandler_FlashChoice);
     SetMenuExitButton(menu, true);
     SetMenuTitle(menu, "Give players flashbangs?");
-    AddMenuItem(menu, "yes", "Yes");
-    AddMenuItem(menu, "no", "No");
+    AddMenuBool(menu, true, "Yes");
+    AddMenuBool(menu, false, "No");
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -241,12 +211,34 @@ public FlashbangChoiceMenu(any:client) {
 public MenuHandler_FlashChoice(Handle:menu, MenuAction:action, param1, param2) {
     if (action == MenuAction_Select) {
         new any:client = param1;
-        decl String:info[WEAPON_LENGTH];
-        GetMenuItem(menu, param2, info, sizeof(info));
-        g_GiveFlash[client] = StrEqual(info, "yes");
-        SafeSetCookie(client, g_hFlashCookie, info);
-        SafeSetCookie(client, g_hSetCookies, "yes");
+        new bool:choice = GetMenuBool(menu, param2);
+        g_GiveFlash[client] = choice;
+        SetCookieBool(client, g_hFlashCookie, choice);
+        SetCookieBool(client, g_hSetCookies, true);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
     }
+}
+
+/**
+ * Sets all the weapon choices based on the client's cookies.
+ */
+public UpdatePreferencesOnCookies(client) {
+    decl String:sCookieValue[WEAPON_LENGTH];
+
+    GetClientCookie(client, g_hSetCookies, sCookieValue, sizeof(sCookieValue));
+    if (!GetCookieBool(client, g_hSetCookies))
+        return;
+
+    g_AllowAWP[client] = GetCookieBool(client, g_hAllowAWPCookie);
+    g_AllowPistol[client] = GetCookieBool(client, g_hAllowPistolCookie);
+    g_Preference[client] = RoundType:GetCookieInt(client, g_hPreferenceCookie);
+    g_GiveFlash[client] = GetCookieBool(client, g_hFlashCookie);
+
+    GetClientCookie(client, g_hRifleCookie, sCookieValue, sizeof(sCookieValue));
+    strcopy(g_primaryWeapon[client], sizeof(sCookieValue), sCookieValue);
+
+    GetClientCookie(client, g_hPistolCookie, sCookieValue, sizeof(sCookieValue));
+    strcopy(g_secondaryWeapon[client], sizeof(sCookieValue), sCookieValue);
+
 }

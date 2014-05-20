@@ -80,9 +80,9 @@ new Handle:g_hQueue = INVALID_HANDLE;
 
 /** The different round types **/
 enum RoundType {
-    RoundType_Rifle = 0,
-    RoundType_Awp = 1,
-    RoundType_Pistol = 2
+    RoundType_Rifle,
+    RoundType_Awp,
+    RoundType_Pistol
 };
 
 /** Weapon menu choice cookies **/
@@ -101,6 +101,7 @@ new Handle:g_hCTSpawns = INVALID_HANDLE;
 new Handle:g_hCTAngles = INVALID_HANDLE;
 
 /** multi1v1 function includes **/
+#include "multi1v1/generic.sp"
 #include "multi1v1/queue.sp"
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
@@ -530,34 +531,7 @@ public OnClientDisconnect(client) {
 public OnClientCookiesCached(client) {
     if (IsFakeClient(client))
         return;
-
-    decl String:sCookieValue[WEAPON_LENGTH];
-    GetClientCookie(client, g_hSetCookies, sCookieValue, sizeof(sCookieValue));
-    if (!StrEqual(sCookieValue, "yes"))
-        return;
-
-    GetClientCookie(client, g_hAllowAWPCookie, sCookieValue, sizeof(sCookieValue));
-    g_AllowAWP[client] = StrEqual(sCookieValue, "yes") ? true : false;
-
-    GetClientCookie(client, g_hAllowPistolCookie, sCookieValue, sizeof(sCookieValue));
-    g_AllowPistol[client] = StrEqual(sCookieValue, "yes") ? true : false;
-
-    GetClientCookie(client, g_hPreferenceCookie, sCookieValue, sizeof(sCookieValue));
-    if (StrEqual(sCookieValue, "awp"))
-        g_Preference[client] = RoundType_Awp;
-    else if (StrEqual(sCookieValue, "pistol"))
-        g_Preference[client] = RoundType_Pistol;
-    else
-        g_Preference[client] = RoundType_Rifle;
-
-    GetClientCookie(client, g_hRifleCookie, sCookieValue, sizeof(sCookieValue));
-    strcopy(g_primaryWeapon[client], sizeof(sCookieValue), sCookieValue);
-
-    GetClientCookie(client, g_hPistolCookie, sCookieValue, sizeof(sCookieValue));
-    strcopy(g_secondaryWeapon[client], sizeof(sCookieValue), sCookieValue);
-
-    GetClientCookie(client, g_hFlashCookie, sCookieValue, sizeof(sCookieValue));
-    g_GiveFlash[client] = StrEqual(sCookieValue, "yes");
+    UpdatePreferencesOnCookies(client);
 }
 
 
@@ -634,11 +608,11 @@ public Action:Command_Say(client, const String:command[], argc) {
 
 
 
-/***********************
- *                     *
- *  Generic Functions  *
- *                     *
- ***********************/
+/*************************
+ *                       *
+ * Generic 1v1-Functions *
+ *                       *
+ *************************/
 
 /**
  *
@@ -804,72 +778,5 @@ public UpdateArena(arena) {
             g_ArenaLosers[arena] = p1;
             PrintToChat(p2, " \x01\x0B\x03Your opponent left!");
         }
-    }
-}
-
-/**
- * Switches a client to a new team.
- */
-SwitchPlayerTeam(client, team) {
-    new previousTeam = GetClientTeam(client);
-    if (previousTeam == team)
-        return;
-
-    g_PluginTeamSwitch[client] = true;
-    if (team > CS_TEAM_SPECTATOR) {
-        CS_SwitchTeam(client, team);
-        CS_UpdateClientModel(client);
-    } else {
-        ChangeClientTeam(client, team);
-    }
-    g_PluginTeamSwitch[client] = false;
-}
-
-/**
- * Returns if a player is on an active/player team.
- */
-bool:IsOnTeam(client) {
-    new client_team = GetClientTeam(client);
-    return (client_team == CS_TEAM_CT) || (client_team == CS_TEAM_T);
-}
-
-/**
- * Generic assertion function. Change the ASSERT_FUNCTION if you want.
- */
-public Assert(bool:value, const String:msg[] , any:...) {
-    if (!value) {
-        VFormat(assertBuffer, sizeof(assertBuffer), msg, 3);
-        ASSERT_MODE (assertBuffer);
-    }
-}
-
-/**
- * Removes the radar element from a client's HUD.
- */
-public Action:RemoveRadar(Handle:timer, any:client) {
-    if (IsValidClient(client) && !IsFakeClient(client)) {
-        new flags = GetEntProp(client, Prop_Send, "m_iHideHUD");
-        SetEntProp(client, Prop_Send, "m_iHideHUD", flags | (HIDE_RADAR_BIT));
-    }
-}
-
-/**
- * Function to identify if a client is valid and in game.
- */
-bool:IsValidClient(client) {
-    if (client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
-        return true;
-    return false;
-}
-
-/**
- * Closes an adt array.
- */
-CloseHandleArray(Handle:array) {
-    new iSize = GetArraySize(array);
-    new Handle:hZone;
-    for (new i = 0 ; i < iSize; i++) {
-        hZone = GetArrayCell(array, i);
-        CloseHandle(hZone);
     }
 }
