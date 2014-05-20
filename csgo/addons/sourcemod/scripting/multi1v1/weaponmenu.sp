@@ -224,9 +224,6 @@ public MenuHandler_FlashChoice(Handle:menu, MenuAction:action, param1, param2) {
  * Sets all the weapon choices based on the client's cookies.
  */
 public UpdatePreferencesOnCookies(client) {
-    decl String:sCookieValue[WEAPON_LENGTH];
-
-    GetClientCookie(client, g_hSetCookies, sCookieValue, sizeof(sCookieValue));
     if (!GetCookieBool(client, g_hSetCookies))
         return;
 
@@ -235,10 +232,10 @@ public UpdatePreferencesOnCookies(client) {
     g_Preference[client] = RoundType:GetCookieInt(client, g_hPreferenceCookie);
     g_GiveFlash[client] = GetCookieBool(client, g_hFlashCookie);
 
+    decl String:sCookieValue[WEAPON_LENGTH];
     GetClientCookie(client, g_hRifleCookie, sCookieValue, sizeof(sCookieValue));
     strcopy(g_primaryWeapon[client], sizeof(sCookieValue), sCookieValue);
 
     GetClientCookie(client, g_hPistolCookie, sCookieValue, sizeof(sCookieValue));
     strcopy(g_secondaryWeapon[client], sizeof(sCookieValue), sCookieValue);
-
 }
