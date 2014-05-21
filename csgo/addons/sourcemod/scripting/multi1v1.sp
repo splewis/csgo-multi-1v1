@@ -41,6 +41,7 @@ new bool:g_dbConnected = false;
 new Handle:db = INVALID_HANDLE;
 
 /** ConVar handles **/
+new Handle:g_hEnabledVar = INVALID_HANDLE;
 new Handle:g_hCvarVersion = INVALID_HANDLE;
 new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
 new Handle:g_hRoundTimeVar = INVALID_HANDLE;
@@ -125,13 +126,19 @@ public Plugin:myinfo = {
 public OnPluginStart() {
     LoadTranslations("common.phrases");
 
+    /** Special things for the enabled cvar **/
+    g_hEnabledVar = CreateConVar("sm_multi1v1_enabled", "1", "If the plugin is enabled");
+    HookConVarChange(g_hEnabledVar, Changed_Enabled);
+
     /** ConVars **/
     g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
     g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, 300.0, true, 10000.0);
     g_hMinRoundsVar = CreateConVar("sm_multi1v1_minrounds", "10", "Minimim number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
-    g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
+    g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
+
+    AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
 
     /** Cookies **/
     g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Protected);
@@ -158,7 +165,7 @@ public OnPluginStart() {
 }
 
 public OnMapStart() {
-    ServerCommand("exec sourcemod/multi1v1.cfg");
+    ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
     if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
         DB_Connect();
     }
@@ -193,6 +200,18 @@ public OnClientPostAdminCheck(client) {
     if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDatabase) != 0) {
         DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
     }
+}
+
+
+
+/***********************
+ *                     *
+ * Convar change Hooks *
+ *                     *
+ ***********************/
+
+Changed_Enabled(Handle:cvar, const String:oldVal[], const String:newVal[]) {
+    // TODO: hook/unhook things on enabled/disabled
 }
 
 
@@ -696,7 +715,6 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
     new bool:WaitingPlayers = nPlayers < 2 && Queue_Length(g_WaitingQueue) > 0;  // so the round ends for the first players that join
 
     if (NormalFinish || WaitingPlayers) {
-        // TODO: try putting a mp_restartgame 1 or something like that here
         CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
     }
