@@ -11,7 +11,7 @@ public DB_Connect() {
         LogError("Could not connect: %s", error);
     } else {
         SQL_LockDatabase(db);
-        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, pistolRating FLOAT NOT NULL default 1500.0, rifleRating FLOAT NOT NULL default 1500.0, awpRating FLOAT NOT NULL default 1500.0);");
+        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0;");
         SQL_UnlockDatabase(db);
         SQL_TQuery(db, SQLErrorCheckCallback, "DELETE FROM multi1v1_stats WHERE wins+losses < %d;", GetConVarInt(g_hMinRoundsVar));
         g_dbConnected = true;
@@ -57,13 +57,10 @@ public DB_AddPlayer(client, Float:default_rating) {
  */
 public DB_FetchRatings(client) {
     new Float:rating = 0.0;
-    new Float:pistolRating = 0.0;
-    new Float:awpRating = 0.0;
-    new Float:rifleRating = 0.0;
 
     if (db != INVALID_HANDLE) {
         SQL_LockDatabase(db);
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "SELECT rating, pistolRating, awpRating, rifleRating FROM multi1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "SELECT rating FROM multi1v1_stats WHERE accountID = %d", GetSteamAccountID(client));
         new Handle:query = SQL_Query(db, g_sqlBuffer);
 
         if (query == INVALID_HANDLE) {
@@ -73,18 +70,12 @@ public DB_FetchRatings(client) {
         } else {
             while (SQL_FetchRow(query)) {
                 rating = SQL_FetchFloat(query, 0);
-                pistolRating = SQL_FetchFloat(query, 1);
-                awpRating = SQL_FetchFloat(query, 2);
-                rifleRating = SQL_FetchFloat(query, 3);
             }
             CloseHandle(query);
         }
         SQL_UnlockDatabase(db);
     }
     g_ratings[client] = rating;
-    g_pistolRatings[client] = pistolRating;
-    g_awpRatings[client] = awpRating;
-    g_rifleRatings[client] = rifleRating;
 }
 
 /**
@@ -95,18 +86,6 @@ public DB_WriteRatings(client) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], GetAccountID(client));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
-    if (g_pistolRatings[client] >= 200.0) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set pistolRating = %f WHERE accountID = %d", g_pistolRatings[client], GetAccountID(client));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-    }
-    if (g_awpRatings[client] >= 200.0) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set awpRating = %f WHERE accountID = %d", g_awpRatings[client], GetAccountID(client));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-    }
-    if (g_rifleRatings[client] >= 200.0) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set rifleRating = %f WHERE accountID = %d", g_rifleRatings[client], GetAccountID(client));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-    }
 }
 
 public GetAccountID(client) {
@@ -115,11 +94,14 @@ public GetAccountID(client) {
     return g_playerIDs[client];
 }
 
-public DB_RoundUpdate(winner, loser, RoundType:roundType, bool:forceLoss) {
+public DB_RoundUpdate(winner, loser, bool:forceLoss) {
     if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-        Increment(winner, "wins");
         Increment(loser, "losses");
-        UpdateRatings(winner, loser, roundType, forceLoss);
+        if (forceLoss)
+            Increment(winner, "losses");
+        else
+            Increment(winner, "wins");
+        UpdateRatings(winner, loser, forceLoss);
     }
 }
 
@@ -151,7 +133,7 @@ static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-static UpdateRatings(winner, loser, RoundType:roundType, bool:forceLoss=false) {
+static UpdateRatings(winner, loser, bool:forceLoss=false) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (g_ratings[winner] <= 0.0) {
@@ -188,20 +170,6 @@ static UpdateRatings(winner, loser, RoundType:roundType, bool:forceLoss=false) {
 
         g_ratings[winner] += rating_delta;
         g_ratings[loser]  -= rating_delta;
-
-        if (roundType == RoundType_Pistol) {
-            rating_delta = ELORatingDelta(g_pistolRatings[winner], g_pistolRatings[loser]);
-            g_pistolRatings[winner] += rating_delta;
-            g_pistolRatings[loser] -= rating_delta;
-        } else if (roundType == RoundType_Awp) {
-            rating_delta = ELORatingDelta(g_awpRatings[winner], g_awpRatings[loser]);
-            g_awpRatings[winner] += rating_delta;
-            g_awpRatings[loser] -= rating_delta;
-        } else if (roundType == RoundType_Rifle) {
-            rating_delta = ELORatingDelta(g_rifleRatings[winner], g_rifleRatings[loser]);
-            g_rifleRatings[winner] += rating_delta;
-            g_rifleRatings[loser] -= rating_delta;
-        }
 
         DB_WriteRatings(winner);
         DB_WriteRatings(loser);

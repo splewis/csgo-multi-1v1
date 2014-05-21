@@ -129,7 +129,7 @@ public OnPluginStart() {
     g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
     g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, 300.0, true, 10000.0);
-    g_hMinRoundsVar = CreateConVar("sm_multi1v1_minrounds", "10", "Minimim number of wins+losses to not be purged from the database");
+    g_hMinRoundsVar = CreateConVar("sm_multi1v1_minrounds", "10", "Minimim number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
     g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
 
@@ -333,7 +333,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         new loser = g_ArenaLosers[arena];
         if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
             if (winner != loser && GetConVarInt(g_hUseDatabase) != 0) {
-                DB_RoundUpdate(winner, loser, g_roundTypes[arena], g_LetTimeExpire[winner]);
+                DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
             }
         }
 
@@ -485,7 +485,7 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 
     GivePlayerItem(client, "weapon_knife");
 
-    if (g_LetTimeExpire[client] && g_TotalRounds >= 0) {
+    if (g_LetTimeExpire[client] && g_TotalRounds >= 3) {
         PrintToChat(client, "Stop letting time run out.");
         // PrintToChat(client, " \x01\x0B\x04You let time run out last round. You will be punished and get \x031HP \x04this round.");
         // SetEntityHealth(client, 1);
@@ -705,7 +705,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 }
 
 /**
- *
+ * Function to add a player to the ranking queue with some validity checks.
  */
 public AddPlayer(client) {
     if (IsValidClient(client) && !IsFakeClient(client) && Queue_Length(g_RankingQueue) < 2*g_maxArenas) {
@@ -734,7 +734,7 @@ public ResetClientVariables(client) {
 }
 
 /**
- * Updates an arena in case a player disconnects.
+ * Updates an arena in case a player disconnects or leaves.
  * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
 public UpdateArena(arena) {

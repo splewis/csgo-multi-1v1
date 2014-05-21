@@ -3,23 +3,39 @@ csgo-multi-1v1
 
 This is home of my work-in-progress CS:GO multi-1v1 arena plugin. It sets up any number of players in 1v1-situations on specially made maps and they fight in a ladder-type system. The winners move up, the losers go down.
 
-### Extra Features
+Until the plugin version is greater than 1.0.0 you should consider this **unstable beta software**.
+
+
+### Features
 - Round types: there are 3 round types: rifle, pistol, and awp
 - Player selection: players can select to allow pistol and awp rounds or ban them, rifle rounds are always allowed
 - Player preference: players can also select a preference of round type, if player preferences match they will play that type
 - Weapon selection: players can select their primary (i.e. their rifle) and their pistol
 - Armor on pistol rounds: helmets are taken away, and kevlar is also taken away if the player selected an upgraded pistol
 - Optional flashbangs: players can select to "allow flashbangs" - if both players allow them, they each get 1
-- ELO ranking system: optionally, player statistics (overall ranking, rifle rating, pistol rating, awp rating, wins losses) can be stored in a database, see below for details
+- ELO ranking system: optionally, player statistics can be stored in a database, see below for details
+
+
 
 ### Download
 Download link: https://github.com/splewis/csgo-multi-1v1/releases
 
-### Installation
 
+
+### Installation
 If you only want the plugin, either download **multi1v1.zip** or build it yourself.
 It should contain the plugin binary (**plugins/multi1v1.smx**) and the default game config (**cfg/sourcemod/mult1v1.cfg**).
 Extract these to the appropriate folders, tweak mul1v1.cfg if you want.
+
+### Extras
+My server has some extras such as the web-page for the stats and the !rank/!stats commands that show a players' web page. These are not included with the
+plugin but are not hard to implement yourself. I can assist helping people with it, but I won't do it for free.
+
+Additionally, while it would be possible to define the round types and available weapons in a easy-to-change config file, it would be rather difficult to match
+the full level of flexibility modifying the code gives. In particular, a config that could remove kevlar on upgraded pistols would be non-trivial to parse.
+Again, if you want to write something in I can help, though I probably won't for free.
+
+
 
 ### Building
 The build process is managed by the Makefile.
@@ -31,13 +47,19 @@ The build process is managed by the Makefile.
 You will need SMLib to compile, get it at http://www.sourcemodplugins.org/smlib/,
 I generally just add it to my sourcemod/scripting/include folder where sourcemod is installed.
 
+
+
 ### Maps
+I have a [workshop collectionn](http://steamcommunity.com/sharedfiles/filedetails/?id=249376192) of maps I use. Not all of the maps are finished though, so don't blindly use them all.
+
 Guidelines for making a multi-1v1 map:
 - Create 1 arena and test it well, and when are you happy copy it
 - Create at least 9 arenas, I'd recommend at least 12, however. Any more than 16 is probably overkill.
 - The players shouldn't be able to see each other on spawn
 - Each arena should have exactly 2 spawns - one for CT's and one for T's (this is a condition that may be relaxed in the future)
 - If you want to edit your map, it's easiest to delete all but 1 arena and re-copy them. Be warned this can cause issues with the game's lighting and clients may crash the first time they load the new map if they had downloaded the old one previously
+- You should avoid areas where it's easy for 1 player to hide; ideally they should have to cover multiple angles if they sit in one spot
+
 
 
 ### Using the statistics database
@@ -57,12 +79,12 @@ You should add a database named mult1v1 to your databases.cfg file like so:
 
 To create a MySQL user and database on the database server, you can run:
 
-		CREATE DATABASE multi1v1;
+		CREATE DATABASE game_servers_database;
 		CREATE USER 'mymulti1v1server'@'123.123.123.123' IDENTIFIED BY 'strongpassword';
-		GRANT ALL PRIVILEGES ON multi1v1.* TO 'mymulti1v1server'@'123.123.123.123';
+		GRANT ALL PRIVILEGES ON game_servers_database.multi1v1_stats TO 'mymulti1v1server'@'123.123.123.123';
 		FLUSH PRIVILEGES;
 
-Make sure to change the IP, the username, and the password. You can change the database name 'multi1v1' if you want.
+Make sure to change the IP, the username, and the password. You should probably change the database as well, especially if you already have one set up you can use.
 
 Schema:
 
@@ -72,18 +94,14 @@ Schema:
 			name varchar(64) NOT NULL default '',
 			wins INT NOT NULL default 0,
 			losses INT NOT NULL default 0,
-			rating FLOAT NOT NULL default 1500.0,
-			pistolRating FLOAT NOT NULL default 1500.0,
-			rifleRating FLOAT NOT NULL default 1500.0,
-			awpRating FLOAT NOT NULL default 1500.0);
+			rating FLOAT NOT NULL default 1500.0);
 
 
-Now you can do whatever you want with the stats. For example, to find the 3 users with the most wins:
+Note that the accountID field is what is returned by [GetSteamAccountID](https://wiki.alliedmods.net/SourceMod_1.5.0_API_Changes#Clients), which is "the lower 32 bits of the full 64-bit Steam ID (referred to as community id by some) and is unique per account."
 
-	    SELECT accountID, name, kills FROM multi1v1_stats ORDER BY wins DESC LIMIT 3;
+
 
 ### Clientprefs Usage/Cookies
 
-Player choices (round type preference, weapons) can be saved so they persist across maps for players. Installing sqlite should be sufficient for this.
-
-
+Player choices (round type preferences, weapon choices) can be saved so they persist across maps for players (via the SourceMod clientprefs API).
+Installing sqlite should be sufficient for this.

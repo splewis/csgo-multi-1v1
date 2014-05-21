@@ -1,3 +1,6 @@
+#define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
+                                 // this is for converting ints to strings when setting menu values/cookies
+
 /**
  * Switches a client to a new team.
  */
@@ -69,7 +72,7 @@ public CloseHandleArray(Handle:array) {
  * Adds an integer to a menu as a string choice.
  */
 public AddMenuInt(Handle:menu, any:value, String:display[]) {
-    decl String:buffer[8];
+    decl String:buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     AddMenuItem(menu, buffer, display);
 }
@@ -78,7 +81,7 @@ public AddMenuInt(Handle:menu, any:value, String:display[]) {
  * Gets an integer to a menu from a string choice.
  */
 public any:GetMenuInt(Handle:menu, any:param2) {
-    decl String:choice[8];
+    decl String:choice[INTEGER_STRING_LENGTH];
     GetMenuItem(menu, param2, choice, sizeof(choice));
     return StringToInt(choice);
 }
@@ -102,7 +105,7 @@ public bool:GetMenuBool(Handle:menu, any:param2) {
  * Sets a cookie to an integer value by converting it to a string.
  */
 public SetCookieInt(any:client, Handle:cookie, any:value) {
-    decl String:buffer[8];
+    decl String:buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     SetClientCookie(client, cookie, buffer);
 }
@@ -111,7 +114,7 @@ public SetCookieInt(any:client, Handle:cookie, any:value) {
  * Fetches the value of a cookie that is an integer.
  */
 public any:GetCookieInt(client, Handle:cookie) {
-    decl String:buffer[8];
+    decl String:buffer[INTEGER_STRING_LENGTH];
     GetClientCookie(client, cookie, buffer, sizeof(buffer));
     return StringToInt(buffer);
 }
