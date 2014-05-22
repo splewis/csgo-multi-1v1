@@ -66,6 +66,13 @@ public any:Queue_Dequeue(Handle:queueHandle) {
 }
 
 /**
+ * Clears all entires in a queue.
+ */
+public Queue_Clear(Handle:queueHandle) {
+	ClearArray(queueHandle);
+}
+
+/**
  * Frees the handle used by the queue.
  */
 public Queue_Destroy(Handle:queueHandle) {

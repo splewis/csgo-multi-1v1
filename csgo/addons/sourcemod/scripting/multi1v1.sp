@@ -40,13 +40,12 @@ new String:g_sqlBuffer[1024];
 new bool:g_dbConnected = false;
 new Handle:db = INVALID_HANDLE;
 
-/** ConVar handles **/
-new Handle:g_hEnabledVar = INVALID_HANDLE;
-new Handle:g_hCvarVersion = INVALID_HANDLE;
-new Handle:g_hDefaultRatingVar = INVALID_HANDLE;
-new Handle:g_hRoundTimeVar = INVALID_HANDLE;
-new Handle:g_hUseDatabase = INVALID_HANDLE;
-new Handle:g_hMinRoundsVar = INVALID_HANDLE;
+/** ConVar values **/
+new bool:g_Enabled;
+new Float:g_DefaultRating;
+new any:g_RoundTime;
+new bool:g_UseDatabase;
+new any:g_MinRounds;
 
 /** Client arrays **/
 new g_Rankings[MAXPLAYERS+1] = -1;      // which arena each player is in
@@ -126,18 +125,17 @@ public Plugin:myinfo = {
 public OnPluginStart() {
     LoadTranslations("common.phrases");
 
-    /** Special things for the enabled cvar **/
-    g_hEnabledVar = CreateConVar("sm_multi1v1_enabled", "1", "If the plugin is enabled");
-    HookConVarChange(g_hEnabledVar, Changed_Enabled);
-
     /** ConVars **/
-    g_hRoundTimeVar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
-    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
-    g_hDefaultRatingVar = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, 300.0, true, 10000.0);
-    g_hMinRoundsVar = CreateConVar("sm_multi1v1_minrounds", "10", "Minimim number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
-    g_hCvarVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
-    SetConVarString(g_hCvarVersion, PLUGIN_VERSION);
+    new Handle:tmpCvar; // temp handle for assignments
+    HookConVarChange(tmpCvar=CreateConVar("sm_multi1v1_enabled", "1", "If the plugin is enabled"), Changed_Enabled);
+    HookConVarChange(tmpCvar=CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0), Changed_Roundtime);
+    HookConVarChange(tmpCvar=CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences"), Changed_UseDatabase);
+    HookConVarChange(tmpCvar=CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, 300.0, true, 10000.0), Changed_DefaultRating);
+    HookConVarChange(tmpCvar=CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0), Changed_MinGames);
+    tmpCvar = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+    SetConVarString(tmpCvar, PLUGIN_VERSION);
 
+    /** Config file **/
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
 
     /** Cookies **/
@@ -149,13 +147,15 @@ public OnPluginStart() {
     g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 pistol choice", CookieAccess_Protected);
     g_hSetCookies = RegClientCookie("multi1v1_setprefs", "Multi-1v1 if prefs are saved", CookieAccess_Protected);
 
-    /** Client command hooks **/
+    /** Event hooks and command listeners */
+    // AddHooks();
+}
+
+static AddHooks() {
     AddCommandListener(Command_Say, "say");
     AddCommandListener(Command_Say, "say2");
     AddCommandListener(Command_Say, "say_team");
     AddCommandListener(Command_TeamJoin, "jointeam");
-
-    /** Event hooks **/
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
     HookEvent("player_connect_full", Event_OnFullConnect);
     HookEvent("player_spawn", Event_OnPlayerSpawn);
@@ -164,9 +164,21 @@ public OnPluginStart() {
     HookEvent("round_end", Event_OnRoundEnd);
 }
 
+static RemoveHooks() {
+    RemoveCommandListener(Command_Say, "say");
+    RemoveCommandListener(Command_Say, "say2");
+    RemoveCommandListener(Command_Say, "say_team");
+    RemoveCommandListener(Command_TeamJoin, "jointeam");
+    UnhookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
+    UnhookEvent("player_connect_full", Event_OnFullConnect);
+    UnhookEvent("player_spawn", Event_OnPlayerSpawn);
+    UnhookEvent("player_death", Event_OnPlayerDeath);
+    UnhookEvent("round_start", Event_OnRoundStart);
+    UnhookEvent("round_end", Event_OnRoundEnd);
+}
+
 public OnMapStart() {
-    ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
-    if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
+    if (!g_dbConnected && g_UseDatabase) {
         DB_Connect();
     }
     Spawns_MapInit();
@@ -183,6 +195,13 @@ public OnMapStart() {
         g_ArenaLosers[i] = -1;
     }
     g_WaitingQueue = Queue_Init();
+    if (g_Enabled)
+        StartGame();
+}
+
+static StartGame() {
+    ServerCommand("exec gamemode_competitive.cfg");
+    ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
     GameRules_SetProp("m_bWarmupPeriod", false, _, _, true);
     GameRules_SetPropFloat("m_fWarmupPeriodEnd", GetGameTime(), _, true);
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
@@ -192,13 +211,9 @@ public OnMapEnd() {
     Queue_Destroy(g_WaitingQueue);
 }
 
-/**
- * Called once a client is authorized and fully in-game, and
- * after all post-connection authorizations have been performed.
- */
 public OnClientPostAdminCheck(client) {
-    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDatabase) != 0) {
-        DB_AddPlayer(client, GetConVarFloat(g_hDefaultRatingVar));
+    if (IsClientInGame(client) && !IsFakeClient(client) && g_UseDatabase) {
+        DB_AddPlayer(client, g_DefaultRating);
     }
 }
 
@@ -210,10 +225,46 @@ public OnClientPostAdminCheck(client) {
  *                     *
  ***********************/
 
-Changed_Enabled(Handle:cvar, const String:oldVal[], const String:newVal[]) {
-    // TODO: hook/unhook things on enabled/disabled
+public Changed_Enabled(Handle:cvar, const String:oldVal[], const String:newVal[]) {
+    LogMessage("enable dchanged");
+    g_Enabled = GetConVarBool(cvar);
+    if (StrEqual(oldVal, newVal))
+        return;
+
+    if (g_Enabled) {
+        for (new i = 1; i <= MaxClients; i++) {
+            if (IsValidClient(i) && IsOnTeam(i))
+                Queue_Enqueue(g_WaitingQueue, i);
+        }
+        AddHooks();
+        StartGame();
+        ServerCommand("mp_restartgame 1");
+    } else {
+        Queue_Clear(g_WaitingQueue);
+        RemoveHooks();
+        for (new i = 1; i <= MaxClients; i++)
+            ResetClientVariables(i);
+        ServerCommand("mp_restartgame 1");
+    }
 }
 
+public Changed_Roundtime(Handle:cvar, const String:oldVal[], const String:newVal[]) {
+    g_RoundTime = GetConVarInt(cvar);
+}
+
+public Changed_UseDatabase(Handle:cvar, const String:oldVal[], const String:newVal[]) {
+    g_UseDatabase = GetConVarBool(cvar);
+    if (!g_dbConnected && g_UseDatabase)
+        DB_Connect();
+}
+
+public Changed_MinGames(Handle:cvar, const String:oldVal[], const String:newVal[]) {
+    g_RoundTime = GetConVarInt(cvar);
+}
+
+public Changed_DefaultRating(Handle:cvar, const String:oldVal[], const String:newVal[]) {
+    g_RoundTime = GetConVarFloat(cvar);
+}
 
 
 /***********************
@@ -270,7 +321,7 @@ public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast)
         g_LetTimeExpire[i] = false;
     }
 
-    GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTimeVar), 4, 0, true);
+    GameRules_SetProp("m_iRoundTime", g_RoundTime, 4, 0, true);
 
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
@@ -351,7 +402,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         new winner = g_ArenaWinners[arena];
         new loser = g_ArenaLosers[arena];
         if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-            if (winner != loser && GetConVarInt(g_hUseDatabase) != 0) {
+            if (winner != loser && g_UseDatabase) {
                 DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
             }
         }
@@ -525,7 +576,7 @@ public OnClientConnected(client) {
  * Writes back player stats and resets the player client index data.
  */
 public OnClientDisconnect(client) {
-    if (GetConVarInt(g_hUseDatabase) != 0)
+    if (g_UseDatabase)
         DB_WriteRatings(client);
 
     new arena = g_Rankings[client];

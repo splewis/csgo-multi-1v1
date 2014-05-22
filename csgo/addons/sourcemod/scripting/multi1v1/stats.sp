@@ -14,7 +14,7 @@ public DB_Connect() {
         SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0;");
         SQL_UnlockDatabase(db);
 
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM multi1v1_stats WHERE wins+losses < %d;", GetConVarInt(g_hMinRoundsVar));
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM multi1v1_stats WHERE wins+losses < %d;", g_MinRounds);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
         g_dbConnected = true;
     }
