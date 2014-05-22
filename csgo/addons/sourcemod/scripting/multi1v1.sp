@@ -259,11 +259,11 @@ public Changed_UseDatabase(Handle:cvar, const String:oldVal[], const String:newV
 }
 
 public Changed_MinGames(Handle:cvar, const String:oldVal[], const String:newVal[]) {
-    g_RoundTime = GetConVarInt(cvar);
+    g_MinRounds = GetConVarInt(cvar);
 }
 
 public Changed_DefaultRating(Handle:cvar, const String:oldVal[], const String:newVal[]) {
-    g_RoundTime = GetConVarFloat(cvar);
+    g_DefaultRating = GetConVarFloat(cvar);
 }
 
 
