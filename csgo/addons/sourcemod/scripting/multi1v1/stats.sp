@@ -25,6 +25,8 @@ public DB_Connect() {
  */
 public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], any:data) {
     if (!StrEqual("", error)) {
+        CloseHandle(db);
+        g_dbConnected = false;
         LogError("Last Connect SQL Error: %s", error);
     }
 }
