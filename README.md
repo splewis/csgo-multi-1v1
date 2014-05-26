@@ -32,7 +32,7 @@ My server has some extras such as the web-page for the stats and the !rank/!stat
 plugin but are not hard to implement yourself. I can assist helping people with it, but I won't do it for free.
 
 Additionally, while it would be possible to define the round types and available weapons in a easy-to-change config file, it would be rather difficult to match
-the full level of flexibility modifying the code gives. In particular, a config that could remove kevlar on upgraded pistols would be non-trivial to parse.
+the full level of flexibility modifying the code gives. In particular, a config that could remove kevlar on upgraded pistols would be non-trivial to implement.
 Again, if you want to write something in I can help, though I probably won't for free.
 
 
@@ -50,7 +50,7 @@ I generally just add it to my sourcemod/scripting/include folder where sourcemod
 
 
 ### Maps
-I have a [workshop collectionn](http://steamcommunity.com/sharedfiles/filedetails/?id=249376192) of maps I use. Not all of the maps are finished though, so don't blindly use them all.
+I have a [workshop collection](http://steamcommunity.com/sharedfiles/filedetails/?id=249376192) of maps I use. Not all of the maps are finished though, so don't blindly use them all.
 
 Guidelines for making a multi-1v1 map:
 - Create 1 arena and test it well, and when are you happy copy it
