@@ -1,6 +1,5 @@
 csgo-multi-1v1
 =======================================
-
 This is home of my work-in-progress CS:GO multi-1v1 arena plugin. It sets up any number of players in 1v1-situations on specially made maps and they fight in a ladder-type system. The winners move up, the losers go down.
 
 Until the plugin version is greater than 1.0.0 you should consider this **unstable beta software**.
@@ -19,6 +18,11 @@ Until the plugin version is greater than 1.0.0 you should consider this **unstab
 
 ### Download
 Download link: https://github.com/splewis/csgo-multi-1v1/releases
+
+
+
+### Donations
+The easiest way to support my open development of this is to donate. You can do this at http://csgo1v1.splewis.net/donate, which will also give you a reserved slot for my servers.
 
 
 
@@ -64,7 +68,6 @@ Guidelines for making a multi-1v1 map:
 
 
 ### Using the statistics database
-
 You should add a database named mult1v1 to your databases.cfg file like so:
 
 	"multi1v1"
@@ -103,12 +106,11 @@ Note that the accountID field is what is returned by [GetSteamAccountID](https:/
 
 
 ### Clientprefs Usage/Cookies
-
 Player choices (round type preferences, weapon choices) can be saved so they persist across maps for players (via the SourceMod clientprefs API).
 Installing sqlite should be sufficient for this.
 
+The reason the prefs/choice are not stored in the MySQL stats database, is because the data from it is not fetched immediately due to it taking longer.
+
 ### Other Notes
-
 If you use an afk management plugin you may want to disable kicking spectators, because players are placed in a waiting queue on spectator when all the arenas are full.
-
 
