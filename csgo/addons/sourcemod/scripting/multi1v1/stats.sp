@@ -14,7 +14,7 @@ public DB_Connect() {
         SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0;");
         SQL_UnlockDatabase(db);
 
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM multi1v1_stats WHERE wins+losses < %d;", g_MinRounds);
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM multi1v1_stats WHERE wins+losses < %d;", GetConVarInt(g_hMinRoundsForDB));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
         g_dbConnected = true;
     }
@@ -86,7 +86,7 @@ public DB_FetchRatings(client) {
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
 public DB_WriteRatings(client) {
-    if (g_ratings[client] >= 200.0) {
+    if (g_ratings[client] >= MIN_RATING) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats set rating = %f WHERE accountID = %d", g_ratings[client], GetAccountID(client));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
