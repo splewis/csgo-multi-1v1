@@ -155,7 +155,8 @@ public OnPluginStart() {
     HookEvent("player_connect_full", Event_OnFullConnect);
     HookEvent("player_spawn", Event_OnPlayerSpawn);
     HookEvent("player_death", Event_OnPlayerDeath);
-    HookEvent("round_start", Event_OnRoundStart);
+    HookEvent("round_prestart", Event_OnRoundPreStart);
+    HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
 }
 
@@ -226,11 +227,85 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
 }
 
 /**
- * RoundStart Event, sets up the players for each arena.
+ * Round pre-start, sets up who goes in which arena for this round.
  */
-public Event_OnRoundStart(Handle:event, const String:name[], bool:dontBroadcast) {
-    g_RoundFinished = false;
+public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadcast) {
+    // Here we add each player to the queue in their new ranking
+    g_RankingQueue = Queue_Init();
 
+    //  top arena
+    AddPlayer(g_ArenaWinners[1]);
+    AddPlayer(g_ArenaWinners[2]);
+
+    // middle arenas
+    for (new i = 2; i <= g_Arenas - 1; i++) {
+        AddPlayer(g_ArenaLosers[i - 1]);
+        AddPlayer(g_ArenaWinners[i + 1]);
+    }
+
+    // bottom arena
+    if (g_Arenas >= 1) {
+        AddPlayer(g_ArenaLosers[g_Arenas - 1]);
+        AddPlayer(g_ArenaLosers[g_Arenas]);
+    }
+
+    while (Queue_Length(g_RankingQueue) < 2*g_maxArenas && Queue_Length(g_WaitingQueue) > 0) {
+        AddPlayer(Queue_Dequeue(g_WaitingQueue));
+    }
+
+    // Set leader and scoring information
+    new leader = Queue_Peek(g_RankingQueue);
+    if (IsValidClient(leader) && Queue_Length(g_RankingQueue) >= 2) {
+        g_RoundsLeader[leader]++;
+        CS_SetMVPCount(leader, g_RoundsLeader[leader]);
+        if (g_LastWinner == leader && Queue_Length(g_RankingQueue) >= 2) {
+            g_Score++;
+            if (g_Score > g_HighestScore) {
+                g_HighestScore = g_Score;
+                PrintToChatAll("\x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
+            } else {
+                PrintToChatAll("\x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
+            }
+        } else {
+            g_Score = 1;
+            PrintToChatAll("The new leader is \x06%N\x01", leader);
+        }
+    }
+    g_LastWinner = leader;
+
+    // Player placement logic for this round
+    g_Arenas = 0;
+    for (new arena = 1; arena <= g_maxArenas; arena++) {
+        new p1 = Queue_Dequeue(g_RankingQueue);
+        new p2 = Queue_Dequeue(g_RankingQueue);
+        g_ArenaPlayer1[arena] = p1;
+        g_ArenaPlayer2[arena] = p2;
+        g_roundTypes[arena] = GetRoundType(p1, p2);
+
+        new bool:realp1 = IsValidClient(p1);
+        new bool:realp2 = IsValidClient(p2);
+
+        if (realp1) {
+            g_Rankings[p1] = arena;
+        }
+
+        if (realp2) {
+            g_Rankings[p2] = arena;
+        }
+
+        if (realp1 || realp2) {
+            g_Arenas++;
+        }
+    }
+
+    Queue_Destroy(g_RankingQueue);
+}
+
+/**
+ * Round poststart - puts players in their arena and gives them weapons.
+ */
+public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadcast) {
+    g_RoundFinished = false;
     for (new arena = 1; arena <= g_maxArenas; arena++) {
         g_ArenaWinners[arena] = -1;
         g_ArenaLosers[arena] = -1;
@@ -346,76 +421,6 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         }
 
     }
-
-    // Here we add each player to the queue in their new ranking
-    g_RankingQueue = Queue_Init();
-
-    //  top arena
-    AddPlayer(g_ArenaWinners[1]);
-    AddPlayer(g_ArenaWinners[2]);
-
-    // middle arenas
-    for (new i = 2; i <= g_Arenas - 1; i++) {
-        AddPlayer(g_ArenaLosers[i - 1]);
-        AddPlayer(g_ArenaWinners[i + 1]);
-    }
-
-    // bottom arena
-    if (g_Arenas >= 1) {
-        AddPlayer(g_ArenaLosers[g_Arenas - 1]);
-        AddPlayer(g_ArenaLosers[g_Arenas]);
-    }
-
-    while (Queue_Length(g_RankingQueue) < 2*g_maxArenas && Queue_Length(g_WaitingQueue) > 0) {
-        AddPlayer(Queue_Dequeue(g_WaitingQueue));
-    }
-
-    // Set leader and scoring information
-    new leader = Queue_Peek(g_RankingQueue);
-    if (IsValidClient(leader) && Queue_Length(g_RankingQueue) >= 2) {
-        g_RoundsLeader[leader]++;
-        CS_SetMVPCount(leader, g_RoundsLeader[leader]);
-        if (g_LastWinner == leader && Queue_Length(g_RankingQueue) >= 2) {
-            g_Score++;
-            if (g_Score > g_HighestScore) {
-                g_HighestScore = g_Score;
-                PrintToChatAll("\x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
-            } else {
-                PrintToChatAll("\x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
-            }
-        } else {
-            g_Score = 1;
-            PrintToChatAll("The new leader is \x06%N\x01", leader);
-        }
-    }
-    g_LastWinner = leader;
-
-    // Player placement logic for this round
-    g_Arenas = 0;
-    for (new arena = 1; arena <= g_maxArenas; arena++) {
-        new p1 = Queue_Dequeue(g_RankingQueue);
-        new p2 = Queue_Dequeue(g_RankingQueue);
-        g_ArenaPlayer1[arena] = p1;
-        g_ArenaPlayer2[arena] = p2;
-        g_roundTypes[arena] = GetRoundType(p1, p2);
-
-        new bool:realp1 = IsValidClient(p1);
-        new bool:realp2 = IsValidClient(p2);
-
-        if (realp1) {
-            g_Rankings[p1] = arena;
-        }
-
-        if (realp2) {
-            g_Rankings[p2] = arena;
-        }
-
-        if (realp1 || realp2) {
-            g_Arenas++;
-        }
-    }
-
-    Queue_Destroy(g_RankingQueue);
 }
 
 /**
@@ -753,11 +758,11 @@ public UpdateArena(arena) {
 
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
-            g_ArenaLosers[arena] = p2;
+            g_ArenaLosers[arena] = -1;
             PrintToChat(p1, "\x01\x0B\x09Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
-            g_ArenaLosers[arena] = p1;
+            g_ArenaLosers[arena] = -1;
             PrintToChat(p2, "\x01\x0B\x09Your opponent left!");
         }
     }
