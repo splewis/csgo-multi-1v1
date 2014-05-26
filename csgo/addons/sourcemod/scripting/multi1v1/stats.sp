@@ -163,8 +163,8 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
         if (IsValidClient(winner) && IsValidClient(loser)) {
             new int_winner_d = RoundToNearest(FloatAbs(rating_delta));
             new int_loser_d = RoundToNearest(FloatAbs(rating_delta));
-            new int_loser = RoundToNearest(g_ratings[loser]);
-            new int_winner = RoundToNearest(g_ratings[winner]);
+            new int_loser = RoundToNearest(g_ratings[loser] - rating_delta);
+            new int_winner = RoundToNearest(g_ratings[winner] + rating_delta);
 
             PrintToChat(winner, "\x01\x0B\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
                 int_winner, int_winner_d, loser, int_loser, int_loser_d);

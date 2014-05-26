@@ -290,14 +290,19 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);
 
+    // Arbitrary scores for ordering players in the scoreboard
     new score = 0;
-    if (g_ArenaPlayer1[arena] == client)
+    if (g_ArenaPlayer1[arena] == client) {
         score = 3*g_Arenas - 3*arena + 1;
-    else
+    } else {
         score = 3*g_Arenas - 3*arena;
+    }
+
+    // MVP stars show the number of rounds in arena 1
     CS_SetClientContributionScore(client, score);
     CS_SetMVPCount(client, g_RoundsLeader[client]);
 
+    // Set clan tags to the arena number
     decl String:buffer[32];
     Format(buffer, sizeof(buffer), "Arena %d", arena);
     CS_SetClientClanTag(client, buffer);
