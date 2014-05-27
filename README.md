@@ -19,6 +19,8 @@ Until the plugin version is greater than 1.0.0 you should consider this **unstab
 ### Download
 Download link: https://github.com/splewis/csgo-multi-1v1/releases
 
+I **strongly** recommend using the updater plugin which can automatically update the plugin for bug fixes. It can be found at https://forums.alliedmods.net/showthread.php?t=169095.
+
 
 
 ### Donations
@@ -46,12 +48,12 @@ If you want to write something custom in I can help, but I probably won't for fr
 The build process is managed by the Makefile.
 
 		make          # builds the .smx file
-		make clean    # clears .smx files, .zip files, map configs
+		make clean    # clears .smx files, .zip files
 		make package  # packages the files to multi1v1.zip
 
-You will need SMLib to compile, get it at http://www.sourcemodplugins.org/smlib/,
-I generally just add it to my sourcemod/scripting/include folder where sourcemod is installed.
-
+To compile, you will need:
+- [Updater](https://forums.alliedmods.net/showthread.php?t=169095)
+- [SMLib](http://www.sourcemodplugins.org/smlib/)
 
 
 ### Maps
