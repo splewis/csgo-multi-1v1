@@ -4,6 +4,7 @@ This is home of my work-in-progress CS:GO multi-1v1 arena plugin. It sets up any
 
 Until the plugin version is greater than 1.0.0 you should consider this **unstable beta software**.
 
+Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php?t=241056).
 
 ### Features
 - Round types: there are 3 round types: rifle, pistol, and awp
