@@ -1,4 +1,5 @@
-#define PLUGIN_VERSION "0.1.0"
+#define PLUGIN_VERSION "0.3.0"
+#define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1/csgo-multi-1v1.txt"
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -7,6 +8,7 @@
 #include <cstrike>
 #include <clientprefs>
 #include <smlib>
+#include <updater>
 
 
 
@@ -30,6 +32,7 @@ new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hDefaultRating = INVALID_HANDLE;
 new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
+new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
 
 /** Saved data for database interaction - be careful when using these, they may not
@@ -131,6 +134,7 @@ public OnPluginStart() {
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
     g_hDefaultRating = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, MIN_RATING + 100.0, true, 10000.0);
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
+    g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "1", "Should the plugin attempt to use the auto-update plugin?");
     g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     SetConVarString(g_hVersion, PLUGIN_VERSION);
 
@@ -158,6 +162,16 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
+
+    if (GetConVarBool(g_hAutoUpdate) && LibraryExists("updater")) {
+        Updater_AddPlugin(UPDATE_URL);
+    }
+}
+
+public OnLibraryAdded(const String:name[]) {
+    if (GetConVarBool(g_hAutoUpdate) && LibraryExists("updater")) {
+        Updater_AddPlugin(UPDATE_URL);
+    }
 }
 
 public OnMapStart() {
@@ -178,15 +192,11 @@ public OnMapStart() {
         g_ArenaLosers[i] = -1;
     }
     g_WaitingQueue = Queue_Init();
-    StartGame();
-}
-
-static StartGame() {
     ServerCommand("exec gamemode_competitive.cfg");
     ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
-    GameRules_SetProp("m_bWarmupPeriod", false, _, _, true);
-    GameRules_SetPropFloat("m_fWarmupPeriodEnd", GetGameTime(), _, true);
-    CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
+    // GameRules_SetProp("m_bWarmupPeriod", false, _, _, true);
+    // GameRules_SetPropFloat("m_fWarmupPeriodEnd", GetGameTime(), _, true);
+    // CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
 public OnMapEnd() {
