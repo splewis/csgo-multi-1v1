@@ -8,6 +8,8 @@
 #include <cstrike>
 #include <clientprefs>
 #include <smlib>
+
+#undef REQUIRE_PLUGIN
 #include <updater>
 
 
