@@ -165,19 +165,19 @@ public OnPluginStart() {
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
 
-    if (GetConVarBool(g_hAutoUpdate) && LibraryExists("updater")) {
+    if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
 }
 
 public OnLibraryAdded(const String:name[]) {
-    if (GetConVarBool(g_hAutoUpdate) && LibraryExists("updater")) {
+    if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
 }
 
 public OnMapStart() {
-    if (!g_dbConnected && GetConVarBool(g_hUseDataBase)) {
+    if (!g_dbConnected && GetConVarInt(g_hUseDataBase) != 0) {
         DB_Connect();
     }
     Spawns_MapInit();
@@ -206,7 +206,7 @@ public OnMapEnd() {
 }
 
 public OnClientPostAdminCheck(client) {
-    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarBool(g_hUseDataBase)) {
+    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDataBase) != 0) {
         DB_AddPlayer(client, GetConVarFloat(g_hDefaultRating));
     }
 }
@@ -427,7 +427,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         new winner = g_ArenaWinners[arena];
         new loser = g_ArenaLosers[arena];
         if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-            if (winner != loser && GetConVarBool(g_hUseDataBase)) {
+            if (winner != loser && GetConVarInt(g_hUseDataBase) != 0) {
                 DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
             }
         }
@@ -531,7 +531,7 @@ public OnClientConnected(client) {
  * Writes back player stats and resets the player client index data.
  */
 public OnClientDisconnect(client) {
-    if (GetConVarBool(g_hUseDataBase))
+    if (GetConVarInt(g_hUseDataBase) != 0)
         DB_WriteRatings(client);
 
     new arena = g_Rankings[client];
