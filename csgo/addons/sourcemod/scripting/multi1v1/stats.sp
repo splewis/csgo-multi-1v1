@@ -10,12 +10,15 @@ public DB_Connect() {
         g_dbConnected = false;
         LogError("Could not connect: %s", error);
     } else {
+        // create the table
         SQL_LockDatabase(db);
-        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0;");
+        SQL_FastQuery(db, "CREATE TABLE IF NOT EXISTS multi1v1_stats (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0);");
         SQL_UnlockDatabase(db);
 
+        // delete low-information players
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM multi1v1_stats WHERE wins+losses < %d;", GetConVarInt(g_hMinRoundsForDB));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+
         g_dbConnected = true;
     }
 }
@@ -25,7 +28,7 @@ public DB_Connect() {
  */
 public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], any:data) {
     if (!StrEqual("", error)) {
-        CloseHandle(db);
+        db = INVALID_HANDLE;
         g_dbConnected = false;
         LogError("Last Connect SQL Error: %s", error);
     }
@@ -51,6 +54,7 @@ public DB_AddPlayer(client, Float:default_rating) {
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE multi1v1_stats SET name = '%s' WHERE accountID = %d", sanitized_name, id);
+
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
@@ -71,6 +75,8 @@ public DB_FetchRatings(client) {
             new String:error[255];
             SQL_GetError(db, error, sizeof(error));
             LogError("Failed to query (error: %s)", error);
+            g_dbConnected = false;
+            CloseHandle(db);
         } else {
             while (SQL_FetchRow(query)) {
                 rating = SQL_FetchFloat(query, 0);
@@ -100,6 +106,12 @@ public GetAccountID(client) {
 
 public DB_RoundUpdate(winner, loser, bool:forceLoss) {
     if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
+
+        /* TODO: this is a temporary band-aid for the first round ending too early sometimes and unfairly punishes early connectors */
+        if (forceLoss && g_TotalRounds <= 2) {
+            return;
+        }
+
         Increment(loser, "losses");
         if (forceLoss)
             Increment(winner, "losses");
@@ -184,7 +196,7 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 static ForceLoss(client) {
     new Float:rating = g_ratings[client];
     new Float:delta = ELORatingDelta(rating, rating);
-    PrintToChat(client, "\x01\x0B\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client]), RoundToNearest(delta));
+    PrintToChat(client, "\x01\x0B\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
     g_ratings[client] -= delta;
     DB_WriteRatings(client);
 }
