@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION "0.3.0"
+#define PLUGIN_VERSION "0.3.2"
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1/csgo-multi-1v1.txt"
 #pragma semicolon 1
 
@@ -137,7 +137,7 @@ public OnPluginStart() {
     g_hDefaultRating = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, MIN_RATING + 100.0, true, 10000.0);
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "1", "Should the plugin attempt to use the auto-update plugin?");
-    g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+    g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hVersion, PLUGIN_VERSION);
 
     /** Config file **/
@@ -509,13 +509,6 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     }
 
     GivePlayerItem(client, "weapon_knife");
-
-    if (g_LetTimeExpire[client] && g_TotalRounds >= 3) {
-        PrintToChat(client, "Stop letting time run out.");
-        // PrintToChat(client, " \x01\x0B\x04You let time run out last round. You will be punished and get \x031HP \x04this round.");
-        // SetEntityHealth(client, 1);
-        g_LetTimeExpire[client] = false;
-    }
 
     CreateTimer(0.0, RemoveRadar, client);
 }
