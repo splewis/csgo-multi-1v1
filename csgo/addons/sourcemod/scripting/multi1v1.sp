@@ -180,7 +180,7 @@ public OnMapStart() {
     if (!g_dbConnected && GetConVarInt(g_hUseDataBase) != 0) {
         DB_Connect();
     }
-    Spawns_MapInit();
+    Spawns_MapStart();
     g_Arenas = 1;
     g_TotalRounds = 0;
     g_LastWinner = -1;
@@ -202,6 +202,7 @@ public OnMapStart() {
 }
 
 public OnMapEnd() {
+    Spawns_MapEnd();
     Queue_Destroy(g_WaitingQueue);
 }
 
@@ -267,7 +268,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 
     // Set leader and scoring information
     new leader = Queue_Peek(g_RankingQueue);
-    if (IsValidClient(leader) && Queue_Length(g_RankingQueue) >= 2) {
+
+    if (IsValidClient(leader) && IsOnTeam(leader) && Queue_Length(g_RankingQueue) >= 2) {
         g_RoundsLeader[leader]++;
         CS_SetMVPCount(leader, g_RoundsLeader[leader]);
         if (g_LastWinner == leader && Queue_Length(g_RankingQueue) >= 2) {
