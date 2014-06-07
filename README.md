@@ -95,16 +95,22 @@ Make sure to change the IP, the username, and the password. You should probably 
 
 Schema:
 
-		CREATE TABLE IF NOT EXISTS multi1v1_stats (
-			accountID INT NOT NULL PRIMARY KEY default 0,
-			auth varchar(64) NOT NULL default '',
-			name varchar(64) NOT NULL default '',
-			wins INT NOT NULL default 0,
-			losses INT NOT NULL default 0,
-			rating FLOAT NOT NULL default 1500.0);
+		mysql> describe multi1v1_stats;
+		+--------------+-------------+------+-----+---------+-------+
+		| Field        | Type        | Null | Key | Default | Extra |
+		+--------------+-------------+------+-----+---------+-------+
+		| accountID    | int(11)     | NO   | PRI | 0       |       |
+		| auth         | varchar(64) | NO   |     |         |       |
+		| name         | varchar(64) | NO   |     |         |       |
+		| wins         | int(11)     | NO   |     | 0       |       |
+		| losses       | int(11)     | NO   |     | 0       |       |
+		| rating       | float       | NO   |     | 1500    |       |
+		+--------------+-------------+------+-----+---------+-------+
 
 
 Note that the accountID field is what is returned by [GetSteamAccountID](https://wiki.alliedmods.net/SourceMod_1.5.0_API_Changes#Clients), which is "the lower 32 bits of the full 64-bit Steam ID (referred to as community id by some) and is unique per account."
+
+The auth is the steam ID auth string.
 
 
 
