@@ -105,13 +105,14 @@ Schema:
 		| wins         | int(11)     | NO   |     | 0       |       |
 		| losses       | int(11)     | NO   |     | 0       |       |
 		| rating       | float       | NO   |     | 1500    |       |
+		| lastTime     | int         | NO   |     | 0       |       |
 		+--------------+-------------+------+-----+---------+-------+
 
 
 Note that the accountID field is what is returned by [GetSteamAccountID](https://wiki.alliedmods.net/SourceMod_1.5.0_API_Changes#Clients), which is "the lower 32 bits of the full 64-bit Steam ID (referred to as community id by some) and is unique per account."
 
-The auth is the steam ID auth string.
-
+The auth is the steam ID auth string, and the lastTime field is the number of **seconds** since the player's last connection to the server. I use the lastTime
+field for lowering ratings for players that haven't played in a while. This happens in a script on my web/database server.
 
 
 ### Clientprefs Usage/Cookies
