@@ -22,6 +22,7 @@
 
 #define WEAPON_LENGTH 32  // length of a weapon name string
 #define HIDE_RADAR_BIT 1<<12
+#define TABLE_NAME "multi1v1_stats"
 
 /** Assertions/debug info **/
 new String:assertBuffer[1024];
@@ -46,7 +47,6 @@ new Float:g_ratings[MAXPLAYERS+1];
 new Float:g_pistolRatings[MAXPLAYERS+1];
 new Float:g_rifleRatings[MAXPLAYERS+1];
 new Float:g_awpRatings[MAXPLAYERS+1];
-new g_playerIDs[MAXPLAYERS+1];
 new String:g_sqlBuffer[1024];
 
 /** Database interactions **/
@@ -276,9 +276,9 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
             g_Score++;
             if (g_Score > g_HighestScore) {
                 g_HighestScore = g_Score;
-                PrintToChatAll("\x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
+                PrintToChatAll(" \x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
             } else {
-                PrintToChatAll("\x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
+                PrintToChatAll(" \x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
             }
         } else {
             g_Score = 1;
@@ -348,7 +348,7 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
     for (new i = 1; i <= MaxClients; i++) {
-        if (IsValidClient(i) && !IsFakeClient(i) && g_ratings[i] < 200.0) {
+        if (IsValidClient(i) && !IsFakeClient(i) && g_ratings[i] < MIN_RATING) {
             DB_FetchRatings(i);
         }
     }
@@ -736,7 +736,6 @@ public AddPlayer(client) {
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
-    g_playerIDs[client] = 0;
     g_ratings[client] = 0.0;
     g_pistolRatings[client] = 0.0;
     g_awpRatings[client] = 0.0;
@@ -766,11 +765,11 @@ public UpdateArena(arena) {
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p1, "\x01\x0B\x09Your opponent left!");
+            PrintToChat(p1, " \x09Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p2, "\x01\x0B\x09Your opponent left!");
+            PrintToChat(p2, " \x09Your opponent left!");
         }
     }
 }
