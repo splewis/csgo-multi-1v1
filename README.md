@@ -53,8 +53,8 @@ The build process is managed by the Makefile.
 		make package  # packages the files to multi1v1.zip
 
 To compile, you will need:
-- [Updater](https://forums.alliedmods.net/showthread.php?t=169095)
-- [SMLib](http://www.sourcemodplugins.org/smlib/)
+- [SMLib](http://www.sourcemodplugins.org/smlib/) (required)
+- [Updater](https://forums.alliedmods.net/showthread.php?t=169095) (optional)
 
 
 ### Maps
