@@ -35,6 +35,7 @@ new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hDefaultRating = INVALID_HANDLE;
 new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
+new Handle:g_hRecordConnectTimes = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
 
@@ -136,6 +137,7 @@ public OnPluginStart() {
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
     g_hDefaultRating = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, MIN_RATING + 100.0, true, 10000.0);
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
+    g_hRecordConnectTimes = CreateConVar("sm_multi1v1_record_connect_times", "0", "If the plugin should record the last time each player connected in the lastTime field of the database");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "1", "Should the plugin attempt to use the auto-update plugin?");
     g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hVersion, PLUGIN_VERSION);

@@ -12,16 +12,22 @@ public DB_Connect() {
     } else {
         // create the table
         SQL_LockDatabase(db);
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0);", TABLE_NAME);
-        SQL_FastQuery(db, g_sqlBuffer);
+        CreateTables();
+        PurgeRows();
         SQL_UnlockDatabase(db);
-
-        // delete low-information players
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM %s WHERE wins+losses < %d;", TABLE_NAME, GetConVarInt(g_hMinRoundsForDB));
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         g_dbConnected = true;
     }
+}
+
+static CreateTables() {
+    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, lastTime INT default 0 NOT NULL);", TABLE_NAME);
+    SQL_FastQuery(db, g_sqlBuffer);
+ }
+
+static PurgeRows() {
+    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM %s WHERE wins+losses < %d;", TABLE_NAME, GetConVarInt(g_hMinRoundsForDB));
+    SQL_FastQuery(db, g_sqlBuffer);
 }
 
 /**
@@ -59,6 +65,16 @@ public DB_AddPlayer(client, Float:default_rating) {
         // update the player name
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET name = '%s' WHERE accountID = %d", TABLE_NAME, sanitized_name, id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+
+        // update last time connected
+        if (GetConVarInt(g_hRecordConnectTimes) != 0) {
+            Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
+            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+        }
+
+        // temporary steam id writer (TODO: remove this later!)
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET auth = '%s' WHERE accountID = %d", TABLE_NAME, auth, id);
+        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
 
@@ -80,12 +96,13 @@ public DB_FetchRatings(client) {
             LogError("Failed to query (error: %s)", error);
             g_dbConnected = false;
             CloseHandle(db);
+        } else if (SQL_FetchRow(query)) {
+            rating = SQL_FetchFloat(query, 0);
         } else {
-            while (SQL_FetchRow(query)) {
-                rating = SQL_FetchFloat(query, 0);
-            }
-            CloseHandle(query);
+            LogError("Couldn't fetch rating for %N", client);
         }
+
+        CloseHandle(query);
         SQL_UnlockDatabase(db);
     }
     g_ratings[client] = rating;

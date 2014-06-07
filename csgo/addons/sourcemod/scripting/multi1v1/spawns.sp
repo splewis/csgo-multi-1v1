@@ -44,7 +44,7 @@ public Spawns_MapStart() {
     if (g_maxArenas <= 1) {
         LogError("Only found %d arenas for this map - %d T spawns and %d CT spawns", g_maxArenas, t, ct);
     } else {
-        LogMessage("Found %d CT spawns and %D T spawns - using %d arenas", ct, t, g_maxArenas);
+        LogMessage("Found %d CT spawns and %d T spawns - using %d arenas", ct, t, g_maxArenas);
     }
 }
 
