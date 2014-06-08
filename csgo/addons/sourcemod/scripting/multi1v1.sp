@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION "0.3.0"
+#define PLUGIN_VERSION "0.3.2"
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1/csgo-multi-1v1.txt"
 #pragma semicolon 1
 
@@ -22,6 +22,7 @@
 
 #define WEAPON_LENGTH 32  // length of a weapon name string
 #define HIDE_RADAR_BIT 1<<12
+#define TABLE_NAME "multi1v1_stats"
 
 /** Assertions/debug info **/
 new String:assertBuffer[1024];
@@ -34,6 +35,7 @@ new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hDefaultRating = INVALID_HANDLE;
 new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
+new Handle:g_hRecordConnectTimes = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
 
@@ -46,7 +48,6 @@ new Float:g_ratings[MAXPLAYERS+1];
 new Float:g_pistolRatings[MAXPLAYERS+1];
 new Float:g_rifleRatings[MAXPLAYERS+1];
 new Float:g_awpRatings[MAXPLAYERS+1];
-new g_playerIDs[MAXPLAYERS+1];
 new String:g_sqlBuffer[1024];
 
 /** Database interactions **/
@@ -136,8 +137,9 @@ public OnPluginStart() {
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
     g_hDefaultRating = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, MIN_RATING + 100.0, true, 10000.0);
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
+    g_hRecordConnectTimes = CreateConVar("sm_multi1v1_record_connect_times", "0", "If the plugin should record the last time each player connected in the lastTime field of the database");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "1", "Should the plugin attempt to use the auto-update plugin?");
-    g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+    g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hVersion, PLUGIN_VERSION);
 
     /** Config file **/
@@ -180,7 +182,7 @@ public OnMapStart() {
     if (!g_dbConnected && GetConVarInt(g_hUseDataBase) != 0) {
         DB_Connect();
     }
-    Spawns_MapInit();
+    Spawns_MapStart();
     g_Arenas = 1;
     g_TotalRounds = 0;
     g_LastWinner = -1;
@@ -202,6 +204,7 @@ public OnMapStart() {
 }
 
 public OnMapEnd() {
+    Spawns_MapEnd();
     Queue_Destroy(g_WaitingQueue);
 }
 
@@ -267,16 +270,17 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 
     // Set leader and scoring information
     new leader = Queue_Peek(g_RankingQueue);
-    if (IsValidClient(leader) && Queue_Length(g_RankingQueue) >= 2) {
+
+    if (IsValidClient(leader) && IsOnTeam(leader) && Queue_Length(g_RankingQueue) >= 2) {
         g_RoundsLeader[leader]++;
         CS_SetMVPCount(leader, g_RoundsLeader[leader]);
         if (g_LastWinner == leader && Queue_Length(g_RankingQueue) >= 2) {
             g_Score++;
             if (g_Score > g_HighestScore) {
                 g_HighestScore = g_Score;
-                PrintToChatAll("\x01\x0B\x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
+                PrintToChatAll(" \x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
             } else {
-                PrintToChatAll("\x01\x0B\x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
+                PrintToChatAll(" \x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
             }
         } else {
             g_Score = 1;
@@ -346,7 +350,7 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
     for (new i = 1; i <= MaxClients; i++) {
-        if (IsValidClient(i) && !IsFakeClient(i) && g_ratings[i] < 200.0) {
+        if (IsValidClient(i) && !IsFakeClient(i) && g_ratings[i] < MIN_RATING) {
             DB_FetchRatings(i);
         }
     }
@@ -509,13 +513,6 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     }
 
     GivePlayerItem(client, "weapon_knife");
-
-    if (g_LetTimeExpire[client] && g_TotalRounds >= 3) {
-        PrintToChat(client, "Stop letting time run out.");
-        // PrintToChat(client, " \x01\x0B\x04You let time run out last round. You will be punished and get \x031HP \x04this round.");
-        // SetEntityHealth(client, 1);
-        g_LetTimeExpire[client] = false;
-    }
 
     CreateTimer(0.0, RemoveRadar, client);
 }
@@ -741,7 +738,6 @@ public AddPlayer(client) {
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
-    g_playerIDs[client] = 0;
     g_ratings[client] = 0.0;
     g_pistolRatings[client] = 0.0;
     g_awpRatings[client] = 0.0;
@@ -771,11 +767,11 @@ public UpdateArena(arena) {
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p1, "\x01\x0B\x09Your opponent left!");
+            PrintToChat(p1, " \x09Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p2, "\x01\x0B\x09Your opponent left!");
+            PrintToChat(p2, " \x09Your opponent left!");
         }
     }
 }

@@ -57,18 +57,6 @@ public bool:IsValidClient(client) {
 }
 
 /**
- * Closes an adt array of handles.
- */
-public CloseHandleArray(Handle:array) {
-    new iSize = GetArraySize(array);
-    new Handle:hZone;
-    for (new i = 0 ; i < iSize; i++) {
-        hZone = GetArrayCell(array, i);
-        CloseHandle(hZone);
-    }
-}
-
-/**
  * Adds an integer to a menu as a string choice.
  */
 public AddMenuInt(Handle:menu, any:value, String:display[]) {
