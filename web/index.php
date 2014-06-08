@@ -9,7 +9,7 @@
 		$time = explode(' ', $time);
 		$time = $time[1] + $time[0];
 		$start = $time;
-
+		error_reporting(0);
 ?>
 <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
 <link href="css/style.css" rel="stylesheet" type="text/css" media="all">
@@ -51,14 +51,14 @@
 														<h4>Wins: $wins</h4><br>
 														<h4>Losses: $losses</h4><br>
 														<h4>W/L Ratio: ".number_format((float)$wins/$losses, 2, '.', '')."</h4><br>
-														<h4>ELO Rating: $rating</h4><br>";
+														<h4>ELO Rating: $rating</h4><br>
+														<div class=\"playerAvatar ".getPlayerState(GetCommunityID($auth))."\"><a href=\"http://steamcommunity.com/profiles/".GetCommunityID($auth)."\"><img src=\"".getAvatar(GetCommunityID($auth))."\"/></a></div>";
 										}
 									}else{
 									}
 								}else{
-										echo "User not found.";
+										die("User not found.");
 									}
-									echo "<div class=\"playerAvatar ".getPlayerState(GetCommunityID($auth))."\"><a href=\"http://steamcommunity.com/profiles/".GetCommunityID($auth)."\"><img src=\"".getAvatar(GetCommunityID($auth))."\"/></a></div>";
 							}
 
 								function GetCommunityID($steamid){
