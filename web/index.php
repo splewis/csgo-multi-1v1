@@ -9,6 +9,7 @@
 		$time = explode(' ', $time);
 		$time = $time[1] + $time[0];
 		$start = $time;
+
 ?>
 <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
 <link href="css/style.css" rel="stylesheet" type="text/css" media="all">
@@ -67,7 +68,8 @@
 								}
 
 								function getAvatar($commid){
-									$url = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=56D18EBECA7C9BE07801F285CE76DB2D&steamids='.$commid;
+									global $SteamAPI_Key;
+									$url = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key='.$SteamAPI_Key.'&steamids='.$commid;
 									$content = file_get_contents($url);
 									$json = json_decode($content, true);
 
@@ -76,7 +78,8 @@
 									}
 								}
 								function getPlayerState($commid){
-									$url = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=56D18EBECA7C9BE07801F285CE76DB2D&steamids='.$commid;
+									global $SteamAPI_Key;
+									$url = 'http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key='.$SteamAPI_Key.'&steamids='.$commid;
 									$content = file_get_contents($url);
 									$json = json_decode($content, true);
 
