@@ -1,8 +1,6 @@
 <html>
 <head>
 <?php
-
-
 if(isset($_GET['id']) && !empty($_GET['id'])){
 $id = $_GET['id'];
 $u = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
