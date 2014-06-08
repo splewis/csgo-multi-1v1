@@ -18,20 +18,19 @@
   <div class="maincontent">
 	<div class="container">
 	  <div class="everything">
-	  <div class="search">
-		<form action="search.php" method="GET">
-			<h2>Search player stats:</h1><input type="text" name="searchquery">
-			<input type="submit" value="Submit">
-		</form>
+	  	<div class="search">
+			<form action="search.php" method="GET">
+				<h2>Search player stats:</h1><input type="text" name="searchquery">
+				<input type="submit" value="Submit">
+			</form>
 		</div>
 <?php
 if(isset($_GET['searchquery']) && !empty($_GET['searchquery']) && strlen($_GET['searchquery'])>2){
 	$searchquery = htmlentities($_GET['searchquery']);
 	$query = "SELECT `accountID`, `name` FROM multi1v1_stats WHERE name LIKE '%".mysql_real_escape_string($searchquery)."%'";
-	echo "<h3>Searching for players with name \"$searchquery\".</h3>
-			<div class=\"stats\">";
+	echo "<h3>Searching for players with name \"$searchquery\".</h3>";
 	if(mysql_fetch_row(mysql_query($query))>0){
-		echo "Players found:<br><ul>";
+		echo "<div class=\"stats\">Players found:<br><ul>";
 		if(@$query_run = mysql_query($query)){
 			while ($row = mysql_fetch_assoc($query_run)){
 				$accountID = $row['accountID'];
@@ -43,13 +42,12 @@ if(isset($_GET['searchquery']) && !empty($_GET['searchquery']) && strlen($_GET['
 			}
 		}else{
 		}
-			echo "</ul>";
+			echo "</ul></div>";
 	}else{
-			echo "No users found with name \"".$searchquery."\".";
+			die("No users found with name \"".$searchquery."\".");
 		}
 }else{
-	echo "<h3>Please enter a search term longer than 2 characters.</h3>";
-	die();
+	die("<h3>Please enter a search term longer than 2 characters.</h3>");
 }
 
 ?>
