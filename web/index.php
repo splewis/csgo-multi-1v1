@@ -9,7 +9,6 @@
 		$time = explode(' ', $time);
 		$time = $time[1] + $time[0];
 		$start = $time;
-		error_reporting(0);
 ?>
 <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
 <link href="css/style.css" rel="stylesheet" type="text/css" media="all">
