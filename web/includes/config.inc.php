@@ -1,4 +1,12 @@
 <?php
+/**
+ * =============================================================================
+ * @author Clayton
+ * @version 1.2.0
+ * @link https://github.com/supimfuzzy/csgo-multi-1v1
+ * =============================================================================
+ */
+
 $mysql_host = 'localhost';
 $mysql_user = 'root';
 $mysql_pass = '';
