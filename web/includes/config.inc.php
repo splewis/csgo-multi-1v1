@@ -2,7 +2,7 @@
 $mysql_host = 'localhost';
 $mysql_user = 'root';
 $mysql_pass = '';
-$mysql_db = 'multi1v1';
+$mysql_db = '';
 
 $page_title = "Multi 1v1 Arena";
 $SteamAPI_Key = ""; //https://steamcommunity.com/dev/apikey
