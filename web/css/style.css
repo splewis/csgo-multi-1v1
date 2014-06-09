@@ -13,49 +13,49 @@ abbr,acronym { border:0;}
 .pad_last{padding:0 !important;}
 .no_bg {background:none !important;}
 textarea:focus, input:focus{outline:none;}
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg .tg-dilm{background-color:#c0c0c0;color:#000000}
+.tg .tg-bsv2{background-color:#efefef;color:#000000}
 /**************************************************************************************/
-a											{
-	color:#000;
-	text-decoration:none;
-	outline:0 none;
-}
-a:hover										{color:#000;  text-decoration:none;}
-h1											{font-size:24px;}
-h2											{font-size:22px;}
-h3											{font-size:18px;}
-h4											{font-size:16px;}
-h5											{font-size:14px;}
-h6											{font-size:12px;}
+a						{color:#000;text-decoration:none;outline:0 none;}
+a:hover			{color:#000;  text-decoration:none;}
+h1					{font-size:24px;}
+h2					{font-size:22px;}
+h3					{font-size:18px;}
+h4					{font-size:16px;}
+h5					{font-size:14px;}
+h6					{font-size:12px;}
 /*----------------------------------------------------------------------------------*/
-html 										{}
-body										{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12px;}
-.flt_Lt										{float:left; display:inline;}
-.flt_Rt										{float:right; display:inline;}
+body					{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12px;}
+.flt_Lt				{float:left; display:inline;}
+.flt_Rt				{float:right; display:inline;}
 /* ---------------------------------------------------------------------------------*/
 
 
 /* ----------------------- layout ----------*/
-.wrapper									{margin:0 auto;}
-.container									{width:980px; margin:0 auto;}
-.maincontent								{}
-#header										{
+.wrapper				{margin:0 auto;}
+.container			{width:980px; margin:0 auto;}
+
+#header{
 	width:100%;
 	border-bottom:1px solid #cdcdcd;
 	height:100px;
 	background-color: #EFEFEF;
 }
-#header2										{
+#header2{
 	width:100%;
 	border-bottom:1px solid #cdcdcd;
 	height:100px;
 }
-.header 									{
+.header{
 	width:980px;
 	margin:0 auto;
 	height: 100px;
 }
 .search{
-	top: 10px;
+	top: 15px;
 	right: 20px;
 	position: absolute;
 }
@@ -68,11 +68,11 @@ body										{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12
 	padding-left:50px;
 	margin-top:auto;
 	margin-bottom:auto;
-    height:auto;
-    background-color: #f6f6f6;
+	height:auto;
+	background-color: #f6f6f6;
 	border: 1px solid #eeeeee;
 }
-.everything 										{
+.everything	{
 	padding:20px 20px 20px 20px;
 	position: absolute;
 	top:0;
@@ -82,7 +82,7 @@ body										{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12
 	margin: auto;
 	background-image: url("http://api.thumbr.it/whitenoise-361x370.png?background=f6f6f6ff&noise=d6d6d6&density=100&opacity=22");
 }
-.everything h3 									{
+.everything h3{
 	font-family:"Trebuchet MS",Arial, Helvetica;
 	font-size:24px;
 	font-weight:normal;
@@ -91,7 +91,7 @@ body										{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12
 	line-height:1;
 	text-align: center;
 }
-.everything h4 									{
+.everything h4{
 	font-family:"Trebuchet MS",Arial, Helvetica;
 	font-size:50px;
 	font-weight:bold;
@@ -99,14 +99,20 @@ body										{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12
 	margin:0 0 25px 0;
 	line-height:1;
 }
-.everything h5 									{
+.everything h5{
 	font-family:Arial, Helvetica, sans-serif;
 	font-size:13px;
 	color:#333333;
 	text-decoration:underline;
 	margin:0 0 2px 0;
 }
-.everything p 									{font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#333333;line-height:1.6;margin:0 0 25px 0;}
+.everything p{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color:#333333;
+	line-height:1.6;
+	margin:0 0 25px 0;
+}
 
 .playerAvatar {
 	position:absolute;
@@ -134,10 +140,8 @@ body										{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12
 	/* gradient from #b3fc55 to #8cc82c */
 .playerAvatar.in-game {
 	background-color: #9bc861;
-
 	background: -moz-linear-gradient(top, #9bc861 5%, #789e4c 95%);background: -webkit-gradient(linear, left top, left bottom, color-stop(5%,#9bc861), color-stop(95%,#789e4c));background: -webkit-linear-gradient(top, #9bc861 5%,#789e4c 95%);background: -o-linear-gradient(top, #9bc861 5%,#789e4c 95%);background: -ms-linear-gradient(top, #9bc861 5%,#789e4c 95%);background: linear-gradient(to bottom, #9bc861 5%,#789e4c 95%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9bc861', endColorstr='#789e4c',GradientType=0 );	/* IE <= 9 doesn't support rounded corners and gradient.  The gradient isn't too noticable so just disable the filter in IE9 */
 	filter: none;
-
 }
 .playerAvatar.in-game img {
 	border-color: #525a4f;
@@ -145,4 +149,10 @@ body										{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12
 .playerAvatar {
 	width: 184px;
 	height: 184px;
+}
+.topPlayers{
+	position:absolute;
+	top:150px;
+	left:50%;
+	margin-left:-225px;
 }
