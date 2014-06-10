@@ -66,6 +66,7 @@ new String:g_primaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 new String:g_secondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 
 /** Arena arrays **/
+new bool:g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
 new g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
 new g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
 new g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
@@ -209,7 +210,7 @@ public OnMapEnd() {
 }
 
 public OnClientPostAdminCheck(client) {
-    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDataBase) != 0) {
+    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDataBase) != 0 && g_dbConnected) {
         DB_AddPlayer(client, GetConVarFloat(g_hDefaultRating));
     }
 }
@@ -265,7 +266,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     }
 
     while (Queue_Length(g_RankingQueue) < 2*g_maxArenas && Queue_Length(g_WaitingQueue) > 0) {
-        AddPlayer(Queue_Dequeue(g_WaitingQueue));
+        new client = Queue_Dequeue(g_WaitingQueue);
+        AddPlayer(client);
     }
 
     // Set leader and scoring information
@@ -342,6 +344,7 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     }
 
     for (new i = 1; i <= MAXPLAYERS; i++) {
+        g_ArenaStatsUpdated[i] = false;
         g_LetTimeExpire[i] = false;
     }
 
@@ -354,6 +357,7 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
             DB_FetchRatings(i);
         }
     }
+
 
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
@@ -431,8 +435,11 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         new winner = g_ArenaWinners[arena];
         new loser = g_ArenaLosers[arena];
         if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-            if (winner != loser && GetConVarInt(g_hUseDataBase) != 0) {
+
+            // also skip the update if we already did it (a player got a kill earlier in the round)
+            if (winner != loser && GetConVarInt(g_hUseDataBase) != 0 && !g_ArenaStatsUpdated[arena]) {
                 DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
+                g_ArenaStatsUpdated[arena] = true;
             }
         }
 
@@ -447,7 +454,13 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
     new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     new arena = g_Rankings[victim];
 
-    if ((!IsValidClient(attacker) || !IsClientInGame(attacker) || attacker == victim) && arena != -1) {
+    // TODO: remove me
+    if (arena == -1) {
+        LogError("player %N had arena -1 on death!", victim);
+        return;
+    }
+
+    if (!IsValidClient(attacker) || !IsClientInGame(attacker) || attacker == victim) {
         new p1 = g_ArenaPlayer1[arena];
         new p2 = g_ArenaPlayer2[arena];
 
@@ -455,6 +468,7 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
             if (IsValidClient(p2)) {
                 g_ArenaWinners[arena] = p2;
                 g_ArenaLosers[arena] = p1;
+
             } else {
                 g_ArenaWinners[arena] = p1;
                 g_ArenaLosers[arena] = -1;
@@ -465,17 +479,18 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
             if (IsValidClient(p1)) {
                 g_ArenaWinners[arena] = p1;
                 g_ArenaLosers[arena] = p2;
+
             } else {
                 g_ArenaWinners[arena] = p2;
                 g_ArenaLosers[arena] = -1;
             }
         }
 
-    } else {
-        if (arena != -1) {
-            g_ArenaWinners[arena] = attacker;
-            g_ArenaLosers[arena] = victim;
-        }
+    } else if (!g_ArenaStatsUpdated[arena]) {
+        g_ArenaWinners[arena] = attacker;
+        g_ArenaLosers[arena] = victim;
+        g_ArenaStatsUpdated[arena] = true;
+        DB_RoundUpdate(attacker, victim, false);
     }
 
 }
@@ -758,7 +773,7 @@ public ResetClientVariables(client) {
  * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
 public UpdateArena(arena) {
-    if (arena != -1) {
+    if (arena != -1 && !g_ArenaStatsUpdated[arena]) {
         new p1 = g_ArenaPlayer1[arena];
         new p2 = g_ArenaPlayer2[arena];
         new hasp1 = IsValidClient(p1) && IsOnTeam(p1);
@@ -766,12 +781,18 @@ public UpdateArena(arena) {
 
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
+            DB_RoundUpdate(p1, p2, false);
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p1, " \x09Your opponent left!");
+            g_ArenaPlayer2[arena] = -1;
+            g_ArenaStatsUpdated[arena] = true;
+            PrintToChat(p1, " \x04Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
+            DB_RoundUpdate(p1, p2, false);
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p2, " \x09Your opponent left!");
+            g_ArenaPlayer1[arena] = -1;
+            g_ArenaStatsUpdated[arena] = true;
+            PrintToChat(p2, " \x04Your opponent left!");
         }
     }
 }
