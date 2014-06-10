@@ -111,9 +111,9 @@ Schema:
 
 Note that the accountID field is what is returned by [GetSteamAccountID](https://wiki.alliedmods.net/SourceMod_1.5.0_API_Changes#Clients), which is "the lower 32 bits of the full 64-bit Steam ID (referred to as community id by some) and is unique per account."
 
-The auth is the steam ID auth string, and the lastTime field is the number of **seconds** since the player's last connection to the server. I use the lastTime
-field for lowering ratings for players that haven't played in a while. This happens in a script on my web/database server.
-
+The auth is the steam ID auth string, and the lastTime field is the last time the player connected to the server.
+The time comes from [GetTime](http://docs.sourcemod.net/api/index.php?fastload=show&id=601&), which returns the "number of seconds since unix epoch".
+I use this field for lowering ratings for players that haven't played in a while. This happens in a script on my web/database server.
 
 ### Clientprefs Usage/Cookies
 Player choices (round type preferences, weapon choices) can be saved so they persist across maps for players (via the SourceMod clientprefs API).
