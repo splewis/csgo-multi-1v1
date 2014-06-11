@@ -80,7 +80,6 @@ new g_Arenas = 1; // number of active arenas
 new g_TotalRounds = 0; // rounds played on this map so far
 new g_LastWinner = -1; // winner of the previous round
 new g_Score = 0; // the streak of the current winner
-new g_HighestScore = 0; // the longest streak on the map so far
 new bool:g_RoundFinished = false;
 new Handle:g_RankingQueue = INVALID_HANDLE;
 new Handle:g_WaitingQueue = INVALID_HANDLE;
@@ -132,6 +131,7 @@ public Plugin:myinfo = {
 
 public OnPluginStart() {
     LoadTranslations("common.phrases");
+    LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
@@ -188,7 +188,6 @@ public OnMapStart() {
     g_TotalRounds = 0;
     g_LastWinner = -1;
     g_Score = 0;
-    g_HighestScore = 0;
     g_RoundFinished = false;
     for (new i = 0; i <= MAXPLAYERS; i++) {
         g_ArenaPlayer1[i] = -1;
@@ -278,15 +277,10 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         CS_SetMVPCount(leader, g_RoundsLeader[leader]);
         if (g_LastWinner == leader && Queue_Length(g_RankingQueue) >= 2) {
             g_Score++;
-            if (g_Score > g_HighestScore) {
-                g_HighestScore = g_Score;
-                PrintToChatAll(" \x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
-            } else {
-                PrintToChatAll(" \x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
-            }
+            PrintToChatAll("%t", "PlayerOnTop", PURPLE, leader, WHITE, GREEN, g_Score, WHITE);
         } else {
             g_Score = 1;
-            PrintToChatAll("The new leader is \x06%N\x01", leader);
+            PrintToChatAll("%t", "NewLeader", LIMEGREEN, leader);
         }
     }
     g_LastWinner = leader;
@@ -403,9 +397,9 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     CS_SetClientClanTag(client, buffer);
 
     if (IsValidClient(other)) {
-        PrintToChat(client, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
+        PrintToChat(client, "%t", "Opponent", GREEN, arena, WHITE, PURPLE, other);
     } else {
-        PrintToChat(client, "You are in arena \x04%d\x01 with \x07no opponent", arena);
+        PrintToChat(client, "%t", "NoOpponent", GREEN, arena, WHITE, RED);
     }
 }
 
@@ -785,14 +779,14 @@ public UpdateArena(arena) {
             g_ArenaLosers[arena] = -1;
             g_ArenaPlayer2[arena] = -1;
             g_ArenaStatsUpdated[arena] = true;
-            PrintToChat(p1, " \x04Your opponent left!");
+            PrintToChat(p1, "%t", "OpponentLeft", GREEN);
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
             DB_RoundUpdate(p1, p2, false);
             g_ArenaLosers[arena] = -1;
             g_ArenaPlayer1[arena] = -1;
             g_ArenaStatsUpdated[arena] = true;
-            PrintToChat(p2, " \x04Your opponent left!");
+            PrintToChat(p2, "%t", "OpponentLeft", GREEN);
         }
     }
 }

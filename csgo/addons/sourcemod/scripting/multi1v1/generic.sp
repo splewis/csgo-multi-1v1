@@ -1,3 +1,13 @@
+#define WHITE 0x01
+#define DARKRED 0x02
+#define PURPLE 0x03
+#define GREEN 0x04
+#define MOSSGREEN 0x05
+#define LIMEGREEN 0x06
+#define RED 0x07
+#define GRAY 0x08
+#define YELLOW 0x09
+
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
                                  // this is for converting ints to strings when setting menu values/cookies
 
