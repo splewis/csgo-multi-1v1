@@ -195,8 +195,10 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
             new int_loser = RoundToNearest(g_ratings[loser] - rating_delta);
             new int_winner = RoundToNearest(g_ratings[winner] + rating_delta);
 
-            PrintToChat(winner, "%t", "WinMessage", WHITE, GREEN, int_winner, int_winner_d, PURPLE, loser, RED, int_loser, int_loser_d);
-            PrintToChat(loser, "%t", "LossMessage", WHITE, RED, int_loser, int_loser_d, PURPLE, winner, GREEN, int_winner, int_winner_d);
+            PrintToChat(winner, " \x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
+                int_winner, int_winner_d, loser, int_loser, int_loser_d);
+            PrintToChat(loser,  " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
+                int_loser, int_loser_d, winner, int_winner, int_winner_d);
         }
 
         g_ratings[winner] += rating_delta;
@@ -211,9 +213,7 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 static ForceLoss(client) {
     new Float:rating = g_ratings[client];
     new Float:delta = ELORatingDelta(rating, rating);
-    new any:int_rating = RoundToNearest(g_ratings[client] - delta);
-    new any:int_delta = RoundToNearest(delta);
-    PrintToChat(client, "%t", "TimeRanOut", GREEN, WHITE, GREEN,  int_rating, WHITE, RED, int_delta, WHITE);
+    PrintToChat(client, " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
     g_ratings[client] -= delta;
     DB_WriteRatings(client);
 }
