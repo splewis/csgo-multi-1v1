@@ -113,6 +113,7 @@ new Handle:g_hCTAngles = INVALID_HANDLE;
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
 #include "multi1v1/weaponmenu.sp"
+#include "multi1v1/radiocommands.sp"
 
 
 
@@ -160,6 +161,7 @@ public OnPluginStart() {
     AddCommandListener(Command_Say, "say2");
     AddCommandListener(Command_Say, "say_team");
     AddCommandListener(Command_TeamJoin, "jointeam");
+    AddRadioCommandListeners();
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
     HookEvent("player_connect_full", Event_OnFullConnect);
     HookEvent("player_spawn", Event_OnPlayerSpawn);
