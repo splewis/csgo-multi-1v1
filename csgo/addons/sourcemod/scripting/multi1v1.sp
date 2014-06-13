@@ -775,7 +775,7 @@ public ResetClientVariables(client) {
  * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
 public UpdateArena(arena) {
-    if (arena != -1 && !g_ArenaStatsUpdated[arena]) {
+    if (arena != -1) {
         new p1 = g_ArenaPlayer1[arena];
         new p2 = g_ArenaPlayer2[arena];
         new hasp1 = IsValidClient(p1) && IsOnTeam(p1);
@@ -783,14 +783,16 @@ public UpdateArena(arena) {
 
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
-            DB_RoundUpdate(p1, p2, false);
+            if (!g_ArenaStatsUpdated[arena])
+                DB_RoundUpdate(p1, p2, false);
             g_ArenaLosers[arena] = -1;
             g_ArenaPlayer2[arena] = -1;
             g_ArenaStatsUpdated[arena] = true;
             PrintToChat(p1, " \x04Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
-            DB_RoundUpdate(p1, p2, false);
+            if (!g_ArenaStatsUpdated[arena])
+                DB_RoundUpdate(p1, p2, false);
             g_ArenaLosers[arena] = -1;
             g_ArenaPlayer1[arena] = -1;
             g_ArenaStatsUpdated[arena] = true;
