@@ -24,7 +24,7 @@ if($localIP == $externalIP){
 				// echo $elapsedtime_days;
 
 				if($elapsedtime_days > 1 && $rating > 1500 && $lastTime > 0){
-					$rating_loss = $elo_rate_loss * $elapsedtime_days * ($rating - 1500) / $rating;
+					$rating_loss = $antisquatter_rate_loss * $elapsedtime_days * ($rating - 1500) / $rating;
 					$rating_new = number_format((float)$rating - $rating_loss, 2, '.', '');
 
 					echo $name.": ";
