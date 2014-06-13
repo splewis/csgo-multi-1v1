@@ -2,11 +2,19 @@ Multi 1v1 Arena Web Stats Interface
 =======================================
 
 ###Configuration
-Edit connect.inc.php with your appropriate database credentials, page title and Steam Web API key.
+Edit config.inc.php with your appropriate database credentials, page title, Steam Web API key, and other settings. All descriptions are avaliable in the file.
+
+###Setting up Anti-Squatter
+Setting up the anti-squatter feature is fairly simple if your host supports it.
+All you have to do is create a cronjob with the command following command:
+```bash
+wget http://www.domain.com/1v1stats/cron/antisquatter.php && rm -rf antisquatter.php
+```
+The anti-squatter script has a feature that prevents the file from being run on a computer other than the one it is on. It does this by checking the IP of the connecting machine and comparing it with the IP of the local machine. If the IPs are the same, the script runs. This might not always work. If you are having problems, feel free to email me.
 
 ###In-Game Stats
 A feature for this was not included in the base plugin, but a way to do it has been mentioned [here](https://forums.alliedmods.net/showpost.php?p=2147002&postcount=10).
 Replace the URL with something like "http://www.domain.com/stats/redirect.php?id=".
 
 ###Web Interface
-The web interface is not really polished, this was just a quick days job I did as I was learning PHP.
+This web interface was a quick job that I randomly took up while I was learning PHP. I will try and keep it updated when I can, but no promises. If you have any issues setting it up, feel free to email me.
