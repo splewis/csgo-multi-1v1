@@ -400,9 +400,9 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     CS_SetMVPCount(client, g_RoundsLeader[client]);
 
     // Set clan tags to the arena number
-    decl String:buffer[32];
-    Format(buffer, sizeof(buffer), "Arena %d", arena);
-    CS_SetClientClanTag(client, buffer);
+    // decl String:buffer[32];
+    // Format(buffer, sizeof(buffer), "Arena %d", arena);
+    // CS_SetClientClanTag(client, buffer);
 
     if (IsValidClient(other)) {
         PrintToChat(client, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
@@ -746,7 +746,10 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
  * Function to add a player to the ranking queue with some validity checks.
  */
 public AddPlayer(client) {
-    if (IsValidClient(client) && !IsFakeClient(client) && Queue_Length(g_RankingQueue) < 2*g_maxArenas) {
+    new bool:valid = IsValidClient(client) && !IsFakeClient(client);
+    new bool:space = Queue_Length(g_RankingQueue) < 2 *g_maxArenas;
+    new bool:alreadyin = Queue_Inside(g_RankingQueue, client);
+    if (valid && space && !alreadyin) {
         Queue_Enqueue(g_RankingQueue, client);
     }
 }
