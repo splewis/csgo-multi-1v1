@@ -16,8 +16,8 @@ textarea:focus, input:focus{outline:none;}
 .tg  {border-collapse:collapse;border-spacing:0;}
 .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
 .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
-.tg .tg-dilm{background-color:#c0c0c0;color:#000000}
-.tg .tg-bsv2{background-color:#efefef;color:#000000}
+.tg .tg-dilm{background-color:#c0c0c0;color:#000000;}
+.tg .tg-bsv2{background-color:#efefef;color:#000000;}
 /**************************************************************************************/
 a						{color:#000;text-decoration:none;outline:0 none;}
 a:hover			{color:#000;  text-decoration:none;}
@@ -64,7 +64,7 @@ body					{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12px;}
 	width: 202px; 
 }
 .stats{
-	padding-top:10px;
+	padding-top:20px;
 	padding-left:50px;
 	margin-top:auto;
 	margin-bottom:auto;
@@ -117,7 +117,7 @@ body					{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12px;}
 .playerAvatar {
 	position:absolute;
 	right:50px;
-	top:95px;
+	top:90px;
 	padding: 4px;
 	border-radius: 3px;
 	background-color: #545454;
@@ -155,4 +155,15 @@ body					{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12px;}
 	top:150px;
 	left:50%;
 	margin-left:-225px;
+}
+.activity{
+	position:relative;
+	top:15px;
+	font-size:25px;	
+	font-weight:bold;
+	margin: 0 auto;
+	color: rgb(0,255,0);
+}
+.activity.inactive{
+	color: rgb(255,0,0);
 }
