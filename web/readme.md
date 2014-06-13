@@ -6,11 +6,12 @@ Edit config.inc.php with your appropriate database credentials, page title, Stea
 
 ###Setting up Anti-Squatter
 Setting up the anti-squatter feature is fairly simple if your host supports it.
-All you have to do is create a cronjob with the command following command:
+All you have to do is create a cronjob set to run everyday with the command following command:
 ```bash
 wget http://www.domain.com/1v1stats/cron/antisquatter.php && rm -rf antisquatter.php
 ```
-The anti-squatter script has a feature that prevents the file from being run on a computer other than the one it is on. It does this by checking the IP of the connecting machine and comparing it with the IP of the local machine. If the IPs are the same, the script runs. This might not always work. If you are having problems, feel free to email me.
+What that command does is request the antisquatter.php file and then deletes it.
+The anti-squatter script has a feature that prevents the file from being run on a computer other than the local machine. It does this by checking the IP of the connecting machine and comparing it with the IP of the local machine. If the IPs are the same, the script runs. This might not always work. If you are having problems, feel free to email me.
 
 ###In-Game Stats
 A feature for this was not included in the base plugin, but a way to do it has been mentioned [here](https://forums.alliedmods.net/showpost.php?p=2147002&postcount=10).
