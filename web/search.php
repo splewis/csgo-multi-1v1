@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
 <?php 
-	require 'includes/config.inc.php';
+	require_once 'includes/config.inc.php';
 	echo "<title>$page_title</title>";
 	$time = microtime();
 	$time = explode(' ', $time);
@@ -32,7 +32,7 @@
 			echo "<h3>Searching for players with name \"$searchquery\".</h3>";
 			if(mysql_fetch_row(mysql_query($query))>0){
 				echo "<div class=\"stats\">Players found:<br><ul>";
-				if(@$query_run = mysql_query($query)){
+				if($query_run = mysql_query($query)){
 					while ($row = mysql_fetch_assoc($query_run)){
 						$accountID = $row['accountID'];
 						$name = $row['name'];
