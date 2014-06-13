@@ -1,3 +1,6 @@
+#define K_FACTOR 8.0
+#define DISTRIBUTION_SPREAD 800.0
+
 /**
  * Attempts to connect to the database.
  * Creates the stats (TABLE_NAME) if needed.
@@ -38,6 +41,7 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
         db = INVALID_HANDLE;
         g_dbConnected = false;
         LogError("Last Connect SQL Error: %s", error);
+        LogError("If you set sm_multi1v1_record_connect_times to 1 and initially used version<=0.3.2 you need to manually add a column to the table, see https://github.com/splewis/csgo-multi-1v1");
     }
 }
 
@@ -150,11 +154,10 @@ static Increment(client, const String:field[]) {
 
 static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating) {
     // probability of each player winning
-    new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / 800.0));
+    new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
 
     // constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2
-    new Float:K = 8.0;
-    new Float:winner_delta = K * (1.0 - pWinner);
+    new Float:winner_delta = K_FACTOR * (1.0 - pWinner);
 
     return winner_delta;
 }

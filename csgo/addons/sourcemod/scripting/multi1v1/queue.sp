@@ -16,10 +16,17 @@ public Queue_Enqueue(Handle:queueHandle, any:client) {
 }
 
 /**
- * Finds a client in the Queue and returns their index.
+ * Finds a client in the Queue and returns their index, or -1 if not found.
  */
 public any:Queue_Find(Handle:queueHandle, any:client) {
 	return FindValueInArray(queueHandle, client);
+}
+
+/**
+ * Returns if a player is inside the queue.
+ */
+public bool:Queue_Inside(Handle:queueHandle, any:client) {
+	return Queue_Find(queueHandle, client) >= 0;
 }
 
 /**

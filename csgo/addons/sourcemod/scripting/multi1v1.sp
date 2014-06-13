@@ -66,6 +66,7 @@ new String:g_primaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 new String:g_secondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 
 /** Arena arrays **/
+new bool:g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
 new g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
 new g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
 new g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
@@ -112,6 +113,7 @@ new Handle:g_hCTAngles = INVALID_HANDLE;
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
 #include "multi1v1/weaponmenu.sp"
+#include "multi1v1/radiocommands.sp"
 
 
 
@@ -134,11 +136,11 @@ public OnPluginStart() {
 
     /** ConVars **/
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
-    g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "1", "Should we use a database to store stats and preferences");
+    g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
     g_hDefaultRating = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, MIN_RATING + 100.0, true, 10000.0);
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
     g_hRecordConnectTimes = CreateConVar("sm_multi1v1_record_connect_times", "0", "If the plugin should record the last time each player connected in the lastTime field of the database");
-    g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "1", "Should the plugin attempt to use the auto-update plugin?");
+    g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
     g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hVersion, PLUGIN_VERSION);
 
@@ -159,6 +161,7 @@ public OnPluginStart() {
     AddCommandListener(Command_Say, "say2");
     AddCommandListener(Command_Say, "say_team");
     AddCommandListener(Command_TeamJoin, "jointeam");
+    AddRadioCommandListeners();
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
     HookEvent("player_connect_full", Event_OnFullConnect);
     HookEvent("player_spawn", Event_OnPlayerSpawn);
@@ -209,7 +212,7 @@ public OnMapEnd() {
 }
 
 public OnClientPostAdminCheck(client) {
-    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDataBase) != 0) {
+    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDataBase) != 0 && g_dbConnected) {
         DB_AddPlayer(client, GetConVarFloat(g_hDefaultRating));
     }
 }
@@ -265,7 +268,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     }
 
     while (Queue_Length(g_RankingQueue) < 2*g_maxArenas && Queue_Length(g_WaitingQueue) > 0) {
-        AddPlayer(Queue_Dequeue(g_WaitingQueue));
+        new client = Queue_Dequeue(g_WaitingQueue);
+        AddPlayer(client);
     }
 
     // Set leader and scoring information
@@ -342,6 +346,7 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     }
 
     for (new i = 1; i <= MAXPLAYERS; i++) {
+        g_ArenaStatsUpdated[i] = false;
         g_LetTimeExpire[i] = false;
     }
 
@@ -354,6 +359,7 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
             DB_FetchRatings(i);
         }
     }
+
 
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
@@ -394,9 +400,9 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     CS_SetMVPCount(client, g_RoundsLeader[client]);
 
     // Set clan tags to the arena number
-    decl String:buffer[32];
-    Format(buffer, sizeof(buffer), "Arena %d", arena);
-    CS_SetClientClanTag(client, buffer);
+    // decl String:buffer[32];
+    // Format(buffer, sizeof(buffer), "Arena %d", arena);
+    // CS_SetClientClanTag(client, buffer);
 
     if (IsValidClient(other)) {
         PrintToChat(client, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
@@ -431,8 +437,11 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         new winner = g_ArenaWinners[arena];
         new loser = g_ArenaLosers[arena];
         if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
-            if (winner != loser && GetConVarInt(g_hUseDataBase) != 0) {
+
+            // also skip the update if we already did it (a player got a kill earlier in the round)
+            if (winner != loser && GetConVarInt(g_hUseDataBase) != 0 && !g_ArenaStatsUpdated[arena]) {
                 DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
+                g_ArenaStatsUpdated[arena] = true;
             }
         }
 
@@ -447,7 +456,13 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
     new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     new arena = g_Rankings[victim];
 
-    if ((!IsValidClient(attacker) || !IsClientInGame(attacker) || attacker == victim) && arena != -1) {
+    // TODO: remove me
+    if (arena == -1) {
+        LogError("player %N had arena -1 on death!", victim);
+        return;
+    }
+
+    if (!IsValidClient(attacker) || !IsClientInGame(attacker) || attacker == victim) {
         new p1 = g_ArenaPlayer1[arena];
         new p2 = g_ArenaPlayer2[arena];
 
@@ -455,6 +470,7 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
             if (IsValidClient(p2)) {
                 g_ArenaWinners[arena] = p2;
                 g_ArenaLosers[arena] = p1;
+
             } else {
                 g_ArenaWinners[arena] = p1;
                 g_ArenaLosers[arena] = -1;
@@ -465,17 +481,18 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
             if (IsValidClient(p1)) {
                 g_ArenaWinners[arena] = p1;
                 g_ArenaLosers[arena] = p2;
+
             } else {
                 g_ArenaWinners[arena] = p2;
                 g_ArenaLosers[arena] = -1;
             }
         }
 
-    } else {
-        if (arena != -1) {
-            g_ArenaWinners[arena] = attacker;
-            g_ArenaLosers[arena] = victim;
-        }
+    } else if (!g_ArenaStatsUpdated[arena]) {
+        g_ArenaWinners[arena] = attacker;
+        g_ArenaLosers[arena] = victim;
+        g_ArenaStatsUpdated[arena] = true;
+        DB_RoundUpdate(attacker, victim, false);
     }
 
 }
@@ -729,7 +746,10 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
  * Function to add a player to the ranking queue with some validity checks.
  */
 public AddPlayer(client) {
-    if (IsValidClient(client) && !IsFakeClient(client) && Queue_Length(g_RankingQueue) < 2*g_maxArenas) {
+    new bool:valid = IsValidClient(client) && !IsFakeClient(client);
+    new bool:space = Queue_Length(g_RankingQueue) < 2 *g_maxArenas;
+    new bool:alreadyin = Queue_Inside(g_RankingQueue, client);
+    if (valid && space && !alreadyin) {
         Queue_Enqueue(g_RankingQueue, client);
     }
 }
@@ -766,12 +786,20 @@ public UpdateArena(arena) {
 
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;
+            if (!g_ArenaStatsUpdated[arena])
+                DB_RoundUpdate(p1, p2, false);
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p1, " \x09Your opponent left!");
+            g_ArenaPlayer2[arena] = -1;
+            g_ArenaStatsUpdated[arena] = true;
+            PrintToChat(p1, " \x04Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
+            if (!g_ArenaStatsUpdated[arena])
+                DB_RoundUpdate(p1, p2, false);
             g_ArenaLosers[arena] = -1;
-            PrintToChat(p2, " \x09Your opponent left!");
+            g_ArenaPlayer1[arena] = -1;
+            g_ArenaStatsUpdated[arena] = true;
+            PrintToChat(p2, " \x04Your opponent left!");
         }
     }
 }
