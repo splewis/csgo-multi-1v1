@@ -136,7 +136,7 @@ public any:GetArrayRandomIndex(Handle:array) {
  * Returns a random element from an array.
  */
 public any:GetArrayCellRandom(Handle:array) {
-    return GetArrayCell(array, GetArrayCellRandom(array));
+    return GetArrayCell(array, GetArrayRandomIndex(array));
 }
 
 /**
