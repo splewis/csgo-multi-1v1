@@ -32,6 +32,7 @@ new String:assertBuffer[1024];
 /** ConVar handles **/
 new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
+new Handle:g_hStatsWebsite = INVALID_HANDLE;
 new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
@@ -131,13 +132,16 @@ public OnPluginStart() {
     /** ConVars **/
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
+    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
-    g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
-    SetConVarString(g_hVersion, PLUGIN_VERSION);
 
     /** Config file **/
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
+
+    /** Version cvar **/
+    g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+    SetConVarString(g_hVersion, PLUGIN_VERSION);
 
     /** Cookies **/
     g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Protected);
@@ -161,6 +165,11 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
+
+    /** Commands **/
+    RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
+    RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
+    RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
 
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
@@ -391,9 +400,9 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     CS_SetMVPCount(client, g_RoundsLeader[client]);
 
     // Set clan tags to the arena number
-    // decl String:buffer[32];
-    // Format(buffer, sizeof(buffer), "Arena %d", arena);
-    // CS_SetClientClanTag(client, buffer);
+    decl String:buffer[32];
+    Format(buffer, sizeof(buffer), "Arena %d", arena);
+    CS_SetClientClanTag(client, buffer);
 
     if (IsValidClient(other)) {
         PrintToChat(client, " You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
@@ -584,7 +593,7 @@ public Action:Command_TeamJoin(client, const String:command[], argc) {
     } else if (team_to == CS_TEAM_SPECTATOR) {
         // player voluntarily joining spec
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
-        // CS_SetClientClanTag(client, "");
+        CS_SetClientClanTag(client, "");
         new arena = g_Rankings[client];
         g_Rankings[client] = -1;
         UpdateArena(arena);
