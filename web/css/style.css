@@ -1,0 +1,169 @@
+/*====================================== reset.css is here ========================================*/
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { margin:0; padding:0;}
+table {	border-collapse:collapse; border-spacing:0;}
+fieldset,img { border:0; }
+address,caption,cite,code,dfn,em,strong,th,var {font-style:normal; font-weight:normal;}
+ol,ul { list-style:none;}
+caption,th {text-align:left;}
+h1,h2,h3,h4,h5,h6 {	font-size:100%;	font-weight:bold;}
+q:before,q:after {content:'';}
+abbr,acronym { border:0;}
+.clear{clear:both; font-size:0px;line-height:0px; display:block;}
+.last	{margin:0 !important;}
+.pad_last{padding:0 !important;}
+.no_bg {background:none !important;}
+textarea:focus, input:focus{outline:none;}
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
+.tg .tg-dilm{background-color:#c0c0c0;color:#000000;}
+.tg .tg-bsv2{background-color:#efefef;color:#000000;}
+/**************************************************************************************/
+a						{color:#000;text-decoration:none;outline:0 none;}
+a:hover			{color:#000;  text-decoration:none;}
+h1					{font-size:24px;}
+h2					{font-size:22px;}
+h3					{font-size:18px;}
+h4					{font-size:16px;}
+h5					{font-size:14px;}
+h6					{font-size:12px;}
+/*----------------------------------------------------------------------------------*/
+body					{color:#b1b1b1; font-family:"Arial", Verdana, Tahoma; font-size:12px;}
+.flt_Lt				{float:left; display:inline;}
+.flt_Rt				{float:right; display:inline;}
+/* ---------------------------------------------------------------------------------*/
+
+
+/* ----------------------- layout ----------*/
+.wrapper				{margin:0 auto;}
+.container			{width:980px; margin:0 auto;}
+
+#header{
+	width:100%;
+	border-bottom:1px solid #cdcdcd;
+	height:100px;
+	background-color: #EFEFEF;
+}
+#header2{
+	width:100%;
+	border-bottom:1px solid #cdcdcd;
+	height:100px;
+}
+.header{
+	width:980px;
+	margin:0 auto;
+	height: 100px;
+}
+.search{
+	top: 15px;
+	right: 20px;
+	position: absolute;
+}
+.searchnoinfo{
+	margin: 0 auto 0 auto;
+	width: 202px; 
+}
+.stats{
+	padding-top:20px;
+	padding-left:50px;
+	margin-top:auto;
+	margin-bottom:auto;
+	height:auto;
+	background-color: #f6f6f6;
+	border: 1px solid #eeeeee;
+}
+.everything	{
+	padding:20px 20px 20px 20px;
+	position: absolute;
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	background-image: url("http://api.thumbr.it/whitenoise-361x370.png?background=f6f6f6ff&noise=d6d6d6&density=100&opacity=22");
+}
+.everything h3{
+	font-family:"Trebuchet MS",Arial, Helvetica;
+	font-size:24px;
+	font-weight:normal;
+	color:#339966;
+	margin:0 0 25px 0;
+	line-height:1;
+	text-align: center;
+}
+.everything h4{
+	font-family:"Trebuchet MS",Arial, Helvetica;
+	font-size:50px;
+	font-weight:bold;
+	color:#339966;
+	margin:0 0 25px 0;
+	line-height:1;
+}
+.everything h5{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:13px;
+	color:#333333;
+	text-decoration:underline;
+	margin:0 0 2px 0;
+}
+.everything p{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	color:#333333;
+	line-height:1.6;
+	margin:0 0 25px 0;
+}
+
+.playerAvatar {
+	position:absolute;
+	right:50px;
+	top:90px;
+	padding: 4px;
+	border-radius: 3px;
+	background-color: #545454;
+}
+.playerAvatar.offline {
+
+	background: -moz-linear-gradient(top, #706c6b 5%, #4e4d4d 95%);background: -webkit-gradient(linear, left top, left bottom, color-stop(5%,#706c6b), color-stop(95%,#4e4d4d));background: -webkit-linear-gradient(top, #706c6b 5%,#4e4d4d 95%);background: -o-linear-gradient(top, #706c6b 5%,#4e4d4d 95%);background: -ms-linear-gradient(top, #706c6b 5%,#4e4d4d 95%);background: linear-gradient(to bottom, #706c6b 5%,#4e4d4d 95%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#706c6b', endColorstr='#4e4d4d',GradientType=0 );	/* IE <= 9 doesn't support rounded corners and gradient.  The gradient isn't too noticable so just disable the filter in IE9 */
+	filter: none;
+}
+	/* #8dccff to 6da1d0 */
+.playerAvatar.online {
+	background-color: #7bafd6;
+
+	background: -moz-linear-gradient(top, #7bafd6 5%, #506d92 95%);background: -webkit-gradient(linear, left top, left bottom, color-stop(5%,#7bafd6), color-stop(95%,#506d92));background: -webkit-linear-gradient(top, #7bafd6 5%,#506d92 95%);background: -o-linear-gradient(top, #7bafd6 5%,#506d92 95%);background: -ms-linear-gradient(top, #7bafd6 5%,#506d92 95%);background: linear-gradient(to bottom, #7bafd6 5%,#506d92 95%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7bafd6', endColorstr='#506d92',GradientType=0 );	/* IE <= 9 doesn't support rounded corners and gradient.  The gradient isn't too noticable so just disable the filter in IE9 */
+	filter: none;
+}
+.playerAvatar.online img {
+	border-color: #4d5761;
+}
+	/* gradient from #b3fc55 to #8cc82c */
+.playerAvatar.in-game {
+	background-color: #9bc861;
+	background: -moz-linear-gradient(top, #9bc861 5%, #789e4c 95%);background: -webkit-gradient(linear, left top, left bottom, color-stop(5%,#9bc861), color-stop(95%,#789e4c));background: -webkit-linear-gradient(top, #9bc861 5%,#789e4c 95%);background: -o-linear-gradient(top, #9bc861 5%,#789e4c 95%);background: -ms-linear-gradient(top, #9bc861 5%,#789e4c 95%);background: linear-gradient(to bottom, #9bc861 5%,#789e4c 95%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9bc861', endColorstr='#789e4c',GradientType=0 );	/* IE <= 9 doesn't support rounded corners and gradient.  The gradient isn't too noticable so just disable the filter in IE9 */
+	filter: none;
+}
+.playerAvatar.in-game img {
+	border-color: #525a4f;
+}
+.playerAvatar {
+	width: 184px;
+	height: 184px;
+}
+.topPlayers{
+	position:absolute;
+	top:150px;
+	left:50%;
+	margin-left:-225px;
+}
+.activity{
+	position:relative;
+	top:15px;
+	font-size:25px;	
+	font-weight:bold;
+	margin: 0 auto;
+	color: rgb(0,255,0);
+}
+.activity.inactive{
+	color: rgb(255,0,0);
+}
