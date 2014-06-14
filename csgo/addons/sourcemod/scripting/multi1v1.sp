@@ -32,7 +32,6 @@ new String:assertBuffer[1024];
 /** ConVar handles **/
 new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
-new Handle:g_hDefaultRating = INVALID_HANDLE;
 new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
@@ -206,7 +205,7 @@ public OnMapEnd() {
 
 public OnClientPostAdminCheck(client) {
     if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDataBase) != 0 && g_dbConnected) {
-        DB_AddPlayer(client, GetConVarFloat(g_hDefaultRating));
+        DB_AddPlayer(client);
     }
 }
 
@@ -585,7 +584,7 @@ public Action:Command_TeamJoin(client, const String:command[], argc) {
     } else if (team_to == CS_TEAM_SPECTATOR) {
         // player voluntarily joining spec
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
-        CS_SetClientClanTag(client, "");
+        // CS_SetClientClanTag(client, "");
         new arena = g_Rankings[client];
         g_Rankings[client] = -1;
         UpdateArena(arena);

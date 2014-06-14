@@ -49,7 +49,7 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
 /**
  * Adds a player, updating their name if they already exist, to the database.
  */
-public DB_AddPlayer(client, Float:default_rating) {
+public DB_AddPlayer(client) {
     if (db != INVALID_HANDLE) {
         new id = GetSteamAccountID(client);
 
@@ -64,7 +64,7 @@ public DB_AddPlayer(client, Float:default_rating) {
         GetClientAuthString(client, auth, sizeof(auth));
 
         // insert if not already in the table
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);", TABLE_NAME, id, auth, sanitized_name, default_rating);
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);", TABLE_NAME, id, auth, sanitized_name, DEFAULT_RATING);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         // update the player name
