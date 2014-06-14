@@ -41,22 +41,29 @@ public RoundType:GetRoundType(any:client1, any:client2) {
     } else {
         // create array of "allowed" round types
         new Handle:types = CreateArray();
-        if (g_AllowAWP[client1] && g_AllowAWP[client2]) {
-            PushArrayCell(types, RoundType_Awp);
-        }
-        if (g_AllowPistol[client1] && g_AllowPistol[client2]) {
-            PushArrayCell(types, RoundType_Pistol);
-        }
-        PushArrayCell(types, RoundType_Rifle);
+
+        AddRounds_CheckAllowed(types, client1, client2, RoundType_Awp, g_AllowAWP);
+        AddRounds_CheckAllowed(types, client1, client2, RoundType_Pistol, g_AllowPistol);
+        AddRounds(types, client1, client2, RoundType_Rifle);
 
         // pick a random value from the allowed round types
-        new len = GetArraySize(types);
-        new index = GetRandomInt(0, len - 1);
-        roundType = GetArrayCell(types, index);
+        roundType = RoundType:GetArrayCellRandom(types);
         CloseHandle(types);
     }
 
     return roundType;
+}
+
+static AddRounds(Handle:types, client1, client2, RoundType:roundType) {
+    PushArrayCell(types, roundType);
+    if (g_Preference[client1] == roundType || g_Preference[client2] == roundType)
+        PushArrayCell(types, roundType);
+}
+
+static AddRounds_CheckAllowed(Handle:types, client1, client2, RoundType:roundType, bool:allowed[]) {
+    if (allowed[client1] && allowed[client2]) {
+        AddRounds(types, client1, client2, roundType);
+    }
 }
 
 /**

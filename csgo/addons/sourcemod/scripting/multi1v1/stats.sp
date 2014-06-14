@@ -71,6 +71,7 @@ public DB_AddPlayer(client) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET name = '%s' WHERE accountID = %d", TABLE_NAME, sanitized_name, id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
+        // update last connect time
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
@@ -209,20 +210,6 @@ static ForceLoss(client) {
     PrintToChat(client, " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
     g_ratings[client] -= delta;
     DB_WriteRatings(client);
-}
-
-public Action:Command_Stats(client, args) {
-    new String:arg1[32];
-    if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
-        new target = FindTarget(client, arg1, true, false);
-        if (target != -1) {
-            ShowStatsForPlayer(client, target);
-        }
-    } else {
-        ShowStatsForPlayer(client, client);
-    }
-
-    return Plugin_Handled;
 }
 
 public ShowStatsForPlayer(client, target) {

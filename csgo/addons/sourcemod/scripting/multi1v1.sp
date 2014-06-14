@@ -31,6 +31,7 @@ new String:assertBuffer[1024];
 
 /** ConVar handles **/
 new Handle:g_hRoundTime = INVALID_HANDLE;
+new Handle:g_hBlockRadio = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hStatsWebsite = INVALID_HANDLE;
 new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
@@ -131,6 +132,7 @@ public OnPluginStart() {
 
     /** ConVars **/
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
+    g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
@@ -144,20 +146,15 @@ public OnPluginStart() {
     SetConVarString(g_hVersion, PLUGIN_VERSION);
 
     /** Cookies **/
-    g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Protected);
-    g_hAllowAWPCookie = RegClientCookie("multi1v1_allowawp", "Multi-1v1 allow AWP rounds", CookieAccess_Protected);
-    g_hPreferenceCookie = RegClientCookie("multi1v1_preference", "Multi-1v1 round-type preference", CookieAccess_Protected);
+    g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Public);
+    g_hAllowAWPCookie = RegClientCookie("multi1v1_allowawp", "Multi-1v1 allow AWP rounds", CookieAccess_Public);
+    g_hPreferenceCookie = RegClientCookie("multi1v1_preference", "Multi-1v1 round-type preference", CookieAccess_Public);
     g_hRifleCookie = RegClientCookie("multi1v1_rifle", "Multi-1v1 rifle choice", CookieAccess_Protected);
     g_hPistolCookie = RegClientCookie("multi1v1_pistol", "Multi-1v1 pistol choice", CookieAccess_Protected);
-    g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 pistol choice", CookieAccess_Protected);
+    g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 allow flashbangs in rounds", CookieAccess_Public);
     g_hSetCookies = RegClientCookie("multi1v1_setprefs", "Multi-1v1 if prefs are saved", CookieAccess_Protected);
 
     /** Hooks **/
-    AddCommandListener(Command_Say, "say");
-    AddCommandListener(Command_Say, "say2");
-    AddCommandListener(Command_Say, "say_team");
-    AddCommandListener(Command_TeamJoin, "jointeam");
-    AddRadioCommandListeners();
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
     HookEvent("player_connect_full", Event_OnFullConnect);
     HookEvent("player_spawn", Event_OnPlayerSpawn);
@@ -167,9 +164,15 @@ public OnPluginStart() {
     HookEvent("round_end", Event_OnRoundEnd);
 
     /** Commands **/
+    AddCommandListener(Command_Say, "say");
+    AddCommandListener(Command_Say, "say2");
+    AddCommandListener(Command_Say, "say_team");
+    AddCommandListener(Command_TeamJoin, "jointeam");
+    AddRadioCommandListeners();
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
+    RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
 
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
@@ -611,6 +614,21 @@ public JoinGame(client) {
     }
 }
 
+/** sm_stats command **/
+public Action:Command_Stats(client, args) {
+    new String:arg1[32];
+    if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
+        new target = FindTarget(client, arg1, true, false);
+        if (target != -1) {
+            ShowStatsForPlayer(client, target);
+        }
+    } else {
+        ShowStatsForPlayer(client, client);
+    }
+
+    return Plugin_Handled;
+}
+
 /**
  * Hook for player chat actions, gives player the guns menu.
  */
@@ -621,15 +639,20 @@ public Action:Command_Say(client, const String:command[], argc) {
 
     StripQuotes(text);
 
-    new String:gunsChatCommands[][] = { "gun", "guns", "!guns", "/guns" };
+    new String:gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup"};
 
     for (new i = 0; i < 4; i++) {
         if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
-            GiveWeaponMenu(client);
+            Command_Guns(client, 0);
             return Plugin_Handled;
         }
     }
     return Plugin_Continue;
+}
+
+/** sm_guns command **/
+public Action:Command_Guns(client, args) {
+    GiveWeaponMenu(client);
 }
 
 
