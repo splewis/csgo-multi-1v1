@@ -281,7 +281,7 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
             }
         } else {
             g_Score = 1;
-            PrintToChatAll("The new leader is \x06%N\x01", leader);
+            PrintToChatAll(" The new leader is \x06%N\x01", leader);
         }
     }
     g_LastWinner = leader;
@@ -353,7 +353,6 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         }
     }
 
-
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
@@ -398,9 +397,9 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     // CS_SetClientClanTag(client, buffer);
 
     if (IsValidClient(other)) {
-        PrintToChat(client, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
+        PrintToChat(client, " You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
     } else {
-        PrintToChat(client, "You are in arena \x04%d\x01 with \x07no opponent", arena);
+        PrintToChat(client, " You are in arena \x04%d\x01 with \x07no opponent", arena);
     }
 }
 
