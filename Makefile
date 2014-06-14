@@ -13,4 +13,4 @@ clean:
 	rm -rf *.smx *.zip csgo/addons/sourcemod/configs csgo/addons/sourcemod/plugins
 
 package: build
-	zip -r multi1v1 csgo
+	zip -r multi1v1 csgo web LICENSE README.md
