@@ -1,5 +1,8 @@
+#define TABLE_NAME "multi1v1_stats"
 #define K_FACTOR 8.0
-#define DISTRIBUTION_SPREAD 800.0
+#define DISTRIBUTION_SPREAD 1000.0
+#define DEFAULT_RATING 1500.0
+#define MIN_RATING 200.0
 
 /**
  * Attempts to connect to the database.
@@ -18,7 +21,6 @@ public DB_Connect() {
         CreateTables();
         PurgeRows();
         SQL_UnlockDatabase(db);
-
         g_dbConnected = true;
     }
 }
@@ -41,7 +43,6 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
         db = INVALID_HANDLE;
         g_dbConnected = false;
         LogError("Last Connect SQL Error: %s", error);
-        LogError("If you set sm_multi1v1_record_connect_times to 1 and initially used version<=0.3.2 you need to manually add a column to the table, see https://github.com/splewis/csgo-multi-1v1");
     }
 }
 
@@ -70,14 +71,7 @@ public DB_AddPlayer(client, Float:default_rating) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET name = '%s' WHERE accountID = %d", TABLE_NAME, sanitized_name, id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
-        // update last time connected
-        if (GetConVarInt(g_hRecordConnectTimes) != 0) {
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
-            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-        }
-
-        // temporary steam id writer (TODO: remove this later!)
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET auth = '%s' WHERE accountID = %d", TABLE_NAME, auth, id);
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }

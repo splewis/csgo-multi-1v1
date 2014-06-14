@@ -1,5 +1,5 @@
-#define PLUGIN_VERSION "0.3.2"
-#define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1/csgo-multi-1v1.txt"
+#define PLUGIN_VERSION "0.4.0dev"
+#define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-0.4.x/csgo-multi-1v1.txt"
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -22,7 +22,6 @@
 
 #define WEAPON_LENGTH 32  // length of a weapon name string
 #define HIDE_RADAR_BIT 1<<12
-#define TABLE_NAME "multi1v1_stats"
 
 /** Assertions/debug info **/
 new String:assertBuffer[1024];
@@ -35,7 +34,6 @@ new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hDefaultRating = INVALID_HANDLE;
 new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
-new Handle:g_hRecordConnectTimes = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
 
@@ -43,11 +41,8 @@ new Handle:g_hVersion = INVALID_HANDLE;
   *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
   *  using one of these directly.
   */
-#define MIN_RATING 200.0
-new Float:g_ratings[MAXPLAYERS+1];
-new Float:g_pistolRatings[MAXPLAYERS+1];
-new Float:g_rifleRatings[MAXPLAYERS+1];
-new Float:g_awpRatings[MAXPLAYERS+1];
+new Float:g_roundsPlayed[MAXPLAYERS+1];
+new Float:g_ratings[MAXPLAYERS+1];\
 new String:g_sqlBuffer[1024];
 
 /** Database interactions **/
@@ -137,9 +132,7 @@ public OnPluginStart() {
     /** ConVars **/
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
-    g_hDefaultRating = CreateConVar("sm_multi1v1_default_rating", "1500.0", "ELO rating a player starts with", _, true, MIN_RATING + 100.0, true, 10000.0);
     g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "10", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
-    g_hRecordConnectTimes = CreateConVar("sm_multi1v1_record_connect_times", "0", "If the plugin should record the last time each player connected in the lastTime field of the database");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
     g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY);
     SetConVarString(g_hVersion, PLUGIN_VERSION);
@@ -758,10 +751,8 @@ public AddPlayer(client) {
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
+    g_roundsPlayed[client] = 0.0;
     g_ratings[client] = 0.0;
-    g_pistolRatings[client] = 0.0;
-    g_awpRatings[client] = 0.0;
-    g_rifleRatings[client] = 0.0;
     g_Rankings[client] = -1;
     g_LetTimeExpire[client] = false;
     g_AllowAWP[client] = false;
