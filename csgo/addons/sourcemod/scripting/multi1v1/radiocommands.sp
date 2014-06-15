@@ -15,5 +15,9 @@ public AddRadioCommandListeners() {
 }
 
 public Action:Command_Radio(client, const String:command[], argc) {
-    return Plugin_Handled;
+	if (GetConVarInt(g_hBlockRadio) == 0) {
+		return Plugin_Continue;
+	} else {
+    	return Plugin_Handled;
+	}
 }

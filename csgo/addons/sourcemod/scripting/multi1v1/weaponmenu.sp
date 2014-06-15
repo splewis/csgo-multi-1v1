@@ -1,3 +1,23 @@
+new String:g_Rifles[][][] = {
+    {"weapon_ak47", "AK47"},
+    {"weapon_m4a1", "M4A4"},
+    {"weapon_m4a1_silencer", "M4A1-S"},
+    {"weapon_famas", "Famas"},
+    {"weapon_galilar", "Galil"},
+    {"weapon_aug", "AUG"},
+    {"weapon_sg556", "SG553"}
+};
+
+new String:g_Pistols[][][] = {
+    {"weapon_hkp2000", "P2000"},
+    {"weapon_usp_silencer", "USP"},
+    {"weapon_glock", "Glock"},
+    {"weapon_p250", "P250"},
+    {"weapon_cz75a", "CZ75"},
+    {"weapon_deagle", "Deagle"},
+    {"weapon_fiveseven", "Five-Seven"}
+};
+
 /**
  * Opens up the weapon menu for a client.
  */
@@ -21,22 +41,29 @@ public RoundType:GetRoundType(any:client1, any:client2) {
     } else {
         // create array of "allowed" round types
         new Handle:types = CreateArray();
-        if (g_AllowAWP[client1] && g_AllowAWP[client2]) {
-            PushArrayCell(types, RoundType_Awp);
-        }
-        if (g_AllowPistol[client1] && g_AllowPistol[client2]) {
-            PushArrayCell(types, RoundType_Pistol);
-        }
-        PushArrayCell(types, RoundType_Rifle);
+
+        AddRounds_CheckAllowed(types, client1, client2, RoundType_Awp, g_AllowAWP);
+        AddRounds_CheckAllowed(types, client1, client2, RoundType_Pistol, g_AllowPistol);
+        AddRounds(types, client1, client2, RoundType_Rifle);
 
         // pick a random value from the allowed round types
-        new len = GetArraySize(types);
-        new index = GetRandomInt(0, len - 1);
-        roundType = GetArrayCell(types, index);
+        roundType = RoundType:GetArrayCellRandom(types);
         CloseHandle(types);
     }
 
     return roundType;
+}
+
+static AddRounds(Handle:types, client1, client2, RoundType:roundType) {
+    PushArrayCell(types, roundType);
+    if (g_Preference[client1] == roundType || g_Preference[client2] == roundType)
+        PushArrayCell(types, roundType);
+}
+
+static AddRounds_CheckAllowed(Handle:types, client1, client2, RoundType:roundType, bool:allowed[]) {
+    if (allowed[client1] && allowed[client2]) {
+        AddRounds(types, client1, client2, roundType);
+    }
 }
 
 /**
@@ -109,6 +136,7 @@ public PreferenceMenu(client) {
         AddMenuInt(menu, RoundType_Awp, "AWP Rounds");
     if (g_AllowPistol[client])
         AddMenuInt(menu, RoundType_Pistol, "Pistol Rounds");
+
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -133,13 +161,10 @@ public MenuHandler_Preference(Handle:menu, MenuAction:action, param1, param2) {
 public RifleChoiceMenu(client) {
     new Handle:menu = CreateMenu(MenuHandler_RifleChoice);
     SetMenuTitle(menu, "Choose your favorite rifle:");
-    AddMenuItem(menu, "weapon_ak47", "AK47");
-    AddMenuItem(menu, "weapon_m4a1", "M4A4");
-    AddMenuItem(menu, "weapon_m4a1_silencer", "M4A1-S");
-    AddMenuItem(menu, "weapon_famas", "Famas");
-    AddMenuItem(menu, "weapon_galilar", "Galil");
-    AddMenuItem(menu, "weapon_aug", "AUG");
-    AddMenuItem(menu, "weapon_sg556", "SG553");
+    SetMenuExitButton(menu, true);
+    for (new i = 0; i < sizeof(g_Rifles); i++)
+        AddMenuItem(menu, g_Rifles[i][0], g_Rifles[i][1]);
+
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
@@ -166,14 +191,9 @@ public PistolChoiceMenu(any:client) {
     new Handle:menu = CreateMenu(MenuHandler_PistolChoice);
     SetMenuExitButton(menu, true);
     SetMenuTitle(menu, "Choose your favorite pistol:");
-    AddMenuItem(menu, "weapon_hkp2000", "P2000");
-    AddMenuItem(menu, "weapon_usp_silencer", "USP");
-    AddMenuItem(menu, "weapon_glock", "Glock");
-    AddMenuItem(menu, "weapon_p250", "P250");
-    AddMenuItem(menu, "weapon_cz75a", "CZ75");
-    AddMenuItem(menu, "weapon_deagle", "Deagle");
-    AddMenuItem(menu, "weapon_fiveseven", "Five-Seven");
-    AddMenuItem(menu, "weapon_tec9", "Tec9");
+    for (new i = 0; i < sizeof(g_Pistols); i++)
+        AddMenuItem(menu, g_Pistols[i][0], g_Pistols[i][1]);
+
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 

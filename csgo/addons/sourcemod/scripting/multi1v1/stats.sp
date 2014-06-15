@@ -1,5 +1,8 @@
+#define TABLE_NAME "multi1v1_stats"
 #define K_FACTOR 8.0
-#define DISTRIBUTION_SPREAD 800.0
+#define DISTRIBUTION_SPREAD 1000.0
+#define DEFAULT_RATING 1500.0
+#define MIN_RATING 200.0
 
 /**
  * Attempts to connect to the database.
@@ -18,7 +21,6 @@ public DB_Connect() {
         CreateTables();
         PurgeRows();
         SQL_UnlockDatabase(db);
-
         g_dbConnected = true;
     }
 }
@@ -41,14 +43,13 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
         db = INVALID_HANDLE;
         g_dbConnected = false;
         LogError("Last Connect SQL Error: %s", error);
-        LogError("If you set sm_multi1v1_record_connect_times to 1 and initially used version<=0.3.2 you need to manually add a column to the table, see https://github.com/splewis/csgo-multi-1v1");
     }
 }
 
 /**
  * Adds a player, updating their name if they already exist, to the database.
  */
-public DB_AddPlayer(client, Float:default_rating) {
+public DB_AddPlayer(client) {
     if (db != INVALID_HANDLE) {
         new id = GetSteamAccountID(client);
 
@@ -63,21 +64,15 @@ public DB_AddPlayer(client, Float:default_rating) {
         GetClientAuthString(client, auth, sizeof(auth));
 
         // insert if not already in the table
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);", TABLE_NAME, id, auth, sanitized_name, default_rating);
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);", TABLE_NAME, id, auth, sanitized_name, DEFAULT_RATING);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         // update the player name
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET name = '%s' WHERE accountID = %d", TABLE_NAME, sanitized_name, id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
-        // update last time connected
-        if (GetConVarInt(g_hRecordConnectTimes) != 0) {
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
-            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-        }
-
-        // temporary steam id writer (TODO: remove this later!)
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET auth = '%s' WHERE accountID = %d", TABLE_NAME, auth, id);
+        // update last connect time
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
@@ -206,7 +201,6 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 
         DB_WriteRatings(winner);
         DB_WriteRatings(loser);
-
     }
 }
 
@@ -216,4 +210,18 @@ static ForceLoss(client) {
     PrintToChat(client, " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
     g_ratings[client] -= delta;
     DB_WriteRatings(client);
+}
+
+public ShowStatsForPlayer(client, target) {
+    decl String:url[255];
+    GetConVarString(g_hStatsWebsite, url, sizeof(url));
+    if (StrEqual(url, "")) {
+        PrintToChat(client, "Sorry, there is no stats website for this server.");
+        return;
+    }
+
+    decl String:player_url[255];
+    Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
+
+    ShowMOTDPanel(client, "Multi-1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
 }
