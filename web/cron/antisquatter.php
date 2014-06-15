@@ -5,12 +5,12 @@ $localIP = $_SERVER['SERVER_ADDR'];
 $externalIP = $_SERVER['REMOTE_ADDR'];
 $changes = 0;
 
-if($localIP == $externalIP){
+if ($localIP == $externalIP) {
 	$query = "SELECT accountID, name, rating, lastTime FROM multi1v1_stats";
 
-	if(mysql_fetch_row(mysql_query($query))>0){
-		if($query_run = mysql_query($query)){
-			while ($row = mysql_fetch_assoc($query_run)){
+	if (mysql_fetch_row(mysql_query($query)) > 0) {
+		if ($query_run = mysql_query($query)) {
+			while ($row = mysql_fetch_assoc($query_run)) {
 				$accountID = $row['accountID'];
 				$name = $row['name'];
 				$rating = $row['rating'];
@@ -36,13 +36,13 @@ if($localIP == $externalIP){
 			}
 		}
 	}
-	if($log_antisquatter == true){
+	if ($log_antisquatter == true) {
 		file_put_contents("antisquatter.log", date('d/m/y h:i:s')." Script ran successfully. | Players updated: ".$changes."\n", FILE_APPEND);
 	}
 }
-else{
+else {
 	echo 'You aren\'t supposed to be here! Only follow links!';
-	if($log_antisquatter == true){
+	if ($log_antisquatter == true) {
 		file_put_contents("antisquatter.log", date('d/m/y h:i:s')." File unsuccessfully accessed from IP: ".$externalIP.". Local IP: ".$localIP.".\n", FILE_APPEND);
 	}
 }

@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 
-<?php 
+<?php
 	require_once 'includes/config.inc.php';
 	require_once 'includes/utils.inc.php';
 	echo "<title>$page_title</title>";
@@ -21,10 +21,10 @@
 	<div class="everything">
 
 		<?php
-		if(!isset($_GET['id']) && empty($_GET['id']) || $_GET['id']==''){
+		if (!isset($_GET['id']) && empty($_GET['id']) || $_GET['id']=='') {
 			echo "<h3>$page_title</h3>";
 			echo "<div class=\"searchnoinfo\">";
-		}else{
+		} else{
 			echo "<div class=\"search\">";
 		}
 		?>
@@ -36,19 +36,19 @@
 		</div>
 
 		<?php
-		if(!isset($_GET['id']) && empty($_GET['id']) || $_GET['id']==''){
+		if (!isset($_GET['id']) && empty($_GET['id']) || $_GET['id']=='') {
 			echo "<div class=\"topPlayers\"><h1>Top 15 Players</h1>";
 			include 'includes/generatetopplayers.php';
 			echo "</div>";
 		}
 
-		if(isset($_GET['id']) && !empty($_GET['id'])){
+		if (isset($_GET['id']) && !empty($_GET['id'])) {
 			$totalplayers = mysql_num_rows(mysql_query("SELECT * FROM $mysql_table"));
 			$searchquery = htmlentities($_GET['id']);
 			$query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM $mysql_table AS s1 WHERE accountID=".mysql_real_escape_string($searchquery);
 			if(mysql_fetch_row(mysql_query($query))>0){
 				if($query_run = mysql_query($query)){
-					while ($row = mysql_fetch_assoc($query_run)){
+					while ($row = mysql_fetch_assoc($query_run)) {
 						$accountID = $row['accountID'];
 						$auth = $row['auth'];
 						$rank = $row['rank'];
@@ -66,9 +66,9 @@
 						<h4>W/L Ratio: ".number_format((float)$wins/$losses, 2, '.', '')."</h4><br>
 						<h4>ELO Rating: $rating</h4><br>
 						<div class=\"playerAvatar ".getPlayerState(GetCommunityID($auth))."\"><a href=\"http://steamcommunity.com/profiles/".GetCommunityID($auth)."\"><img src=\"".getAvatar(GetCommunityID($auth))."\"/></a>";
-						if(isPlayerActive($lastTime) == true){
+						if (isPlayerActive($lastTime) == true) {
 							echo "<div class=\"activity inactive\">INACTIVE</div></div>";
-						}else{
+						} else{
 							echo "<div class=\"activity\">ACTIVE</div></div>";
 						}
 					}
@@ -82,7 +82,7 @@
 		</div>
 
 		<?php
-		if(isset($_GET['id']) && !empty($_GET['id'])){
+		if (isset($_GET['id']) && !empty($_GET['id'])) {
 			$time = microtime();
 			$time = explode(' ', $time);
 			$time = $time[1] + $time[0];
