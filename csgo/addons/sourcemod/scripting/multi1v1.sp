@@ -43,7 +43,7 @@ new Handle:g_hVersion = INVALID_HANDLE;
   *  using one of these directly.
   */
 new Float:g_roundsPlayed[MAXPLAYERS+1];
-new Float:g_ratings[MAXPLAYERS+1];\
+new Float:g_ratings[MAXPLAYERS+1];
 new String:g_sqlBuffer[1024];
 
 /** Database interactions **/
@@ -52,7 +52,6 @@ new Handle:db = INVALID_HANDLE;
 
 /** Client arrays **/
 new g_Rankings[MAXPLAYERS+1] = -1;      // which arena each player is in
-new g_RoundsLeader[MAXPLAYERS+1] = 0;   // number of rounds each player has been the winner
 new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false;  // Flags the teamswitches as being done by the plugin
 new bool:g_AllowAWP[MAXPLAYERS+1];
 new bool:g_AllowPistol[MAXPLAYERS+1];
@@ -69,23 +68,22 @@ new g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
 new g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
 new RoundType:g_roundTypes[MAXPLAYERS+1];
 new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
+new bool:g_PrivateArena[MAXPLAYERS+1] = false;
 
 /** Overall global variables **/
 new g_maxArenas = 0; // maximum number of arenas the map can support
 new g_Arenas = 1; // number of active arenas
 new g_TotalRounds = 0; // rounds played on this map so far
-new g_LastWinner = -1; // winner of the previous round
-new g_Score = 0; // the streak of the current winner
-new g_HighestScore = 0; // the longest streak on the map so far
 new bool:g_RoundFinished = false;
 new Handle:g_RankingQueue = INVALID_HANDLE;
 new Handle:g_WaitingQueue = INVALID_HANDLE;
 
 /** The different round types **/
 enum RoundType {
-    RoundType_Rifle,
-    RoundType_Awp,
-    RoundType_Pistol
+    RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
+    RoundType_Rifle = 0,
+    RoundType_Awp = 1,
+    RoundType_Pistol = 2
 };
 
 /** Weapon menu choice cookies **/
@@ -192,9 +190,6 @@ public OnMapStart() {
     Spawns_MapStart();
     g_Arenas = 1;
     g_TotalRounds = 0;
-    g_LastWinner = -1;
-    g_Score = 0;
-    g_HighestScore = 0;
     g_RoundFinished = false;
     for (new i = 0; i <= MAXPLAYERS; i++) {
         g_ArenaPlayer1[i] = -1;
@@ -275,27 +270,6 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         new client = Queue_Dequeue(g_WaitingQueue);
         AddPlayer(client);
     }
-
-    // Set leader and scoring information
-    new leader = Queue_Peek(g_RankingQueue);
-
-    if (IsValidClient(leader) && IsOnTeam(leader) && Queue_Length(g_RankingQueue) >= 2) {
-        g_RoundsLeader[leader]++;
-        CS_SetMVPCount(leader, g_RoundsLeader[leader]);
-        if (g_LastWinner == leader && Queue_Length(g_RankingQueue) >= 2) {
-            g_Score++;
-            if (g_Score > g_HighestScore) {
-                g_HighestScore = g_Score;
-                PrintToChatAll(" \x03%N \x01has set a record of leading \x04%d \x01rounds in a row!", leader, g_Score);
-            } else {
-                PrintToChatAll(" \x03%N \x01has stayed at the top for \x04%d \x01rounds in a row!", leader, g_Score);
-            }
-        } else {
-            g_Score = 1;
-            PrintToChatAll(" The new leader is \x06%N\x01", leader);
-        }
-    }
-    g_LastWinner = leader;
 
     // Player placement logic for this round
     g_Arenas = 0;
@@ -791,7 +765,6 @@ public ResetClientVariables(client) {
     g_Preference[client] = RoundType_Rifle;
     g_primaryWeapon[client] = "weapon_ak47";
     g_secondaryWeapon[client] = "weapon_glock";
-    g_RoundsLeader[client] = 0;
 }
 
 /**

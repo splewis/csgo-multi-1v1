@@ -36,7 +36,7 @@ public RoundType:GetRoundType(any:client1, any:client2) {
     new RoundType:pref1 = g_Preference[client1];
     new RoundType:pref2 = g_Preference[client2];
 
-    if (pref1 == pref2) {
+    if (pref1 == pref2 && pref1 != RoundType_NoPreference) {
         roundType = pref1;
     } else {
         // create array of "allowed" round types
@@ -52,6 +52,16 @@ public RoundType:GetRoundType(any:client1, any:client2) {
     }
 
     return roundType;
+}
+
+public RoundType:GetRandomRoundType() {
+    new Handle:types = CreateArray();
+    PushArrayCell(types, RoundType_Rifle);
+    PushArrayCell(types, RoundType_Awp);
+    PushArrayCell(types, RoundType_Pistol);
+    new RoundType:choice = GetArrayCellRandom(types);
+    CloseHandle(types);
+    return choice;
 }
 
 static AddRounds(Handle:types, client1, client2, RoundType:roundType) {
@@ -136,6 +146,7 @@ public PreferenceMenu(client) {
         AddMenuInt(menu, RoundType_Awp, "AWP Rounds");
     if (g_AllowPistol[client])
         AddMenuInt(menu, RoundType_Pistol, "Pistol Rounds");
+    AddMenuInt(menu, RoundType_NoPreference, "No Preference");
 
     DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

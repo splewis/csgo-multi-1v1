@@ -51,9 +51,11 @@ public Action:RemoveRadar(Handle:timer, any:client) {
  * Function to identify if a client is valid and in game.
  */
 public bool:IsValidClient(client) {
-    if (client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client))
-        return true;
-    return false;
+    return client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client);
+}
+
+public bool:IsValidArena(arena) {
+    return arena > 0 && arena <= g_maxArenas;
 }
 
 /**
