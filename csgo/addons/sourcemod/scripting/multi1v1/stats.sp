@@ -130,7 +130,7 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
             Increment(winner, "losses");
         else
             Increment(winner, "wins");
-        UpdateRatings(winner, loser, forceLoss);
+        UpdateRatings(winner, loser, forceLoss, K_FACTOR);
     }
 }
 
@@ -147,12 +147,12 @@ static Increment(client, const String:field[]) {
     }
 }
 
-static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating) {
+static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
     // probability of each player winning
     new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
 
     // constant factor, suppose we have two opponents of equal ratings - they will lose/gain K/2
-    new Float:winner_delta = K_FACTOR * (1.0 - pWinner);
+    new Float:winner_delta = K * (1.0 - pWinner);
 
     return winner_delta;
 }
@@ -160,7 +160,7 @@ static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-static UpdateRatings(winner, loser, bool:forceLoss=false) {
+static UpdateRatings(winner, loser, bool:forceLoss=false, Float:K) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (g_ratings[winner] < MIN_RATING) {
@@ -182,7 +182,7 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
             return;
         }
 
-        new Float:rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser]);
+        new Float:rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
             new int_winner_d = RoundToNearest(FloatAbs(rating_delta));
@@ -206,7 +206,7 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 
 static ForceLoss(client) {
     new Float:rating = g_ratings[client];
-    new Float:delta = ELORatingDelta(rating, rating);
+    new Float:delta = ELORatingDelta(rating, rating, K_FACTOR);
     PrintToChat(client, " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
     g_ratings[client] -= delta;
     DB_WriteRatings(client);
