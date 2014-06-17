@@ -68,7 +68,6 @@ new g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
 new g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
 new RoundType:g_roundTypes[MAXPLAYERS+1];
 new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
-new bool:g_PrivateArena[MAXPLAYERS+1] = false;
 
 /** Overall global variables **/
 new g_maxArenas = 0; // maximum number of arenas the map can support
@@ -371,10 +370,7 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     } else {
         score = 3*g_Arenas - 3*arena;
     }
-
-    // MVP stars show the number of rounds in arena 1
     CS_SetClientContributionScore(client, score);
-    CS_SetMVPCount(client, g_RoundsLeader[client]);
 
     // Set clan tags to the arena number
     decl String:buffer[32];
