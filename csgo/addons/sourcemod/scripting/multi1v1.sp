@@ -42,7 +42,7 @@ new Handle:g_hVersion = INVALID_HANDLE;
   *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
   *  using one of these directly.
   */
-new Float:g_roundsPlayed[MAXPLAYERS+1];
+new any:g_roundsPlayed[MAXPLAYERS+1];
 new Float:g_ratings[MAXPLAYERS+1];
 new String:g_sqlBuffer[1024];
 
@@ -751,7 +751,7 @@ public AddPlayer(client) {
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
-    g_roundsPlayed[client] = 0.0;
+    g_roundsPlayed[client] = 0;
     g_ratings[client] = 0.0;
     g_Rankings[client] = -1;
     g_LetTimeExpire[client] = false;

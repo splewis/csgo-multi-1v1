@@ -4,7 +4,7 @@
 #define PLACEMENT_MATCHES 20
 #define DISTRIBUTION_SPREAD 1000.0
 #define DEFAULT_RATING 1500.0
-#define MIN_RATING 200.0
+#define MIN_RATING 200.0 // this number MUST be greater than 0.0 to detect failures to fetch ratings
 
 /**
  * Attempts to connect to the database.
@@ -136,7 +136,7 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
         else
             Increment(winner, "wins");
 
-        UpdateRatings(winner, loser, forceLoss, K_FACTOR);
+        UpdateRatings(winner, loser, forceLoss);
     }
 }
 
@@ -166,7 +166,7 @@ static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-static UpdateRatings(winner, loser, bool:forceLoss=false, Float:K) {
+static UpdateRatings(winner, loser, bool:forceLoss=false) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (g_ratings[winner] < MIN_RATING) {
@@ -188,15 +188,15 @@ static UpdateRatings(winner, loser, bool:forceLoss=false, Float:K) {
             return;
         }
 
-        new bool:newWinner = g_roundsPlayed[winner] <= PLACEMENT_MATCHES;
-        new bool:newLoser = g_roundsPlayed[loser] <= PLACEMENT_MATCHES;
+        new bool:newWinner = g_roundsPlayed[winner] < PLACEMENT_MATCHES;
+        new bool:newLoser = g_roundsPlayed[loser] < PLACEMENT_MATCHES;
         new bool:placementRound = newWinner || newLoser;
 
         new Float:rating_delta = 0.0;
         if (placementRound)
-            rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K);
+            rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K_FACTOR*PLACEMENT_MATCHES);
         else
-            rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K*K_PLACEMENT_CONSTANT);
+            rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K_FACTOR);
 
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
@@ -222,12 +222,12 @@ static UpdateRatings(winner, loser, bool:forceLoss=false, Float:K) {
         if (!newLoser)
             g_ratings[winner] += rating_delta;
         else
-            PrintToChat(loser, "You need \x04%d \x01rounds played to get ranked.", PLACEMENT_MATCHES);
+            PrintToChat(loser, "You need \x04%d \x01 more rounds played to get ranked.", PLACEMENT_MATCHES - g_roundsPlayed[loser] + 1);
 
         if (!newWinner)
             g_ratings[loser] -= rating_delta;
         else
-            PrintToChat(winner, "You need \x04%d \x01rounds played to get ranked.", PLACEMENT_MATCHES);
+            PrintToChat(winner, "You need \x04%d \x01more rounds played to get ranked.", PLACEMENT_MATCHES - g_roundsPlayed[winner] + 1);
 
         DB_WriteRatings(winner);
         DB_WriteRatings(loser);
@@ -237,7 +237,9 @@ static UpdateRatings(winner, loser, bool:forceLoss=false, Float:K) {
 static ForceLoss(client) {
     new Float:rating = g_ratings[client];
     new Float:delta = ELORatingDelta(rating, rating, K_FACTOR);
-    PrintToChat(client, " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
+    new bool:newPlayer = g_roundsPlayed[client] < PLACEMENT_MATCHES;
+    if (!newPlayer)
+        PrintToChat(client, " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
     g_ratings[client] -= delta;
     DB_WriteRatings(client);
 }
