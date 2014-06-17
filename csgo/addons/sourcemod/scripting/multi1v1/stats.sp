@@ -1,5 +1,7 @@
 #define TABLE_NAME "multi1v1_stats"
 #define K_FACTOR 8.0
+#define K_PLACEMENT_CONSTANT 3.0
+#define PLACEMENT_MATCHES 20
 #define DISTRIBUTION_SPREAD 1000.0
 #define DEFAULT_RATING 1500.0
 #define MIN_RATING 200.0
@@ -83,10 +85,11 @@ public DB_AddPlayer(client) {
  */
 public DB_FetchRatings(client) {
     new Float:rating = 0.0;
+    new any:roundsPlayed = 0;
 
     if (db != INVALID_HANDLE) {
         SQL_LockDatabase(db);
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "SELECT rating FROM %s WHERE accountID = %d", TABLE_NAME, GetSteamAccountID(client));
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "SELECT rating, wins+losses FROM %s WHERE accountID = %d", TABLE_NAME, GetSteamAccountID(client));
         new Handle:query = SQL_Query(db, g_sqlBuffer);
 
         if (query == INVALID_HANDLE) {
@@ -97,14 +100,16 @@ public DB_FetchRatings(client) {
             CloseHandle(db);
         } else if (SQL_FetchRow(query)) {
             rating = SQL_FetchFloat(query, 0);
+            roundsPlayed = SQL_FetchInt(query, 1);
         } else {
-            LogError("Couldn't fetch rating for %N", client);
+            LogError("Couldn't fetch rating or wins_losses for %N", client);
         }
 
         CloseHandle(query);
         SQL_UnlockDatabase(db);
     }
     g_ratings[client] = rating;
+    g_roundsPlayed[client] = roundsPlayed;
 }
 
 /**
@@ -130,6 +135,7 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
             Increment(winner, "losses");
         else
             Increment(winner, "wins");
+
         UpdateRatings(winner, loser, forceLoss, K_FACTOR);
     }
 }
@@ -182,7 +188,16 @@ static UpdateRatings(winner, loser, bool:forceLoss=false, Float:K) {
             return;
         }
 
-        new Float:rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K);
+        new bool:newWinner = g_roundsPlayed[winner] <= PLACEMENT_MATCHES;
+        new bool:newLoser = g_roundsPlayed[loser] <= PLACEMENT_MATCHES;
+        new bool:placementRound = newWinner || newLoser;
+
+        new Float:rating_delta = 0.0;
+        if (placementRound)
+            rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K);
+        else
+            rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K*K_PLACEMENT_CONSTANT);
+
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
             new int_winner_d = RoundToNearest(FloatAbs(rating_delta));
@@ -190,14 +205,29 @@ static UpdateRatings(winner, loser, bool:forceLoss=false, Float:K) {
             new int_loser = RoundToNearest(g_ratings[loser] - rating_delta);
             new int_winner = RoundToNearest(g_ratings[winner] + rating_delta);
 
-            PrintToChat(winner, " \x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
-                int_winner, int_winner_d, loser, int_loser, int_loser_d);
-            PrintToChat(loser,  " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
-                int_loser, int_loser_d, winner, int_winner, int_winner_d);
+            if (!placementRound) {
+                PrintToChat(winner, " \x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
+                    int_winner, int_winner_d, loser, int_loser, int_loser_d);
+                PrintToChat(loser,  " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
+                    int_loser, int_loser_d, winner, int_winner, int_winner_d);
+            } else {
+                PrintToChat(winner, " \x04You \x01beat \x03%N", loser);
+                PrintToChat(loser,  " \x04You \x01lost to \x03%N", winner);
+            }
+            g_roundsPlayed[winner]++;
+            g_roundsPlayed[loser]++;
+
         }
 
-        g_ratings[winner] += rating_delta;
-        g_ratings[loser]  -= rating_delta;
+        if (!newLoser)
+            g_ratings[winner] += rating_delta;
+        else
+            PrintToChat(loser, "You need \x04%d \x01rounds played to get ranked.", PLACEMENT_MATCHES);
+
+        if (!newWinner)
+            g_ratings[loser] -= rating_delta;
+        else
+            PrintToChat(winner, "You need \x04%d \x01rounds played to get ranked.", PLACEMENT_MATCHES);
 
         DB_WriteRatings(winner);
         DB_WriteRatings(loser);
