@@ -68,6 +68,7 @@ new g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
 new g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
 new RoundType:g_roundTypes[MAXPLAYERS+1];
 new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
+new any:g_roundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
 new g_maxArenas = 0; // maximum number of arenas the map can support
@@ -159,6 +160,7 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
+    HookEvent("cs_win_panel_match", Event_MatchOver);
 
     /** Commands **/
     AddCommandListener(Command_Say, "say");
@@ -270,6 +272,9 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         AddPlayer(client);
     }
 
+    new leader = Queue_Peek(g_RankingQueue);
+    g_roundsLeader[leader]++;
+
     // Player placement logic for this round
     g_Arenas = 0;
     for (new arena = 1; arena <= g_maxArenas; arena++) {
@@ -376,6 +381,7 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     decl String:buffer[32];
     Format(buffer, sizeof(buffer), "Arena %d", arena);
     CS_SetClientClanTag(client, buffer);
+    CS_SetMVPCount(client, g_roundsLeader[client]);
 
     if (IsValidClient(other)) {
         PrintToChat(client, " You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
@@ -505,6 +511,21 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     GivePlayerItem(client, "weapon_knife");
 
     CreateTimer(0.0, RemoveRadar, client);
+}
+
+public Event_MatchOver(Handle:event, const String:name[], bool:dontBroadcast) {
+    new maxClient = -1;
+    new maxScore = -1;
+    for (new i = 1; i <= MaxClients; i++) {
+        new score = g_roundsLeader[i];
+        if (maxClient == -1 || score > maxScore) {
+            maxClient = i;
+            maxScore = score;
+        }
+    }
+
+    if (IsValidClient(maxClient))
+        PrintToChatAll(" \x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map", maxClient, maxScore);
 }
 
 /**
@@ -752,6 +773,7 @@ public AddPlayer(client) {
  */
 public ResetClientVariables(client) {
     g_roundsPlayed[client] = 0;
+    g_roundsLeader[client] = 0;
     g_ratings[client] = 0.0;
     g_Rankings[client] = -1;
     g_LetTimeExpire[client] = false;
