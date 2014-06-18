@@ -1,7 +1,7 @@
 #define TABLE_NAME "multi1v1_stats"
 #define K_FACTOR 8.0
 #define K_PLACEMENT_CONSTANT 3.0
-#define PLACEMENT_MATCHES 20
+#define PLACEMENT_MATCHES 30
 #define DISTRIBUTION_SPREAD 1000.0
 #define DEFAULT_RATING 1500.0
 #define MIN_RATING 200.0 // this number MUST be greater than 0.0 to detect failures to fetch ratings
