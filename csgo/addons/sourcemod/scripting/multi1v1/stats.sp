@@ -21,7 +21,6 @@ public DB_Connect() {
         // create the table
         SQL_LockDatabase(db);
         CreateTables();
-        PurgeRows();
         SQL_UnlockDatabase(db);
         g_dbConnected = true;
     }
@@ -31,11 +30,6 @@ static CreateTables() {
     Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, lastTime INT default 0 NOT NULL);", TABLE_NAME);
     SQL_FastQuery(db, g_sqlBuffer);
  }
-
-static PurgeRows() {
-    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "DELETE FROM %s WHERE wins+losses < %d;", TABLE_NAME, GetConVarInt(g_hMinRoundsForDB));
-    SQL_FastQuery(db, g_sqlBuffer);
-}
 
 /**
  * Generic SQL threaded query error callback.

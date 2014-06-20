@@ -133,7 +133,6 @@ public OnPluginStart() {
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
-    g_hMinRoundsForDB = CreateConVar("sm_multi1v1_minrounds", "0", "Minimum number of wins+losses to not be purged from the database on plugin startup (set to 0 to disable purging)", _, false, 0.0, true, 100.0);
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
 
     /** Config file **/
