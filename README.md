@@ -1,8 +1,6 @@
 csgo-multi-1v1
 =======================================
-This is home of my work-in-progress CS:GO multi-1v1 arena plugin. It sets up any number of players in 1v1-situations on specially made maps and they fight in a ladder-type system. The winners move up, the losers go down.
-
-Until the plugin version is greater than 1.0.0 you should consider this **unstable beta software**.
+This is home of my CS:GO multi-1v1 arena plugin. It sets up any number of players in 1v1-situations on specially made maps and they fight in a ladder-type system. The winners move up, the losers go down.
 
 Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php?t=241056).
 
@@ -21,6 +19,7 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 Stable releases are in the [GitHub Releases](https://github.com/splewis/csgo-multi-1v1/releases) section.
 
 I **strongly** recommend using the [Updater](https://forums.alliedmods.net/showthread.php?t=169095) plugin which can automatically update the plugin for bug fixes.
+Any changes made through an automatic update will be backwards compatible.
 
 
 ### Donations

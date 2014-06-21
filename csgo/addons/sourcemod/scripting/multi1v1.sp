@@ -34,7 +34,6 @@ new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hBlockRadio = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hStatsWebsite = INVALID_HANDLE;
-new Handle:g_hMinRoundsForDB = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
 
@@ -200,9 +199,6 @@ public OnMapStart() {
     g_WaitingQueue = Queue_Init();
     ServerCommand("exec gamemode_competitive.cfg");
     ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
-    // GameRules_SetProp("m_bWarmupPeriod", false, _, _, true);
-    // GameRules_SetPropFloat("m_fWarmupPeriodEnd", GetGameTime(), _, true);
-    // CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
 public OnMapEnd() {
@@ -433,12 +429,6 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
     new victim = GetClientOfUserId(GetEventInt(event, "userid"));
     new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     new arena = g_Rankings[victim];
-
-    // TODO: remove me
-    if (arena == -1) {
-        LogError("player %N had arena -1 on death!", victim);
-        return;
-    }
 
     if (!IsValidClient(attacker) || !IsClientInGame(attacker) || attacker == victim) {
         new p1 = g_ArenaPlayer1[arena];
