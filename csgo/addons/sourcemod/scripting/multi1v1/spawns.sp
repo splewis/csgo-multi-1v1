@@ -7,14 +7,8 @@ public Spawns_MapStart() {
     g_hCTSpawns = CreateArray(3);
     g_hCTAngles = CreateArray(3);
 
-    ClearArray(g_hTSpawns);
-    ClearArray(g_hTAngles);
-    ClearArray(g_hCTSpawns);
-    ClearArray(g_hCTAngles);
-
-    // spawn counts
-    new ct = 0;
-    new t = 0;
+    new numTSpawns = 0;
+    new numCTSpawns = 0;
 
     new maxEnt = GetMaxEntities();
     decl String:sClassName[64], Float:fVec[3];
@@ -27,24 +21,24 @@ public Spawns_MapStart() {
                 PushArrayArray(g_hTSpawns, fVec);
                 GetEntPropVector(i, Prop_Data, "m_angRotation", fVec);
                 PushArrayArray(g_hTAngles, fVec);
-                t++;
+                numTSpawns++;
             }  else if (StrEqual(sClassName, "info_player_counterterrorist")) {
                 GetEntPropVector(i, Prop_Data, "m_vecOrigin", fVec);
                 PushArrayArray(g_hCTSpawns, fVec);
                 GetEntPropVector(i, Prop_Data, "m_angRotation", fVec);
                 PushArrayArray(g_hCTAngles, fVec);
-                ct++;
+                numCTSpawns++;
             }
         }
     }
 
 
-    new minSpawns = (ct < t) ? ct : t;
+    new minSpawns = (numCTSpawns < numTSpawns) ? numCTSpawns : numTSpawns;
     g_maxArenas = minSpawns;
     if (g_maxArenas <= 1) {
-        LogError("Only found %d arenas for this map - %d T spawns and %d CT spawns", g_maxArenas, t, ct);
+        LogError("Only found %d arenas for this map - %d T spawns and %d CT spawns", g_maxArenas, numTSpawns, numCTSpawns);
     } else {
-        LogMessage("Found %d CT spawns and %d T spawns - using %d arenas", ct, t, g_maxArenas);
+        LogMessage("Found %d CT spawns and %d T spawns - using %d arenas", numCTSpawns, numTSpawns, g_maxArenas);
     }
 }
 

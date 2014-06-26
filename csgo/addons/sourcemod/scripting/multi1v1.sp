@@ -56,8 +56,8 @@ new bool:g_AllowAWP[MAXPLAYERS+1];
 new bool:g_AllowPistol[MAXPLAYERS+1];
 new bool:g_GiveFlash[MAXPLAYERS+1];
 new RoundType:g_Preference[MAXPLAYERS+1];
-new String:g_primaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
-new String:g_secondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
+new String:g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
+new String:g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 
 /** Arena arrays **/
 new bool:g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
@@ -71,8 +71,8 @@ new any:g_roundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
 new g_maxArenas = 0; // maximum number of arenas the map can support
-new g_Arenas = 1; // number of active arenas
-new g_TotalRounds = 0; // rounds played on this map so far
+new g_arenas = 1; // number of active arenas
+new g_totalRounds = 0; // rounds played on this map so far
 new bool:g_RoundFinished = false;
 new Handle:g_RankingQueue = INVALID_HANDLE;
 new Handle:g_WaitingQueue = INVALID_HANDLE;
@@ -187,8 +187,8 @@ public OnMapStart() {
         DB_Connect();
     }
     Spawns_MapStart();
-    g_Arenas = 1;
-    g_TotalRounds = 0;
+    g_arenas = 1;
+    g_totalRounds = 0;
     g_RoundFinished = false;
     for (new i = 0; i <= MAXPLAYERS; i++) {
         g_ArenaPlayer1[i] = -1;
@@ -251,15 +251,15 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     AddPlayer(g_ArenaWinners[2]);
 
     // middle arenas
-    for (new i = 2; i <= g_Arenas - 1; i++) {
+    for (new i = 2; i <= g_arenas - 1; i++) {
         AddPlayer(g_ArenaLosers[i - 1]);
         AddPlayer(g_ArenaWinners[i + 1]);
     }
 
     // bottom arena
-    if (g_Arenas >= 1) {
-        AddPlayer(g_ArenaLosers[g_Arenas - 1]);
-        AddPlayer(g_ArenaLosers[g_Arenas]);
+    if (g_arenas >= 1) {
+        AddPlayer(g_ArenaLosers[g_arenas - 1]);
+        AddPlayer(g_ArenaLosers[g_arenas]);
     }
 
     while (Queue_Length(g_RankingQueue) < 2*g_maxArenas && Queue_Length(g_WaitingQueue) > 0) {
@@ -271,7 +271,7 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     g_roundsLeader[leader]++;
 
     // Player placement logic for this round
-    g_Arenas = 0;
+    g_arenas = 0;
     for (new arena = 1; arena <= g_maxArenas; arena++) {
         new p1 = Queue_Dequeue(g_RankingQueue);
         new p2 = Queue_Dequeue(g_RankingQueue);
@@ -291,7 +291,7 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         }
 
         if (realp1 || realp2) {
-            g_Arenas++;
+            g_arenas++;
         }
     }
 
@@ -366,9 +366,9 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     // Arbitrary scores for ordering players in the scoreboard
     new score = 0;
     if (g_ArenaPlayer1[arena] == client) {
-        score = 3*g_Arenas - 3*arena + 1;
+        score = 3*g_arenas - 3*arena + 1;
     } else {
-        score = 3*g_Arenas - 3*arena;
+        score = 3*g_arenas - 3*arena;
     }
     CS_SetClientContributionScore(client, score);
 
@@ -393,7 +393,7 @@ public SetupPlayer(client, arena, other, bool:onCT) {
  *  - updates globals g_Rankings, g_ArenaPlayer1, g_ArenaPlayer2 for the next round setup
  */
 public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
-    g_TotalRounds++;
+    g_totalRounds++;
     g_RoundFinished = true;
 
     // If time ran out and we have no winners/losers, set them
@@ -481,7 +481,7 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     new RoundType:roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
 
     if (roundType == RoundType_Rifle) {
-        if (GivePlayerItem(client, g_primaryWeapon[client]) == -1)
+        if (GivePlayerItem(client, g_PrimaryWeapon[client]) == -1)
             GivePlayerItem(client, "weapon_ak47");
     } else if (roundType == RoundType_Awp) {
         GivePlayerItem(client, "weapon_awp");
@@ -489,7 +489,7 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
         RemoveVestHelm(client);
     }
 
-    if (GivePlayerItem(client, g_secondaryWeapon[client]) == -1)
+    if (GivePlayerItem(client, g_SecondaryWeapon[client]) == -1)
         GivePlayerItem(client, "weapon_glock");
 
     new other = GetOpponent(client);
@@ -677,7 +677,7 @@ public RemoveVestHelm(client) {
 
     new bool:removeKevlar = true;
     for (new i = 0; i < 3; i++) {
-        if (StrEqual(g_secondaryWeapon[client], kevlarAllowed[i])) {
+        if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
             removeKevlar = false;
             break;
         }
@@ -770,8 +770,8 @@ public ResetClientVariables(client) {
     g_AllowPistol[client] = false;
     g_GiveFlash[client] = false;
     g_Preference[client] = RoundType_Rifle;
-    g_primaryWeapon[client] = "weapon_ak47";
-    g_secondaryWeapon[client] = "weapon_glock";
+    g_PrimaryWeapon[client] = "weapon_ak47";
+    g_SecondaryWeapon[client] = "weapon_glock";
 }
 
 /**

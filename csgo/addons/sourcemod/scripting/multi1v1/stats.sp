@@ -1,7 +1,7 @@
 #define TABLE_NAME "multi1v1_stats"
 #define K_FACTOR 8.0
 #define K_PLACEMENT_CONSTANT 4.0
-#define PLACEMENT_MATCHES 15
+#define PLACEMENT_MATCHES 20
 #define DISTRIBUTION_SPREAD 1000.0
 #define DEFAULT_RATING 1500.0
 #define MIN_RATING 200.0 // this number MUST be greater than 0.0 to detect failures to fetch ratings
@@ -120,7 +120,7 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
     if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
 
         /* TODO: this is a temporary band-aid for the first round ending too early sometimes and unfairly punishes early connectors */
-        if (forceLoss && g_TotalRounds <= 2) {
+        if (forceLoss && g_totalRounds <= 2) {
             return;
         }
 

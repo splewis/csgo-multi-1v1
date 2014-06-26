@@ -1,3 +1,5 @@
+#define MENU_TIME_LENGTH 15
+
 new String:g_Rifles[][][] = {
     {"weapon_ak47", "AK47"},
     {"weapon_m4a1", "M4A4"},
@@ -84,7 +86,7 @@ public AWPMenu(client) {
     SetMenuTitle(menu, "Allow AWP rounds?");
     AddMenuBool(menu ,true, "Yes");
     AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+    DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
 /**
@@ -110,7 +112,7 @@ public PistolMenu(client) {
     SetMenuTitle(menu, "Allow pistol rounds?");
     AddMenuBool(menu, true, "Yes");
     AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+    DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
 /**
@@ -148,7 +150,7 @@ public PreferenceMenu(client) {
         AddMenuInt(menu, RoundType_Pistol, "Pistol Rounds");
     AddMenuInt(menu, RoundType_NoPreference, "No Preference");
 
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+    DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
 /**
@@ -176,7 +178,7 @@ public RifleChoiceMenu(client) {
     for (new i = 0; i < sizeof(g_Rifles); i++)
         AddMenuItem(menu, g_Rifles[i][0], g_Rifles[i][1]);
 
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+    DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
 /**
@@ -187,7 +189,7 @@ public MenuHandler_RifleChoice(Handle:menu, MenuAction:action, param1, param2) {
         new client = param1;
         decl String:info[WEAPON_LENGTH];
         GetMenuItem(menu, param2, info, sizeof(info));
-        g_primaryWeapon[client] = info;
+        g_PrimaryWeapon[client] = info;
         SetClientCookie(client, g_hRifleCookie, info);
         PistolChoiceMenu(client);
     } else if (action == MenuAction_End) {
@@ -205,7 +207,7 @@ public PistolChoiceMenu(any:client) {
     for (new i = 0; i < sizeof(g_Pistols); i++)
         AddMenuItem(menu, g_Pistols[i][0], g_Pistols[i][1]);
 
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+    DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
 /**
@@ -216,7 +218,7 @@ public MenuHandler_PistolChoice(Handle:menu, MenuAction:action, param1, param2) 
         new any:client = param1;
         decl String:info[WEAPON_LENGTH];
         GetMenuItem(menu, param2, info, sizeof(info));
-        g_secondaryWeapon[client] = info;
+        g_SecondaryWeapon[client] = info;
         SetClientCookie(client, g_hPistolCookie, info);
         FlashbangChoiceMenu(client);
     } else if (action == MenuAction_End) {
@@ -233,7 +235,7 @@ public FlashbangChoiceMenu(any:client) {
     SetMenuTitle(menu, "Give players flashbangs?");
     AddMenuBool(menu, true, "Yes");
     AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+    DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
 /**
@@ -265,8 +267,8 @@ public UpdatePreferencesOnCookies(client) {
 
     decl String:sCookieValue[WEAPON_LENGTH];
     GetClientCookie(client, g_hRifleCookie, sCookieValue, sizeof(sCookieValue));
-    strcopy(g_primaryWeapon[client], sizeof(sCookieValue), sCookieValue);
+    strcopy(g_PrimaryWeapon[client], sizeof(sCookieValue), sCookieValue);
 
     GetClientCookie(client, g_hPistolCookie, sCookieValue, sizeof(sCookieValue));
-    strcopy(g_secondaryWeapon[client], sizeof(sCookieValue), sCookieValue);
+    strcopy(g_SecondaryWeapon[client], sizeof(sCookieValue), sCookieValue);
 }
