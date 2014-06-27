@@ -68,8 +68,10 @@ public DB_AddPlayer(client) {
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         // update last connect time
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+        if (GetConVarInt(g_hRecordTimes) != 0) {
+            Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
+            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+        }
     }
 }
 

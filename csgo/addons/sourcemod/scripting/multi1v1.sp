@@ -35,6 +35,7 @@ new Handle:g_hBlockRadio = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hStatsWebsite = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
+new Handle:g_hRecordTimes = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
 
 /** Saved data for database interaction - be careful when using these, they may not
@@ -131,6 +132,7 @@ public OnPluginStart() {
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
+    g_hRecordTimes = CreateConVar("sm_multi1v1_record_times", "0", "Should the lastTime field store when players connect?");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
 
