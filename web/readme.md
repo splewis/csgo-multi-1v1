@@ -18,4 +18,4 @@ A feature for this was not included in the base plugin, but a way to do it has b
 Replace the URL with something like "http://www.domain.com/stats/redirect.php?id=".
 
 ###Web Interface
-This web interface was a quick job that I randomly took up while I was learning PHP. I will try and keep it updated when I can, but no promises. If you have any issues setting it up, feel free to email me at clayton@hidddenempire.org.
+This web interface was a quick job that I randomly took up while I was learning PHP. I will try and keep it updated when I can, but no promises. If you have any issues setting it up, feel free to email me at clayton@hiddenempire.org
