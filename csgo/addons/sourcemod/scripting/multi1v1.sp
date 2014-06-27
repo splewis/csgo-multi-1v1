@@ -270,7 +270,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     }
 
     new leader = Queue_Peek(g_RankingQueue);
-    g_roundsLeader[leader]++;
+    if (IsValidClient(leader))
+        g_roundsLeader[leader]++;
 
     // Player placement logic for this round
     g_arenas = 0;
