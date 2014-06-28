@@ -207,9 +207,27 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
                 PrintToChat(loser,  " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
                     int_loser, int_loser_d, winner, int_winner, int_winner_d);
             } else {
-                PrintToChat(winner, " \x04You \x01beat \x03%N", loser);
-                PrintToChat(loser,  " \x04You \x01lost to \x03%N", winner);
+                if (newLoser)
+                    PrintToChat(winner, " \x04You \x01beat \x03%N \x01(\x03Unranked\x01)", loser);
+                else
+                    PrintToChat(winner, " \x04You \x01beat \x03%N", loser);
+
+                if (newWinner)
+                    PrintToChat(loser,  " \x04You \x01lost to \x03%N \x01(\x03Unranked\x01)", winner);
+                else
+                    PrintToChat(loser,  " \x04You \x01lost to \x03%N", winner);
             }
+
+            if (!newLoser || newWinner)
+                g_ratings[winner] += rating_delta;
+            else
+                PrintToChat(loser, " You need \x04%d \x01more rounds played to get ranked.", PLACEMENT_MATCHES - g_roundsPlayed[loser] + 1);
+
+            if (!newWinner || newLoser)
+                g_ratings[loser] -= rating_delta;
+            else
+                PrintToChat(winner, " You need \x04%d \x01more rounds played to get ranked.", PLACEMENT_MATCHES - g_roundsPlayed[winner] + 1);
+
             g_roundsPlayed[winner]++;
             g_roundsPlayed[loser]++;
 
