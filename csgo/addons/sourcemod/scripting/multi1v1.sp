@@ -269,6 +269,12 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         AddPlayer(client);
     }
 
+    for (new i = 0; i < Queue_Length(g_WaitingQueue); i++) {
+        new client = GetArrayCell(g_WaitingQueue, i);
+        PrintToChat(client, " Sorry, all the arenas are currently \x03full.");
+        PrintToChat(client, " You are in position \x04%d \x01in the waiting queue", i+1);
+    }
+
     new leader = Queue_Peek(g_RankingQueue);
     if (IsValidClient(leader))
         g_roundsLeader[leader]++;
