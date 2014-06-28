@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION "0.4.0"
+#define PLUGIN_VERSION "0.4.1"
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v0.4.x/csgo-multi-1v1.txt"
 #pragma semicolon 1
 

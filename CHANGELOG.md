@@ -1,3 +1,6 @@
+0.4.1:
+ - remove placement match rating system
+
 0.4.0:
  - add `lastTime` field to the database to track last time the player connected, and cvar `sm_multi1v1_record_times` to control if this feature is used.
   If you are upgrading from a previous version you will need to run the following command to update your tables:
