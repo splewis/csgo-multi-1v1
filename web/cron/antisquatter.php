@@ -1,6 +1,8 @@
 <?php
 require_once '../includes/config.inc.php';
 
+ini_set('max_execution_time', 300);
+
 $localIP = $_SERVER['SERVER_ADDR'];
 $externalIP = $_SERVER['REMOTE_ADDR'];
 $changes = 0;
@@ -16,12 +18,7 @@ if ($localIP == $externalIP) {
 				$rating = $row['rating'];
 				$lastTime = $row['lastTime'];
 
-				// echo "Name: $name<br>
-				// LastTime: $lasttime<br>
-				// ELO Rating: $rating<br>";
-
 				$elapsedtime_days = number_format((float)(time() - $lastTime) / 86400, 2, '.', '');
-				// echo $elapsedtime_days;
 
 				if($elapsedtime_days > 1 && $rating > 1500 && $lastTime > 0){
 					$rating_loss = $antisquatter_rate_loss * $elapsedtime_days * ($rating - 1500) / $rating;

@@ -13,7 +13,7 @@ $generated = "<table class=\"tg\" width=\"450px\">
 
 $alt = 0;
 
-$query = "SELECT s1.*, (SELECT COUNT(*) FROM multi1v1_stats AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM multi1v1_stats AS s1 ORDER BY rating DESC";
+$query = "SELECT s1.*, (SELECT COUNT(*) FROM multi1v1_stats AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM multi1v1_stats AS s1 ORDER BY rating DESC LIMIT 0, 15";
 
 if (@$query_run = mysql_query($query)) {
 	for ($i = 0; $i < 15; $i++) {
