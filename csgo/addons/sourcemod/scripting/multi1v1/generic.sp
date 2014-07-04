@@ -148,3 +148,32 @@ public PushArrayCellReplicated(Handle:array, any:value, any:times) {
     for (new i = 0; i < times; i++)
         PushArrayCell(array, value);
 }
+
+
+public any:Min(any:x, any:y) {
+    return (x < y) ? x : y;
+}
+
+public NearestNeighborIndex(Float:vec[3], Handle:others) {
+    new closestIndex = -1;
+    new Float:closestDistance = 1.0e300;
+    for (new i = 0; i < GetArraySize(others); i++) {
+        new Float:tmp[3];
+        GetArrayArray(others, i, tmp);
+        new Float:dist = GetVectorDistance(vec, tmp);
+        if (dist < closestDistance) {
+            closestDistance = dist;
+            closestIndex = i;
+        }
+    }
+
+    return closestIndex;
+}
+
+public CloseHandleArray(Handle:array) {
+    for (new i = 0; i < GetArraySize(array); i++) {
+        new Handle:tmp = GetArrayCell(array, i);
+        CloseHandle(tmp);
+    }
+    CloseHandle(array);
+}

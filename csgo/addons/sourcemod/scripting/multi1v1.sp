@@ -30,6 +30,7 @@ new String:assertBuffer[1024];
 #endif
 
 /** ConVar handles **/
+new Handle:g_hVerboseSpawnModes = INVALID_HANDLE;
 new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hBlockRadio = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
@@ -129,6 +130,7 @@ public OnPluginStart() {
     LoadTranslations("common.phrases");
 
     /** ConVars **/
+    g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
@@ -359,26 +361,20 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     new Float:angles[3];
     new Float:spawn[3];
 
-    if (onCT) {
-        SwitchPlayerTeam(client, CS_TEAM_CT);
-        GetArrayArray(g_hCTSpawns, arena - 1, spawn);
-        GetArrayArray(g_hCTAngles, arena - 1, angles);
-    } else {
-        SwitchPlayerTeam(client, CS_TEAM_T);
-        GetArrayArray(g_hTSpawns, arena - 1, spawn);
-        GetArrayArray(g_hTAngles, arena - 1, angles);
-    }
+    new team = onCT ? CS_TEAM_CT : CS_TEAM_T;
+    SwitchPlayerTeam(client, team);
+    GetSpawn(arena, team, spawn, angles);
 
     CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);
 
-    // Arbitrary scores for ordering players in the scoreboard
     new score = 0;
-    if (g_ArenaPlayer1[arena] == client) {
+    // Arbitrary scores for ordering players in the scoreboard
+    if (g_ArenaPlayer1[arena] == client)
         score = 3*g_arenas - 3*arena + 1;
-    } else {
+    else
         score = 3*g_arenas - 3*arena;
-    }
+
     CS_SetClientContributionScore(client, score);
 
     // Set clan tags to the arena number
