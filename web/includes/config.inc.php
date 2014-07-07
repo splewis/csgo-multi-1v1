@@ -2,12 +2,12 @@
 /**
  * =============================================================================
  * @author Clayton
- * @version 1.3.2
+ * @version 1.3.5
  * @link https://github.com/supimfuzzy/csgo-multi-1v1
  * =============================================================================
  */
 
-$mysql_host = 'localhost:3306';
+$mysql_host = 'localhost';
 $mysql_user = 'root';
 $mysql_pass = '';
 $mysql_db = '';
@@ -19,7 +19,6 @@ $antisquatter_rate_loss = 40; //Rate loss constant. A higher value equals a high
 $log_antisquatter = true; //Keep IP logs and the number of player stats changes. For debugging and testing purposes only.
 $days_until_inactivity = 7; //Number of days before a player is given an inactive status.
 
-if (!mysql_connect($mysql_host,$mysql_user,$mysql_pass) || !mysql_select_db($mysql_db)){
-	die('Cannot connect.');
-}
+$connect = mysqli_connect($mysql_host,$mysql_user,$mysql_pass) or die('Cannot connect to server.');
+$select_db = mysqli_select_db($connect, $mysql_db) or die('Cannot find database.')
 ?>
