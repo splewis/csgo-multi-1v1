@@ -3,41 +3,41 @@ require_once '../includes/config.inc.php';
 
 ini_set('max_execution_time', 300);
 
-$localIP = $_SERVER['SERVER_ADDR'];
+if (array_key_exists('SERVER_ADDR', $_SERVER)){
+	$localIP = $_SERVER['SERVER_ADDR'];
+} elseif(array_key_exists('LOCAL_ADDR', $_SERVER)){
+	$localIP = $_SERVER['LOCAL_ADDR'];
+}
+
 $externalIP = $_SERVER['REMOTE_ADDR'];
 $changes = 0;
 
 if ($localIP == $externalIP) {
-	$query = "SELECT accountID, name, rating, lastTime FROM multi1v1_stats";
+	$run_query = "SELECT accountID, name, rating, lastTime, TRUNCATE((unix_timestamp(NOW()) - lastTime) / 86400, 0) AS elapsedtime_days FROM multi1v1_stats WHERE rating > 1500 AND lastTime > 0 AND (unix_timestamp(NOW()) - lastTime) > 86400";
+	$query = mysqli_query($connect, $run_query);
 
-	if (mysql_fetch_row(mysql_query($query)) > 0) {
-		if ($query_run = mysql_query($query)) {
-			while ($row = mysql_fetch_assoc($query_run)) {
-				$accountID = $row['accountID'];
-				$name = $row['name'];
-				$rating = $row['rating'];
-				$lastTime = $row['lastTime'];
+	mysqli_begin_transaction($connect);
 
-				$elapsedtime_days = number_format((float)(time() - $lastTime) / 86400, 2, '.', '');
+	while ($row = mysqli_fetch_assoc($query)) {
+		$accountID = $row['accountID'];
+		$rating = $row['rating'];
+		$lastTime = $row['lastTime'];
+		$elapsedtime_days = $row['elapsedtime_days'];
 
-				if($elapsedtime_days > 1 && $rating > 1500 && $lastTime > 0){
-					$rating_loss = $antisquatter_rate_loss * $elapsedtime_days * ($rating - 1500) / $rating;
-					$rating_new = number_format((float)$rating - $rating_loss, 2, '.', '');
+		$rating_loss = $antisquatter_rate_loss * $elapsedtime_days * ($rating - 1500) / $rating;
+		$rating_new = number_format((float)$rating - $rating_loss, 2, '.', '');
 
-					echo $name.": ";
-					echo $elapsedtime_days." ::";
-					echo $rating_new."<br>";
-					mysql_query("UPDATE multi1v1_stats SET rating='$rating_new' WHERE accountID='$accountID'");
-					$changes++;
-				}
-			}
-		}
+		mysqli_query($connect, "UPDATE multi1v1_stats SET rating='$rating_new' WHERE accountID='$accountID'");
+		$changes++;
 	}
+
+	mysqli_commit($connect);
+
 	if ($log_antisquatter == true) {
 		file_put_contents("antisquatter.log", date('d/m/y h:i:s')." Script ran successfully. | Players updated: ".$changes."\n", FILE_APPEND);
 	}
-}
-else {
+	echo "Complete. Updated $changes players.";
+} else{
 	echo 'You aren\'t supposed to be here! Only follow links!';
 	if ($log_antisquatter == true) {
 		file_put_contents("antisquatter.log", date('d/m/y h:i:s')." File unsuccessfully accessed from IP: ".$externalIP.". Local IP: ".$localIP.".\n", FILE_APPEND);
