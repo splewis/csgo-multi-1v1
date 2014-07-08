@@ -1,22 +1,23 @@
 <?php
 require_once '../includes/config.inc.php';
 
-ini_set('max_execution_time', 300);
+$externalIP = $_SERVER['REMOTE_ADDR'];
 
-if (array_key_exists('SERVER_ADDR', $_SERVER)){
-	$localIP = $_SERVER['SERVER_ADDR'];
-} elseif(array_key_exists('LOCAL_ADDR', $_SERVER)){
-	$localIP = $_SERVER['LOCAL_ADDR'];
+if (isset($_GET['p']) && !empty($_GET['p'])) {
+	$passphrase = $_GET['p'];
+} else{
+	die("<b>You aren't supposed to be here! Only follow links!<b>");
 }
 
-$externalIP = $_SERVER['REMOTE_ADDR'];
+ini_set('max_execution_time', 300);
 $changes = 0;
 
-if ($localIP == $externalIP) {
-	$run_query = "SELECT accountID, name, rating, lastTime, TRUNCATE((unix_timestamp(NOW()) - lastTime) / 86400, 0) AS elapsedtime_days FROM multi1v1_stats WHERE rating > 1500 AND lastTime > 0 AND (unix_timestamp(NOW()) - lastTime) > 86400";
+if ($passphrase == $anti_squatter_pass) {
+	$run_query = "SELECT accountID, name, rating, lastTime, TRUNCATE((unix_timestamp(NOW()) - lastTime) / 86400, 0) AS elapsedtime_days FROM $mysql_table WHERE rating > 1500 AND lastTime > 0 AND (unix_timestamp(NOW()) - lastTime) > 86400";
 	$query = mysqli_query($connect, $run_query);
 
-	mysqli_begin_transaction($connect);
+	mysqli_autocommit($connect, false);
+
 
 	while ($row = mysqli_fetch_assoc($query)) {
 		$accountID = $row['accountID'];
@@ -38,9 +39,9 @@ if ($localIP == $externalIP) {
 	}
 	echo "Complete. Updated $changes players.";
 } else{
-	echo 'You aren\'t supposed to be here! Only follow links!';
 	if ($log_antisquatter == true) {
-		file_put_contents("antisquatter.log", date('d/m/y h:i:s')." File unsuccessfully accessed from IP: ".$externalIP.". Local IP: ".$localIP.".\n", FILE_APPEND);
+		file_put_contents("antisquatter.log", date('d/m/y h:i:s')." Invalid password from IP: ".$externalIP."\n", FILE_APPEND);
 	}
+	echo "<b>Incorrect Password!</b>";
 }
 ?>
