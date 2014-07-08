@@ -2,7 +2,7 @@
 /**
  * =============================================================================
  * @author Clayton
- * @version 1.3.5
+ * @version 1.3.6
  * @link https://github.com/supimfuzzy/csgo-multi-1v1
  * =============================================================================
  */
@@ -17,6 +17,7 @@ $page_title = "Multi 1v1 Arena";
 $SteamAPI_Key = ""; //https://steamcommunity.com/dev/apikey
 $antisquatter_rate_loss = 40; //Rate loss constant. A higher value equals a higher rate loss per day of inactivity.
 $log_antisquatter = true; //Keep IP logs and the number of player stats changes. For debugging and testing purposes only.
+$anti_squatter_pass = ""; //Used to access anti-squatter.php
 $days_until_inactivity = 7; //Number of days before a player is given an inactive status.
 
 $connect = mysqli_connect($mysql_host,$mysql_user,$mysql_pass) or die('Cannot connect to server.');
