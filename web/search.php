@@ -26,14 +26,16 @@
 		</div>
 
 		<?php
-		if (isset($_GET['searchquery']) && !empty($_GET['searchquery']) && strlen($_GET['searchquery'])>2) {
+		if (isset($_GET['searchquery']) && !empty($_GET['searchquery']) && strlen($_GET['searchquery'])>2){
 			$searchquery = htmlentities($_GET['searchquery']);
-			$query = "SELECT `accountID`, `name` FROM multi1v1_stats WHERE name LIKE '%".mysql_real_escape_string($searchquery)."%'";
+			$run_query = "SELECT `accountID`, `name` FROM multi1v1_stats WHERE name LIKE '%".mysqli_real_escape_string($connect, $searchquery)."%'";
+			$query = mysqli_query($connect, $run_query);
+
 			echo "<h3>Searching for players with name \"$searchquery\".</h3>";
-			if(mysql_fetch_row(mysql_query($query)) > 0) {
+			if (mysqli_num_rows($query) > 0){
 				echo "<div class=\"stats\">Players found:<br><ul>";
-				if ($query_run = mysql_query($query)) {
-					while ($row = mysql_fetch_assoc($query_run)) {
+				if ($query) {
+					while ($row = mysqli_fetch_assoc($query)){
 						$accountID = $row['accountID'];
 						$name = $row['name'];
 						echo "<h2><li><a href=\"index.php?id=".$accountID."\">$name</a></li></h2>";

@@ -13,11 +13,12 @@ $generated = "<table class=\"tg\" width=\"450px\">
 
 $alt = 0;
 
-$query = "SELECT s1.*, (SELECT COUNT(*) FROM multi1v1_stats AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM multi1v1_stats AS s1 ORDER BY rating DESC LIMIT 0, 15";
+$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM multi1v1_stats AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM multi1v1_stats AS s1 ORDER BY rating DESC LIMIT 0, 15";
+$query = mysqli_query($connect, $run_query);
 
-if (@$query_run = mysql_query($query)) {
-	for ($i = 0; $i < 15; $i++) {
-		$row = mysql_fetch_assoc($query_run);
+if (@$query){
+	for ($i = 0; $i < 15; $i++){
+		$row = mysqli_fetch_assoc($query);
 		$accountID = $row['accountID'];
 		$rank = $row['rank'];
 		$name = $row['name'];
@@ -26,10 +27,10 @@ if (@$query_run = mysql_query($query)) {
 		$rating = $row['rating'];
 		$lastTime = $row['lastTime'];
 
-		if ($alt == 0) {
+		if ($alt == 0){
 			$generated .= "<tr><td class=\"tg-bsv2\">$rank</td>";
 
-			if (isPlayerActive($lastTime) == true) {
+			if (isPlayerActive($lastTime) == true){
 				$generated .= "<td class=\"tg-bsv2\"><a href=\"index.php?id=".$accountID."\">$name (Inactive)</a></td>";
 			} else {
 				$generated .= "<td class=\"tg-bsv2\"><a href=\"index.php?id=".$accountID."\">$name</a></td>";
@@ -40,12 +41,12 @@ if (@$query_run = mysql_query($query)) {
 							<td class=\"tg-bsv2\">".number_format((float)$wins/$losses, 2, '.', '')."</td>
 							<td class=\"tg-bsv2\">$rating</td></tr>";
 			$alt = 1;
-		} else {
+		} else{
 			$generated .= "<tr><td class=\"tg-dilm\">$rank</td>";
 
 			if (isPlayerActive($lastTime) == true){
 				$generated .= "<td class=\"tg-dilm\"><a href=\"index.php?id=".$accountID."\">$name (Inactive)</a></td>";
-			} else {
+			} else{
 				$generated .= "<td class=\"tg-dilm\"><a href=\"index.php?id=".$accountID."\">$name</a></td>";
 			}
 
