@@ -5,10 +5,10 @@ Multi 1v1 Arena Web Stats Interface
 Edit config.inc.php with your appropriate database credentials, page title, Steam Web API key, and other settings. All descriptions are avaliable in the file.
 
 ###Setting up Anti-Squatter
-Setting up the anti-squatter feature is fairly simple if your host supports it.
-All you have to do is create a cronjob set to run everyday with the command following command:
+Setting up the anti-squatter feature is fairly simple to set up.
+All you have to do is add a password to $anti_squatter_pass in config.inc.php and create a cronjob set to run everyday with the command following command:
 ```bash
-wget http://www.domain.com/stats/cron/antisquatter.php && rm -rf antisquatter.php
+wget http://www.domain.com/stats/cron/antisquatter.php?p={YOUR_PASSWORD} && rm -rf antisquatter.php
 ```
 What that command does is request the antisquatter.php file and then deletes it.
 The anti-squatter script has a feature that prevents the file from being run on a computer other than the local machine. It does this by checking the IP of the connecting machine and comparing it with the IP of the local machine. If the IPs are the same, the script runs. This might not always work. If you are having problems, feel free to email me.
