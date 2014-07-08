@@ -2,14 +2,19 @@ Multi-1v1 Web Interface
 =========
 Updates
 ----
-1.3.5
+1.3.6
 -----------
-* Made a switch from MySQL to MySQLi
-* [Anti-Squatter] - Now completes the job much faster.
+* Switched from checking IP to using a password for Anti-Squatter.
+* mysqli_begin_transaction did not exist in older versions of PHP. Changed to mysqli_autocommit.
 
 Upcoming
 * Add an option to disable getting the player's avatar/online status.
 * Option to backup database before running Anti-Squatter
+
+1.3.5
+-----------
+* Made a switch from MySQL to MySQLi
+* [Anti-Squatter] - Now completes the job much faster.
 
 1.3.2
 -----------
