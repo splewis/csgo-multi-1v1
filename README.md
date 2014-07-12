@@ -14,7 +14,6 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 - ELO ranking system: optionally, player statistics can be stored in a database, see below for details
 
 
-
 ### Download
 Stable releases are in the [GitHub Releases](https://github.com/splewis/csgo-multi-1v1/releases) section.
 
@@ -55,7 +54,8 @@ Guidelines for making a multi-1v1 map:
 - Create 1 arena and test it well, and when are you happy copy it
 - Create at least 9 arenas, I'd recommend at least 12, however. Any more than 16 is probably overkill.
 - The players shouldn't be able to see each other on spawn
-- Each arena should have exactly 2 spawns - one for CT's and one for T's (this is a condition that may be relaxed in the future)
+- Each group of spawns (e.g. all CT spawns in arena 1) must be within 1600.0 units of each other, this is required to cluster spawns into the arenas and not configurable
+- Ensure that the arenas are sufficiently far apart so players don't hear shooting in other arenas
 - If you want to edit your map, it's easiest to delete all but 1 arena and re-copy them. Be warned this can cause issues with the game's lighting and clients may crash the first time they load the new map if they had downloaded the old one previously
 - You should avoid areas where it's easy for 1 player to hide; ideally they should have to cover multiple angles if they sit in one spot
 

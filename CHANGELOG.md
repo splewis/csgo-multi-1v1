@@ -1,3 +1,6 @@
+0.5.0:
+ - maps can have multiple spawns per arena per player now
+
 0.4.1:
  - remove placement match rating system
 
@@ -24,4 +27,4 @@
 - revert to comparing boolean convars as ints so they work properly
 
 0.3.0:
-- initial release
+- initial public release

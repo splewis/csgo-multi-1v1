@@ -34,7 +34,7 @@ public Spawns_MapStart() {
                 GetEntPropVector(i, Prop_Data, "m_angRotation", angle);
                 AddSpawn(spawn, angle, g_hCTSpawns, g_hCTAngles);
                 if (verbose)
-                    LogMessage("T spawn (ent %d) %f %f %f",
+                    LogMessage("CT spawn (ent %d) %f %f %f",
                                i, spawn[0], spawn[1], spawn[2]);
             }
         }
@@ -48,11 +48,13 @@ public Spawns_MapStart() {
     for (new i = 0; i < g_maxArenas; i++)
         takenTSpawns[i] = false;
 
+
+    // Looping through CT spawn clusters, matching the nearest T spawn cluster to each
     for (new i = 0; i < g_maxArenas; i++) {
         new Handle:ct_spawns = GetArrayCell(g_hCTSpawns, i);
 
         new closestIndex = -1;
-        new Float:closestDist = 1.0e300;
+        new Float:closestDist = 0.0;
 
         for (new j = 0; j < g_maxArenas; j++) {
             if (takenTSpawns[j])
