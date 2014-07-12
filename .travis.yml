@@ -1,3 +1,9 @@
 language: c
-install: "wget https://dl.dropboxusercontent.com/u/76035852/spcomp; PATH+=':'; chmod +x spcomp; "
+
+install:
+ - wget https://dl.dropboxusercontent.com/u/76035852/sm-dev.tar.gz
+ - tar -xzf sm-dev.tar.gz
+ - chmod +x sm-dev/addons/sourcemod/scripting/spcomp
+ - PATH=$PATH:$(pwd)/sm-dev/addons/sourcemod/scripting
+
 script: make
