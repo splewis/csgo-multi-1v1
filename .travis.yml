@@ -1,0 +1,3 @@
+language: c
+install: "wget https://dl.dropboxusercontent.com/u/76035852/spcomp; PATH+=':.'; chmod +x spcomp; "
+script: make
