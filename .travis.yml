@@ -4,6 +4,8 @@ install:
  - wget https://dl.dropboxusercontent.com/u/76035852/sm-dev.tar.gz
  - tar -xzf sm-dev.tar.gz
  - chmod +x sm-dev/addons/sourcemod/scripting/spcomp
- - PATH=$PATH:$(pwd)/sm-dev/addons/sourcemod/scripting
 
-script: make
+script:
+ - mkdir -p csgo/addons/sourcemod/plugins
+ - sm-dev/addons/sourcemod/scripting/spcomp csgo/addons/sourcemod/scripting/multi1v1.sp -O2 -t4 -o=csgo/addons/sourcemod/plugins/multi1v1
+ - zip -r multi1v1 csgo web LICENSE README.md
