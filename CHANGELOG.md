@@ -1,5 +1,6 @@
 0.5.0:
- - maps can have multiple spawns per arena per player now
+ - maps can have multiple spawns per arena per player now. Most old maps should continue to function normally, but you should test them
+ - new cvar `sm_multi1v1_verbose_spawns` (default 0) controls logging information about spawns read on map start, use this when testing a map!
 
 0.4.1:
  - remove placement match rating system
