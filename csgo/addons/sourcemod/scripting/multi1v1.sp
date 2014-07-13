@@ -541,6 +541,7 @@ public OnClientDisconnect(client) {
     if (GetConVarInt(g_hUseDataBase) != 0)
         DB_WriteRatings(client);
 
+    Queue_Drop(g_WaitingQueue, client);
     new arena = g_Rankings[client];
     UpdateArena(arena);
     ResetClientVariables(client);
