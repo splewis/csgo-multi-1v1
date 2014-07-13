@@ -11,6 +11,7 @@
 
 #undef REQUIRE_PLUGIN
 #include <updater>
+#include <smart-player-reports>
 
 
 
@@ -183,6 +184,10 @@ public OnPluginStart() {
 public OnLibraryAdded(const String:name[]) {
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
+    }
+
+    if (StrEqual(name, "smart-player-reports")) {
+        SPR_RegisterWeightFunction("ReportWeight");
     }
 }
 
@@ -808,4 +813,23 @@ public UpdateArena(arena) {
             PrintToChat(p2, " \x04Your opponent left!");
         }
     }
+}
+
+public any:ReportWeight(client, victim) {
+    new weight = 0;
+    #define WEIGHT(%1) if (%1) weight++
+
+    WEIGHT(g_ratings[client] > 1700.0);
+    WEIGHT(g_ratings[client] > 1800.0);
+    WEIGHT(g_ratings[client] > 1900.0);
+    WEIGHT(g_ratings[victim] > 1750.0);
+    WEIGHT(g_ratings[victim] > 2000.0);
+    WEIGHT(g_Rankings[victim] <= 2);
+    WEIGHT(g_roundsPlayed[victim] < 500);
+    WEIGHT(g_roundsPlayed[client] > 1000);
+    WEIGHT(g_roundsPlayed[client] > 3000);
+    WEIGHT(g_roundsPlayed[client] > 5000);
+    WEIGHT(g_roundsPlayed[client] > 5000);
+
+    return weight;
 }
