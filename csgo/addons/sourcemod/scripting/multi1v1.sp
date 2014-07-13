@@ -11,7 +11,6 @@
 
 #undef REQUIRE_PLUGIN
 #include <updater>
-#include <smart-player-reports>
 
 
 
@@ -184,10 +183,6 @@ public OnPluginStart() {
 public OnLibraryAdded(const String:name[]) {
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
-    }
-
-    if (StrEqual(name, "smart-player-reports")) {
-        SPR_RegisterWeightFunction("ReportWeight");
     }
 }
 
