@@ -1,3 +1,7 @@
+0.5.1:
+ - correct a error in the waiting queue (used when the arenas were all full) where players were never dropped from the queue on disconnect
+ - experimental smart-player-reports support
+
 0.5.0:
  - maps can have multiple spawns per arena per player now. Most old maps should continue to function normally, but you should test them
  - new cvar `sm_multi1v1_verbose_spawns` (default 0) controls logging information about spawns read on map start, use this when testing a map!
