@@ -37,7 +37,7 @@
 				if ($query) {
 					while ($row = mysqli_fetch_assoc($query)){
 						$accountID = $row['accountID'];
-						$name = $row['name'];
+						$name = htmlentities($row['name']);
 						echo "<h2><li><a href=\"index.php?id=".$accountID."\">$name</a></li></h2>";
 					}
 				}
