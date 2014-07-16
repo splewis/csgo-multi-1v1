@@ -54,18 +54,24 @@
 						$accountID = $row['accountID'];
 						$auth = $row['auth'];
 						$rank = $row['rank'];
-						$name = $row['name'];
+						$name = htmlentities($row['name']);
 						$wins = $row['wins'];
 						$losses = $row['losses'];
 						$rating = $row['rating'];
 						$lastTime = $row['lastTime'];
+
+						if ($losses == 0) {
+							$WL = $wins;
+						} else{
+							$WL = round($wins/$losses, 2);
+						}
 
 						echo "<h3>Stats for player: <a href=\"http://steamcommunity.com/profiles/".GetCommunityID($auth)."\">$name</a></h3>
 						<div class=\"stats\">
 						<h4>Rank: $rank of $totalplayers</h4><br>
 						<h4>Wins: $wins</h4><br>
 						<h4>Losses: $losses</h4><br>
-						<h4>W/L Ratio: ".number_format((float)$wins/$losses, 2, '.', '')."</h4><br>
+						<h4>W/L Ratio: $WL</h4><br>
 						<h4>ELO Rating: $rating</h4><br>
 						<div class=\"playerAvatar ".getPlayerState(GetCommunityID($auth))."\"><a href=\"http://steamcommunity.com/profiles/".GetCommunityID($auth)."\"><img src=\"".getAvatar(GetCommunityID($auth))."\" height=\"184\" width=\"184\"/></a>";
 						if (isPlayerActive($lastTime) == true){

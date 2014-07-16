@@ -13,7 +13,7 @@ $generated = "<table class=\"tg\" width=\"450px\">
 
 $alt = 0;
 
-$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM multi1v1_stats AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM multi1v1_stats AS s1 ORDER BY rating DESC LIMIT 0, 15";
+$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating AND s2.wins+s2.losses > 200)+1 AS rank FROM $mysql_table AS s1 WHERE s1.wins+s1.losses > 200 ORDER BY rating DESC LIMIT 0, 15";
 $query = mysqli_query($connect, $run_query);
 
 if (@$query){
@@ -21,11 +21,17 @@ if (@$query){
 		$row = mysqli_fetch_assoc($query);
 		$accountID = $row['accountID'];
 		$rank = $row['rank'];
-		$name = $row['name'];
+		$name = htmlentities($row['name']);
 		$wins = $row['wins'];
 		$losses = $row['losses'];
 		$rating = $row['rating'];
 		$lastTime = $row['lastTime'];
+
+		if ($losses == 0) {
+			$WL = $wins;
+		} else{
+			$WL = round($wins/$losses, 2);
+		}
 
 		if ($alt == 0){
 			$generated .= "<tr><td class=\"tg-bsv2\">$rank</td>";
@@ -38,7 +44,7 @@ if (@$query){
 
 			$generated .= "<td class=\"tg-bsv2\">$wins</td>
 							<td class=\"tg-bsv2\">$losses</td>
-							<td class=\"tg-bsv2\">".number_format((float)$wins/$losses, 2, '.', '')."</td>
+							<td class=\"tg-bsv2\">$WL</td>
 							<td class=\"tg-bsv2\">$rating</td></tr>";
 			$alt = 1;
 		} else{
@@ -52,10 +58,11 @@ if (@$query){
 
 			$generated .= "<td class=\"tg-dilm\">$wins</td>
 							<td class=\"tg-dilm\">$losses</td>
-							<td class=\"tg-dilm\">".number_format((float)$wins/$losses, 2, '.', '')."</td>
+							<td class=\"tg-dilm\">$WL</td>
 							<td class=\"tg-dilm\">$rating</td></tr>";
 			$alt = 0;
 		}
+		
 	}
 	$generated .= "</table><br>Ranked by ELO Rating.";
 }
