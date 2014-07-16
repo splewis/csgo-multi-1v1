@@ -21,7 +21,7 @@ if (@$query){
 		$row = mysqli_fetch_assoc($query);
 		$accountID = $row['accountID'];
 		$rank = $row['rank'];
-		$name = $row['name'];
+		$name = htmlentities($row['name']);
 		$wins = $row['wins'];
 		$losses = $row['losses'];
 		$rating = $row['rating'];
