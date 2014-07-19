@@ -4,6 +4,10 @@
  * Loads the spawn positions from the map and updates global spawn arrays.
  */
 public Spawns_MapStart() {
+    // Note: these are arrays of arrays!
+    // Each index corresponds to the data for THAT arena.
+    // Example: g_hTspawns[0] has a handle to another adt array - that array contains
+    //   the 3-vectors of spawns.
     g_hTSpawns = CreateArray();
     g_hTAngles = CreateArray();
     g_hCTSpawns = CreateArray();
@@ -16,7 +20,7 @@ public Spawns_MapStart() {
     new Float:spawn[3];
     new Float:angle[3];
 
-    // check if each entity is a spawn and add it
+    // Check if each entity is a spawn and add it
     for (new i = MaxClients; i < maxEnt; i++) {
         new bool:valid = IsValidEdict(i) && IsValidEntity(i);
         if (valid && GetEdictClassname(i, sClassName, sizeof(sClassName))) {
@@ -60,7 +64,7 @@ public Spawns_MapStart() {
             if (takenTSpawns[j])
                 continue;
 
-            new Handle:t_spawns = GetArrayCell(g_hTSpawns, i);
+            new Handle:t_spawns = GetArrayCell(g_hTSpawns, j);
             new Float:vec1[3];
             new Float:vec2[3];
             GetArrayArray(ct_spawns, 0, vec1);
@@ -76,14 +80,12 @@ public Spawns_MapStart() {
         SwapArrayItems(g_hTSpawns, i, closestIndex);
         SwapArrayItems(g_hTAngles, i, closestIndex);
         takenTSpawns[i] = true;
-
     }
 
-
-
+    // More Helpful logging for map developers
     if (verbose) {
         for (new i = 0; i < g_maxArenas; i++) {
-            LogMessage("Cluster %d:", i);
+            LogMessage("Cluster %d:", i + 1);
 
             new Handle:ct_spawns = GetArrayCell(g_hCTSpawns, i);
             for (new j = 0; j < GetArraySize(ct_spawns); j++) {
