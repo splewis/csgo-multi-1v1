@@ -38,6 +38,7 @@ new Handle:g_hStatsWebsite = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hRecordTimes = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
+new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 
 /** Saved data for database interaction - be careful when using these, they may not
   *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
@@ -57,6 +58,7 @@ new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false;  // Flags the teamswitches as
 new bool:g_AllowAWP[MAXPLAYERS+1];
 new bool:g_AllowPistol[MAXPLAYERS+1];
 new bool:g_GiveFlash[MAXPLAYERS+1];
+new bool:g_GunsSelected[MAXPLAYERS+1];
 new RoundType:g_Preference[MAXPLAYERS+1];
 new String:g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 new String:g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
@@ -137,6 +139,7 @@ public OnPluginStart() {
     g_hRecordTimes = CreateConVar("sm_multi1v1_record_times", "0", "Should the lastTime field store when players connect?");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
+    g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Should players see the guns menu automatically on their first connect?");
 
     /** Config file **/
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
@@ -761,12 +764,17 @@ public AddPlayer(client) {
     if (valid && space && !alreadyin) {
         Queue_Enqueue(g_RankingQueue, client);
     }
+
+    if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && valid && !g_GunsSelected[client]) {
+        GiveWeaponMenu(client);
+    }
 }
 
 /**
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
+    g_GunsSelected[client] = false;
     g_roundsPlayed[client] = 0;
     g_roundsLeader[client] = 0;
     g_ratings[client] = 0.0;

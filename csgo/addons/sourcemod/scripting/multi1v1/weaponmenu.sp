@@ -143,13 +143,12 @@ public MenuHandler_Pistol(Handle:menu, MenuAction:action, param1, param2) {
 public PreferenceMenu(client) {
     new Handle:menu = CreateMenu(MenuHandler_Preference);
     SetMenuTitle(menu, "Choose your preference:");
+    AddMenuInt(menu, RoundType_NoPreference, "No Preference");
     AddMenuInt(menu, RoundType_Rifle, "Rifle Rounds");
     if (g_AllowAWP[client])
         AddMenuInt(menu, RoundType_Awp, "AWP Rounds");
     if (g_AllowPistol[client])
         AddMenuInt(menu, RoundType_Pistol, "Pistol Rounds");
-    AddMenuInt(menu, RoundType_NoPreference, "No Preference");
-
     DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
@@ -247,10 +246,15 @@ public MenuHandler_FlashChoice(Handle:menu, MenuAction:action, param1, param2) {
         new bool:choice = GetMenuBool(menu, param2);
         g_GiveFlash[client] = choice;
         SetCookieBool(client, g_hFlashCookie, choice);
-        SetCookieBool(client, g_hSetCookies, true);
+        FinishGunsMenu(client);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
     }
+}
+
+public FinishGunsMenu(client) {
+    SetCookieBool(client, g_hSetCookies, true);
+    g_GunsSelected[client] = true;
 }
 
 /**
@@ -260,6 +264,7 @@ public UpdatePreferencesOnCookies(client) {
     if (!GetCookieBool(client, g_hSetCookies))
         return;
 
+    g_GunsSelected[client] = true;
     g_AllowAWP[client] = GetCookieBool(client, g_hAllowAWPCookie);
     g_AllowPistol[client] = GetCookieBool(client, g_hAllowPistolCookie);
     g_Preference[client] = RoundType:GetCookieInt(client, g_hPreferenceCookie);
