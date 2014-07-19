@@ -1,4 +1,4 @@
-#define PLUGIN_VERSION "0.5.1"
+#define PLUGIN_VERSION "0.5.2"
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v0.5.x/csgo-multi-1v1.txt"
 #pragma semicolon 1
 
@@ -817,23 +817,4 @@ public UpdateArena(arena) {
             PrintToChat(p2, " \x04Your opponent left!");
         }
     }
-}
-
-public any:ReportWeight(client, victim) {
-    new weight = 0;
-    #define WEIGHT(%1) if (%1) weight++
-
-    WEIGHT(g_ratings[client] > 1700.0);
-    WEIGHT(g_ratings[client] > 1800.0);
-    WEIGHT(g_ratings[client] > 1900.0);
-    WEIGHT(g_ratings[victim] > 1750.0);
-    WEIGHT(g_ratings[victim] > 2000.0);
-    WEIGHT(g_Rankings[victim] <= 2);
-    WEIGHT(g_roundsPlayed[victim] < 500);
-    WEIGHT(g_roundsPlayed[client] > 1000);
-    WEIGHT(g_roundsPlayed[client] > 3000);
-    WEIGHT(g_roundsPlayed[client] > 5000);
-    WEIGHT(g_roundsPlayed[client] > 5000);
-
-    return weight;
 }
