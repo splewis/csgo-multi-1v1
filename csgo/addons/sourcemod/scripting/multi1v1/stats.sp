@@ -79,11 +79,10 @@ public DB_AddPlayer(client) {
  */
 public DB_FetchRatings(client) {
     new Float:rating = 0.0;
-    new any:roundsPlayed = 0;
 
     if (db != INVALID_HANDLE) {
         SQL_LockDatabase(db);
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "SELECT rating, wins+losses FROM %s WHERE accountID = %d", TABLE_NAME, GetSteamAccountID(client));
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "SELECT rating FROM %s WHERE accountID = %d", TABLE_NAME, GetSteamAccountID(client));
         new Handle:query = SQL_Query(db, g_sqlBuffer);
 
         if (query == INVALID_HANDLE) {
@@ -94,16 +93,14 @@ public DB_FetchRatings(client) {
             CloseHandle(db);
         } else if (SQL_FetchRow(query)) {
             rating = SQL_FetchFloat(query, 0);
-            roundsPlayed = SQL_FetchInt(query, 1);
         } else {
-            LogError("Couldn't fetch rating or wins+losses for %N", client);
+            LogError("Couldn't fetch rating for %N", client);
         }
 
         CloseHandle(query);
         SQL_UnlockDatabase(db);
     }
     g_ratings[client] = rating;
-    g_roundsPlayed[client] = roundsPlayed;
 }
 
 /**
@@ -197,9 +194,6 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 
             g_ratings[winner] += rating_delta;
             g_ratings[loser] -= rating_delta;
-
-            g_roundsPlayed[winner]++;
-            g_roundsPlayed[loser]++;
 
             DB_WriteRatings(winner);
             DB_WriteRatings(loser);
