@@ -20,14 +20,6 @@ public SwitchPlayerTeam(client, team) {
 }
 
 /**
- * Returns if a player is on an active/player team.
- */
-public bool:IsOnTeam(client) {
-    new client_team = GetClientTeam(client);
-    return (client_team == CS_TEAM_CT) || (client_team == CS_TEAM_T);
-}
-
-/**
  * Generic assertion function. Change the ASSERT_FUNCTION if you want.
  */
 public Assert(bool:value, const String:msg[] , any:...) {
@@ -53,6 +45,25 @@ public Action:RemoveRadar(Handle:timer, any:client) {
 public bool:IsValidClient(client) {
     return client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client);
 }
+
+/**
+ * Returns if a player is on an active/player team.
+ */
+public bool:IsPlayer(client) {
+    return IsValidClient(client) && !IsFakeClient(client);
+}
+
+/**
+ * Returns if a player is on an active/player team.
+ */
+public bool:IsActivePlayer(client) {
+    if (!IsPlayer(client))
+        return false;
+    new client_team = GetClientTeam(client);
+    return (client_team == CS_TEAM_CT) || (client_team == CS_TEAM_T);
+}
+
+
 
 public bool:IsValidArena(arena) {
     return arena > 0 && arena <= g_maxArenas;
@@ -149,11 +160,14 @@ public PushArrayCellReplicated(Handle:array, any:value, any:times) {
         PushArrayCell(array, value);
 }
 
-
 public any:Min(any:x, any:y) {
     return (x < y) ? x : y;
 }
 
+/**
+ * Given an array of vectors, returns the index of the index
+ * that minimizes the euclidean distance between the vectors.
+ */
 public NearestNeighborIndex(Float:vec[3], Handle:others) {
     new closestIndex = -1;
     new Float:closestDistance = 1.0e300;
@@ -170,10 +184,27 @@ public NearestNeighborIndex(Float:vec[3], Handle:others) {
     return closestIndex;
 }
 
+/**
+ * Closes all handles within an array of handles.
+ */
 public CloseHandleArray(Handle:array) {
     for (new i = 0; i < GetArraySize(array); i++) {
         new Handle:tmp = GetArrayCell(array, i);
         CloseHandle(tmp);
     }
     CloseHandle(array);
+}
+
+/**
+ * Creates a table given an array of table arguments.
+ */
+public SQL_CreateTable(Handle:db_connection, String:table_name[], String:fields[][], num_fields) {
+    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
+    for (new i = 0; i < num_fields; i++) {
+        StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), fields[i]);
+        if (i != num_fields - 1)
+            StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ", ");
+    }
+    StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ");");
+    SQL_FastQuery(db_connection, g_sqlBuffer);
 }

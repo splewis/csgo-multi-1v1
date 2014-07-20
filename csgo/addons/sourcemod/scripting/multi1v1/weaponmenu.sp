@@ -84,7 +84,7 @@ static AddRounds_CheckAllowed(Handle:types, client1, client2, RoundType:roundTyp
 public AWPMenu(client) {
     new Handle:menu = CreateMenu(MenuHandler_AWP);
     SetMenuTitle(menu, "Allow AWP rounds?");
-    AddMenuBool(menu ,true, "Yes");
+    AddMenuBool(menu, true, "Yes");
     AddMenuBool(menu, false, "No");
     DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
@@ -253,6 +253,8 @@ public MenuHandler_FlashChoice(Handle:menu, MenuAction:action, param1, param2) {
 }
 
 public FinishGunsMenu(client) {
+    if (!g_GunsSelected[client])
+        PrintToChat(client, " You can type \x04guns\x01 to see this menu in the future!");
     SetCookieBool(client, g_hSetCookies, true);
     g_GunsSelected[client] = true;
 }

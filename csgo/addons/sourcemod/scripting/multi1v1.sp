@@ -45,6 +45,7 @@ new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
   *  using one of these directly.
   */
 
+new bool:g_FetchedPlayerInfo[MAXPLAYERS+1];
 new Float:g_ratings[MAXPLAYERS+1];
 new String:g_sqlBuffer[1024];
 
@@ -103,6 +104,9 @@ new Handle:g_hTSpawns = INVALID_HANDLE;
 new Handle:g_hTAngles = INVALID_HANDLE;
 new Handle:g_hCTSpawns = INVALID_HANDLE;
 new Handle:g_hCTAngles = INVALID_HANDLE;
+
+/** Constant offsets values **/
+new g_iPlayers_HelmetOffset;
 
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
@@ -178,6 +182,9 @@ public OnPluginStart() {
     RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
 
+    /** Compute any constant offsets **/
+    g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
+
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
@@ -190,10 +197,11 @@ public OnLibraryAdded(const String:name[]) {
 }
 
 public OnMapStart() {
+    Spawns_MapStart();
+    g_WaitingQueue = Queue_Init();
     if (!g_dbConnected && GetConVarInt(g_hUseDataBase) != 0) {
         DB_Connect();
     }
-    Spawns_MapStart();
     g_arenas = 1;
     g_totalRounds = 0;
     g_RoundFinished = false;
@@ -203,14 +211,13 @@ public OnMapStart() {
         g_ArenaWinners[i] = -1;
         g_ArenaLosers[i] = -1;
     }
-    g_WaitingQueue = Queue_Init();
     ServerCommand("exec gamemode_competitive.cfg");
     ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
 }
 
 public OnMapEnd() {
-    Spawns_MapEnd();
     Queue_Destroy(g_WaitingQueue);
+    Spawns_MapEnd();
 }
 
 public OnClientPostAdminCheck(client) {
@@ -277,7 +284,7 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     for (new i = 0; i < Queue_Length(g_WaitingQueue); i++) {
         new client = GetArrayCell(g_WaitingQueue, i);
         PrintToChat(client, " Sorry, all the arenas are currently \x03full.");
-        PrintToChat(client, " You are in position \x04%d \x01in the waiting queue", i+1);
+        PrintToChat(client, " You are in position \x04%d \x01in the waiting queue", i + 1);
     }
 
     new leader = Queue_Peek(g_RankingQueue);
@@ -313,6 +320,22 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 }
 
 /**
+ * Function to add a player to the ranking queue with some validity checks.
+ */
+public AddPlayer(client) {
+    new bool:player = IsPlayer(client);
+    new bool:space = Queue_Length(g_RankingQueue) < 2 *g_maxArenas;
+    new bool:alreadyin = Queue_Inside(g_RankingQueue, client);
+    if (player && space && !alreadyin) {
+        Queue_Enqueue(g_RankingQueue, client);
+    }
+
+    if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && player && !g_GunsSelected[client]) {
+        GiveWeaponMenu(client);
+    }
+}
+
+/**
  * Round poststart - puts players in their arena and gives them weapons.
  */
 public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadcast) {
@@ -341,13 +364,20 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         g_LetTimeExpire[i] = false;
     }
 
+    // round time is bu a special cvar since mp_roundtime has a lower bound of 1 minutes
     GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTime), 4, 0, true);
 
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
-    for (new i = 1; i <= MaxClients; i++) {
-        if (IsValidClient(i) && !IsFakeClient(i) && g_ratings[i] < MIN_RATING) {
-            DB_FetchRatings(i);
+    if (GetConVarInt(g_hUseDataBase) != 0) {
+        if (!g_dbConnected)
+            DB_Connect();
+        if (g_dbConnected) {
+            for (new i = 1; i <= MaxClients; i++) {
+                if (IsValidClient(i) && !IsFakeClient(i) && !g_FetchedPlayerInfo[i]) {
+                    DB_FetchRatings(i);
+                }
+            }
         }
     }
 
@@ -411,14 +441,14 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         if (g_ArenaWinners[arena] == -1) {
             g_ArenaWinners[arena] = p1;
             g_ArenaLosers[arena] = p2;
-            if (IsValidClient(p1) && !IsFakeClient(p1) && IsValidClient(p2) && !IsFakeClient(p2) && IsOnTeam(p1) && IsOnTeam(p2)) {
+            if (IsActivePlayer(p1) && IsActivePlayer(p2)) {
                 g_LetTimeExpire[p1] = true;
                 g_LetTimeExpire[p2] = true;
             }
         }
         new winner = g_ArenaWinners[arena];
         new loser = g_ArenaLosers[arena];
-        if (IsValidClient(winner) && IsValidClient(loser) && !IsFakeClient(winner) && !IsFakeClient(loser)) {
+        if (IsPlayer(winner) && IsPlayer(loser)) {
 
             // also skip the update if we already did it (a player got a kill earlier in the round)
             if (winner != loser && GetConVarInt(g_hUseDataBase) != 0 && !g_ArenaStatsUpdated[arena]) {
@@ -438,7 +468,7 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
     new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     new arena = g_Rankings[victim];
 
-    if (!IsValidClient(attacker) || !IsClientInGame(attacker) || attacker == victim) {
+    if (!IsValidClient(attacker) || attacker == victim) {
         new p1 = g_ArenaPlayer1[arena];
         new p2 = g_ArenaPlayer2[arena];
 
@@ -628,7 +658,7 @@ public Action:Command_Say(client, const String:command[], argc) {
 
     StripQuotes(text);
 
-    new String:gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup"};
+    new String:gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS" };
 
     for (new i = 0; i < 4; i++) {
         if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
@@ -674,7 +704,6 @@ public RemoveVestHelm(client) {
         return;
 
     // remove helmet
-    new g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
     SetEntData(client, g_iPlayers_HelmetOffset, 0);
 
     // remove kevlar if needed
@@ -712,8 +741,8 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 
         new any:p1 = g_ArenaPlayer1[arena];
         new any:p2 = g_ArenaPlayer2[arena];
-        new bool:hasp1 = IsValidClient(p1) && IsOnTeam(p1);
-        new bool:hasp2 = IsValidClient(p2) && IsOnTeam(p2);
+        new bool:hasp1 = IsActivePlayer(p1);
+        new bool:hasp2 = IsActivePlayer(p2);
 
         if (hasp1)
             nPlayers++;
@@ -755,25 +784,10 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 }
 
 /**
- * Function to add a player to the ranking queue with some validity checks.
- */
-public AddPlayer(client) {
-    new bool:valid = IsValidClient(client) && !IsFakeClient(client);
-    new bool:space = Queue_Length(g_RankingQueue) < 2 *g_maxArenas;
-    new bool:alreadyin = Queue_Inside(g_RankingQueue, client);
-    if (valid && space && !alreadyin) {
-        Queue_Enqueue(g_RankingQueue, client);
-    }
-
-    if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && valid && !g_GunsSelected[client]) {
-        GiveWeaponMenu(client);
-    }
-}
-
-/**
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
+    g_FetchedPlayerInfo[client] = false;
     g_GunsSelected[client] = false;
     g_roundsLeader[client] = 0;
     g_ratings[client] = 0.0;
@@ -795,8 +809,8 @@ public UpdateArena(arena) {
     if (arena != -1) {
         new p1 = g_ArenaPlayer1[arena];
         new p2 = g_ArenaPlayer2[arena];
-        new hasp1 = IsValidClient(p1) && IsOnTeam(p1);
-        new hasp2 = IsValidClient(p2) && IsOnTeam(p2);
+        new hasp1 = IsActivePlayer(p1);
+        new hasp2 = IsActivePlayer(p2);
 
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;

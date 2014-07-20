@@ -2,7 +2,16 @@
 #define K_FACTOR 8.0
 #define DISTRIBUTION_SPREAD 1000.0
 #define DEFAULT_RATING 1500.0
-#define MIN_RATING 200.0 // this number MUST be greater than 0.0 to detect failures to fetch ratings
+
+new String:g_TableFormat[][] = {
+    "accountID INT NOT NULL PRIMARY KEY default 0",
+    "auth varchar(64) NOT NULL default ''",
+    "name varchar(64) NOT NULL default ''",
+    "wins INT NOT NULL default 0",
+    "losses INT NOT NULL default 0",
+    "rating FLOAT NOT NULL default 1500.0",
+    "lastTime INT default 0 NOT NULL"
+};
 
 /**
  * Attempts to connect to the database.
@@ -18,25 +27,20 @@ public DB_Connect() {
     } else {
         // create the table
         SQL_LockDatabase(db);
-        CreateTables();
+        SQL_CreateTable(db, TABLE_NAME, g_TableFormat, sizeof(g_TableFormat));
         SQL_UnlockDatabase(db);
         g_dbConnected = true;
     }
 }
-
-static CreateTables() {
-    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (accountID INT NOT NULL PRIMARY KEY default 0, auth varchar(64) NOT NULL default '', name varchar(64) NOT NULL default '', wins INT NOT NULL default 0, losses INT NOT NULL default 0, rating FLOAT NOT NULL default 1500.0, lastTime INT default 0 NOT NULL);", TABLE_NAME);
-    SQL_FastQuery(db, g_sqlBuffer);
- }
 
 /**
  * Generic SQL threaded query error callback.
  */
 public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], any:data) {
     if (!StrEqual("", error)) {
-        db = INVALID_HANDLE;
         g_dbConnected = false;
         LogError("Last Connect SQL Error: %s", error);
+        CloseHandle(db);
     }
 }
 
@@ -58,16 +62,22 @@ public DB_AddPlayer(client) {
         GetClientAuthString(client, auth, sizeof(auth));
 
         // insert if not already in the table
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);", TABLE_NAME, id, auth, sanitized_name, DEFAULT_RATING);
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+               "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);",
+               TABLE_NAME, id, auth, sanitized_name, DEFAULT_RATING);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         // update the player name
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET name = '%s' WHERE accountID = %d", TABLE_NAME, sanitized_name, id);
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+               "UPDATE %s SET name = '%s' WHERE accountID = %d",
+               TABLE_NAME, sanitized_name, id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         // update last connect time
         if (GetConVarInt(g_hRecordTimes) != 0) {
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s SET lastTime = %d WHERE accountID = %d", TABLE_NAME, GetTime(), id);
+            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+                "UPDATE %s SET lastTime = %d WHERE accountID = %d",
+                TABLE_NAME, GetTime(), id);
             SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
         }
     }
@@ -78,6 +88,7 @@ public DB_AddPlayer(client) {
  * Note that this is a *SLOW* operation and you should not do it during gameplay
  */
 public DB_FetchRatings(client) {
+    g_FetchedPlayerInfo[client] = false;
     new Float:rating = 0.0;
 
     if (db != INVALID_HANDLE) {
@@ -93,6 +104,7 @@ public DB_FetchRatings(client) {
             CloseHandle(db);
         } else if (SQL_FetchRow(query)) {
             rating = SQL_FetchFloat(query, 0);
+            g_FetchedPlayerInfo[client] = true;
         } else {
             LogError("Couldn't fetch rating for %N", client);
         }
@@ -107,7 +119,7 @@ public DB_FetchRatings(client) {
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
 public DB_WriteRatings(client) {
-    if (g_ratings[client] >= MIN_RATING) {
+    if (g_FetchedPlayerInfo[client]) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "UPDATE %s set rating = %f WHERE accountID = %d", TABLE_NAME, g_ratings[client], GetSteamAccountID(client));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
@@ -160,16 +172,16 @@ static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
 static UpdateRatings(winner, loser, bool:forceLoss=false) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
-        if (g_ratings[winner] < MIN_RATING) {
+        if (!g_FetchedPlayerInfo[winner]) {
             DB_FetchRatings(winner);
         }
 
-        if (g_ratings[loser] < MIN_RATING) {
+        if (!g_FetchedPlayerInfo[loser]) {
             DB_FetchRatings(loser);
         }
 
         // still couldn't fetch the ratings - give up
-        if (g_ratings[winner] <= MIN_RATING || g_ratings[loser] <= MIN_RATING) {
+        if (!g_FetchedPlayerInfo[winner] || !g_FetchedPlayerInfo[loser]) {
             return;
         }
 
@@ -220,6 +232,5 @@ public ShowStatsForPlayer(client, target) {
 
     decl String:player_url[255];
     Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
-
     ShowMOTDPanel(client, "Multi-1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
 }
