@@ -75,6 +75,7 @@ new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
 new any:g_roundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
+new g_roundStartTime = 0;
 new g_maxArenas = 0; // maximum number of arenas the map can support
 new g_arenas = 1; // number of active arenas
 new g_totalRounds = 0; // rounds played on this map so far
@@ -168,6 +169,7 @@ public OnPluginStart() {
     HookEvent("player_death", Event_OnPlayerDeath);
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
+    HookEvent("round_freeze_end", Event_OnRoundFreezeEnd);
     HookEvent("round_end", Event_OnRoundEnd);
     HookEvent("cs_win_panel_match", Event_MatchOver);
 
@@ -382,6 +384,11 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     }
 
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
+}
+
+
+public Event_OnRoundFreezeEnd(Handle:event, const String:name[], bool:dontBroadcast) {
+    g_roundStartTime = GetTime();
 }
 
 /**
@@ -775,7 +782,11 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
     new bool:NormalFinish = AllDone && nPlayers >= 2;
     new bool:WaitingPlayers = nPlayers < 2 && Queue_Length(g_WaitingQueue) > 0;  // so the round ends for the first players that join
 
-    if (NormalFinish || WaitingPlayers) {
+    // This check is a sanity check on when the round passes what the round time cvar allowed
+    new freeze_time_length = GetConVarInt(FindConVar("mp_freezetime"));
+    new bool:RoundTooLong = GetTime() - g_roundStartTime >= GetConVarInt(g_hRoundTime) + freeze_time_length;
+
+    if (NormalFinish || WaitingPlayers || RoundTooLong) {
         CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
     }
