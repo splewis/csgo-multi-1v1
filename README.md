@@ -3,6 +3,8 @@ csgo-multi-1v1
 
 [![Build Status](https://travis-ci.org/splewis/csgo-multi-1v1.svg?branch=master)](https://travis-ci.org/splewis/csgo-multi-1v1)
 
+Work toward a stable 1.0.0 is underway.
+
 This is home of my CS:GO multi-1v1 arena plugin. It sets up any number of players in 1v1-situations on specially made maps and they fight in a ladder-type system. The winners move up, the losers go down.
 
 Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php?t=241056).
