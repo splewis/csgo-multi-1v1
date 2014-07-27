@@ -112,11 +112,12 @@ new g_iPlayers_HelmetOffset;
 
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
+#include "multi1v1/natives.sp"
 #include "multi1v1/queue.sp"
+#include "multi1v1/radiocommands.sp"
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
 #include "multi1v1/weaponmenu.sp"
-#include "multi1v1/radiocommands.sp"
 
 
 
