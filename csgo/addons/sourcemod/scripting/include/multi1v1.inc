@@ -22,3 +22,8 @@ native any:GetArenaNumber(client);
  * Returns the number of rounds a client has spent at arena 1.
  */
 native any:GetRoundsAtArena1(client);
+
+/**
+ * Returns the clients current opponent, or -1 if they have none.
+ */
+native any:GetOpponent(client);

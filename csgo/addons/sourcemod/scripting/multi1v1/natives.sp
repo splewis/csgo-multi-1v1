@@ -4,6 +4,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
    CreateNative("HasRating", Native_HasRating);
    CreateNative("GetRating", Native_GetRating);
    CreateNative("GetArenaNumber", Native_GetArenaNumber);
+   CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
+   CreateNative("GetOpponent", Native_GetOpponent);
    return APLRes_Success;
 }
 
@@ -34,4 +36,21 @@ public Native_GetRoundsAtArena1(Handle:plugin, numParams) {
         return 0;
     else
         return g_roundsLeader[client];
+}
+
+public Native_GetOpponent(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    new other = -1;
+    if (IsValidClient(client)) {
+        new arena = g_Rankings[client];
+        if (IsValidArena(arena)) {
+            if (g_ArenaPlayer1[client] == client)
+                other = g_ArenaPlayer2[client];
+            else
+                other = g_ArenaPlayer1[client];
+        }
+    }
+    if (!IsValidClient(other))
+        other = -1;
+    return other;
 }
