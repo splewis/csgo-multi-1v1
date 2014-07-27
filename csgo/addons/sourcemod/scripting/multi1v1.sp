@@ -114,6 +114,14 @@ new Handle:g_hCTAngles = INVALID_HANDLE;
 /** Constant offsets values **/
 new g_iPlayers_HelmetOffset;
 
+/** Forwards **/
+// forward OnPreArenaRestart(Handle:queue)
+new Handle:g_hOnPreArenaRestart = INVALID_HANDLE;
+// forward OnRankingQueueSet(Handle:queue)
+new Handle:g_hOnRankingQueueSet = INVALID_HANDLE;
+// forward OnPostArenaRestart()
+new Handle:g_hOnPostArenaRestart = INVALID_HANDLE;
+
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
 #include "multi1v1/natives.sp"
@@ -187,6 +195,11 @@ public OnPluginStart() {
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
+
+    /** Forwards **/
+    g_hOnPreArenaRestart = CreateGlobalForward("OnPreArenaRestart", ET_Ignore, Param_Cell);
+    g_hOnRankingQueueSet =  CreateGlobalForward("OnRankingQueueSet", ET_Ignore, Param_Cell);
+    g_hOnPostArenaRestart = CreateGlobalForward("OnPostArenaRestart", ET_Ignore);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -268,6 +281,10 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     // Here we add each player to the queue in their new ranking
     g_rankingQueue = Queue_Init();
 
+    Call_StartForward(g_hOnPreArenaRestart);
+    Call_PushCell(g_rankingQueue);
+    Call_Finish();
+
     //  top arena
     AddPlayer(g_ArenaWinners[1]);
     AddPlayer(g_ArenaWinners[2]);
@@ -288,6 +305,10 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         new client = Queue_Dequeue(g_waitingQueue);
         AddPlayer(client);
     }
+
+    Call_StartForward(g_hOnRankingQueueSet);
+    Call_PushCell(g_rankingQueue);
+    Call_Finish();
 
     for (new i = 0; i < Queue_Length(g_waitingQueue); i++) {
         new client = GetArrayCell(g_waitingQueue, i);
@@ -390,6 +411,9 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     }
 
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
+
+    Call_StartForward(g_hOnPostArenaRestart);
+    Call_Finish();
 }
 
 /**
