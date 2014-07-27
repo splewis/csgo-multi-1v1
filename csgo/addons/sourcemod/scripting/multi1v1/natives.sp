@@ -20,7 +20,7 @@ public Native_GetRating(Handle:plugin, numParams) {
     if (!IsValidClient(client))
         return _:0.0;
     else
-        return _:g_ratings[client];
+        return _:g_Rating[client];
 }
 
 public Native_GetArenaNumber(Handle:plugin, numParams) {
@@ -28,7 +28,7 @@ public Native_GetArenaNumber(Handle:plugin, numParams) {
     if (!IsValidClient(client))
         return -1;
     else
-        return g_Rankings[client];
+        return g_Ranking[client];
 }
 
 public Native_GetRoundsAtArena1(Handle:plugin, numParams) {
@@ -36,22 +36,12 @@ public Native_GetRoundsAtArena1(Handle:plugin, numParams) {
     if (!IsValidClient(client))
         return 0;
     else
-        return g_roundsLeader[client];
+        return g_RoundsLeader[client];
 }
 
 public Native_GetOpponent(Handle:plugin, numParams) {
     new client = GetNativeCell(1);
-    new other = -1;
-    if (IsValidClient(client)) {
-        new arena = g_Rankings[client];
-        if (IsValidArena(arena)) {
-            if (g_ArenaPlayer1[client] == client)
-                other = g_ArenaPlayer2[client];
-            else
-                other = g_ArenaPlayer1[client];
-        }
-    }
-    if (!IsValidClient(other))
-        other = -1;
-    return other;
+    if (IsValidClient(client))
+        return GetOpponent(client);
+    return -1;
 }

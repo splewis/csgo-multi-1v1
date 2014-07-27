@@ -10,7 +10,11 @@ new String:g_TableFormat[][] = {
     "wins INT NOT NULL default 0",
     "losses INT NOT NULL default 0",
     "rating FLOAT NOT NULL default 1500.0",
-    "lastTime INT default 0 NOT NULL"
+    "rifleRating FLOAT NOT NULL default 1500.0",
+    "awpRating FLOAT NOT NULL default 1500.0",
+    "pistolRating FLOAT NOT NULL default 1500.0",
+    "lastTime INT default 0 NOT NULL",
+    "recentRounds INT default 0 NOT NULL"
 };
 
 /**
@@ -73,12 +77,10 @@ public DB_AddPlayer(client) {
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         // update last connect time
-        if (GetConVarInt(g_hRecordTimes) != 0) {
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-                "UPDATE %s SET lastTime = %d WHERE accountID = %d",
-                TABLE_NAME, GetTime(), id);
-            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-        }
+        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+              "UPDATE %s SET lastTime = %d WHERE accountID = %d",
+              TABLE_NAME, GetTime(), id);
+        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         DB_FetchRatings(client);
     }
@@ -92,13 +94,11 @@ public DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
     if (db != INVALID_HANDLE) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "SELECT rating FROM %s WHERE accountID = %d",
+               "SELECT rating, awpRating, pistolRating, rifleRating FROM %s WHERE accountID = %d",
                TABLE_NAME, GetSteamAccountID(client));
-
         SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, client);
     }
 }
-
 
 public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any:data) {
     new client = data;
@@ -109,7 +109,10 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
     if (hndl == INVALID_HANDLE) {
         LogError("Query failed: (error: %s)", error);
     } else if (SQL_FetchRow(hndl)) {
-        g_ratings[client] = SQL_FetchFloat(hndl, 0);
+        g_Rating[client] = SQL_FetchFloat(hndl, 0);
+        g_AwpRating[client] = SQL_FetchFloat(hndl, 1);
+        g_PistolRating[client] = SQL_FetchFloat(hndl, 2);
+        g_RifleRating[client] = SQL_FetchFloat(hndl, 3);
         g_FetchedPlayerInfo[client] = true;
     } else {
         LogError("Couldn't fetch rating for %N", client);
@@ -122,9 +125,8 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
 public DB_WriteRatings(client) {
     if (g_FetchedPlayerInfo[client]) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "UPDATE %s set rating = %f WHERE accountID = %d",
-               TABLE_NAME, g_ratings[client], GetSteamAccountID(client));
-
+               "UPDATE %s set rating = %f, pistolRating = %f, awpRating = %f, rifleRating = %f WHERE accountID = %d",
+               TABLE_NAME, g_Rating[client], g_PistolRating[client], g_AwpRating[client], g_RifleRating[client], GetSteamAccountID(client));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
@@ -144,6 +146,8 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
         else
             Increment(winner, "wins");
 
+        Increment(winner, "recentRounds");
+        Increment(loser, "recentRounds");
         UpdateRatings(winner, loser, forceLoss);
     }
 }
@@ -188,7 +192,7 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
             DB_FetchRatings(loser);
         }
 
-        // give up - we don't have the ratings yet!
+        // give up - we don't have the ratings yet, better luck next time?
         if (!g_FetchedPlayerInfo[winner] || !g_FetchedPlayerInfo[loser]) {
             return;
         }
@@ -199,37 +203,51 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
             return;
         }
 
-        new Float:rating_delta = ELORatingDelta(g_ratings[winner], g_ratings[loser], K_FACTOR);
+        new Float:rating_delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
             new int_winner_d = RoundToNearest(FloatAbs(rating_delta));
             new int_loser_d = RoundToNearest(FloatAbs(rating_delta));
-            new int_loser = RoundToNearest(g_ratings[loser] - rating_delta);
-            new int_winner = RoundToNearest(g_ratings[winner] + rating_delta);
+            new int_loser = RoundToNearest(g_Rating[loser] - rating_delta);
+            new int_winner = RoundToNearest(g_Rating[winner] + rating_delta);
 
             PluginMessage(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
                 int_winner, int_winner_d, loser, int_loser, int_loser_d);
             PluginMessage(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
                 int_loser, int_loser_d, winner, int_winner, int_winner_d);
 
-            g_ratings[winner] += rating_delta;
-            g_ratings[loser] -= rating_delta;
+            g_Rating[winner] += rating_delta;
+            g_Rating[loser] -= rating_delta;
+
+            // rndTypeUpdate(RoundType:roundType, Float:ratingArray[])
+            #define rndTypeUpdate(%1,%2) \
+            if (g_roundTypes[arena] == %1) { \
+               new Float:delta = ELORatingDelta(%2[winner], %2[loser], K_FACTOR); \
+                %2[winner] += delta; \
+                %2[loser] -= delta; \
+            }
+
+            new arena = g_Ranking[winner];
+            if (IsValidArena(arena)) {
+                rndTypeUpdate(RoundType_Rifle, g_RifleRating)
+                rndTypeUpdate(RoundType_Pistol, g_PistolRating)
+                rndTypeUpdate(RoundType_Awp, g_AwpRating)
+             }
 
             DB_WriteRatings(winner);
             DB_WriteRatings(loser);
-
         }
     }
 }
 
 static ForceLoss(client) {
-    new Float:rating = g_ratings[client];
+    new Float:rating = g_Rating[client];
     new Float:delta = ELORatingDelta(rating, rating, K_FACTOR);
     PluginMessage(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out",
-                  RoundToNearest(g_ratings[client] - delta),
+                  RoundToNearest(g_Rating[client] - delta),
                   RoundToNearest(delta));
 
-    g_ratings[client] -= delta;
+    g_Rating[client] -= delta;
     DB_WriteRatings(client);
 }
 
