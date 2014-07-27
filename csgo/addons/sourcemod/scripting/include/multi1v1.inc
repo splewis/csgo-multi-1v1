@@ -4,22 +4,6 @@
 #define __MULTI1V1_INCLUDE__
 
 /**
- * Returns if a client has a rating stored.
- */
-native bool:HasStats(client);
-
-/**
- * Functions for getting a players' 1v1-stats.
- * You should confirm HasStats(client) is true before using any of these.
- */
-native Float:GetRating(client);
-native Float:GetAwpRating(client);
-native Float:GetPistolRating(client);
-native Float:GetRifleRating(client);
-native Float:GetWins(client);
-native Float:GetLosses(client);
-
-/**
  * Returns the maximum number of areans the map allows.
  */
 native any:GetMaximumArenas();
@@ -29,6 +13,28 @@ native any:GetMaximumArenas();
  */
 native any:GetNumActiveArenas();
 
+/**
+ * Returns if a player is inside the waiting queue.
+ */
+native bool:IsInWaitingQueue(client);
+
+/**
+ * Returns a handle to the (adt array) waiting queue.
+ */
+native Handle:GetWaitingQueue();
+
+/**
+ * Returns if a client has a rating stored.
+ */
+native bool:HasStats(client);
+
+/**
+ * Functions for getting a players' 1v1-stats.
+ * You should confirm HasStats(client) is true before using any of these.
+ */
+native Float:GetRating(client);
+native Float:GetWins(client);
+native Float:GetLosses(client);
 /**
  * Returns a client's arena number, or -1 if they aren't in an arena.
  */

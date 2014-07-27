@@ -10,9 +10,6 @@ new String:g_TableFormat[][] = {
     "wins INT NOT NULL default 0",
     "losses INT NOT NULL default 0",
     "rating FLOAT NOT NULL default 1500.0",
-    "rifleRating FLOAT NOT NULL default 1500.0",
-    "awpRating FLOAT NOT NULL default 1500.0",
-    "pistolRating FLOAT NOT NULL default 1500.0",
     "lastTime INT default 0 NOT NULL",
     "recentRounds INT default 0 NOT NULL"
 };
@@ -94,7 +91,7 @@ public DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
     if (db != INVALID_HANDLE) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "SELECT rating, awpRating, pistolRating, rifleRating, wins, losses FROM %s WHERE accountID = %d",
+               "SELECT rating, wins, losses FROM %s WHERE accountID = %d",
                TABLE_NAME, GetSteamAccountID(client));
         SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, client);
     }
@@ -110,11 +107,8 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
         LogError("Query failed: (error: %s)", error);
     } else if (SQL_FetchRow(hndl)) {
         g_Rating[client] = SQL_FetchFloat(hndl, 0);
-        g_AwpRating[client] = SQL_FetchFloat(hndl, 1);
-        g_PistolRating[client] = SQL_FetchFloat(hndl, 2);
-        g_RifleRating[client] = SQL_FetchFloat(hndl, 3);
-        g_Wins[client] = SQL_FetchInt(hndl, 4);
-        g_Losses[client] = SQL_FetchInt(hndl, 5);
+        g_Wins[client] = SQL_FetchInt(hndl, 1);
+        g_Losses[client] = SQL_FetchInt(hndl, 2);
         g_FetchedPlayerInfo[client] = true;
     } else {
         LogError("Couldn't fetch rating for %N", client);
@@ -127,8 +121,8 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
 public DB_WriteRatings(client) {
     if (g_FetchedPlayerInfo[client]) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "UPDATE %s set rating = %f, pistolRating = %f, awpRating = %f, rifleRating = %f WHERE accountID = %d",
-               TABLE_NAME, g_Rating[client], g_PistolRating[client], g_AwpRating[client], g_RifleRating[client], GetSteamAccountID(client));
+               "UPDATE %s set rating = %f WHERE accountID = %d",
+               TABLE_NAME, g_Rating[client], GetSteamAccountID(client));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
@@ -218,21 +212,6 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 
             g_Rating[winner] += rating_delta;
             g_Rating[loser] -= rating_delta;
-
-            // rndTypeUpdate(RoundType:roundType, Float:ratingArray[])
-            #define rndTypeUpdate(%1,%2) \
-            if (g_roundTypes[arena] == %1) { \
-               new Float:delta = ELORatingDelta(%2[winner], %2[loser], K_FACTOR); \
-                %2[winner] += delta; \
-                %2[loser] -= delta; \
-            }
-
-            new arena = g_Ranking[winner];
-            if (IsValidArena(arena)) {
-                rndTypeUpdate(RoundType_Rifle, g_RifleRating)
-                rndTypeUpdate(RoundType_Pistol, g_PistolRating)
-                rndTypeUpdate(RoundType_Awp, g_AwpRating)
-             }
 
             DB_WriteRatings(winner);
             DB_WriteRatings(loser);

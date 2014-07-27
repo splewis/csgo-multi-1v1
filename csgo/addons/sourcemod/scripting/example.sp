@@ -24,8 +24,9 @@ public OnPreArenaRestart(Handle:queue) {
 public OnRankingQueueSet(Handle:queue) {
     PrintToServer("Called OnRankingQueueSet");
     for (new i = 0; i < GetArraySize(queue); i++) {
-        if (IsClientInGame(i) && HasStats(i)) {
-            PrintToServer("%N has rating %f", GetArrayCell(queue, i), GetRating(i));
+        new client = GetArrayCell(queue, i);
+        if (IsClientInGame(client) && HasStats(client)) {
+            PrintToServer("%N has rating %f", client, GetRating(client));
         }
     }
 }
