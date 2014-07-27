@@ -208,3 +208,19 @@ public SQL_CreateTable(Handle:db_connection, String:table_name[], String:fields[
     StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ");");
     SQL_FastQuery(db_connection, g_sqlBuffer);
 }
+
+public PluginMessage(client, const String:msg[], any:...) {
+    new String:formattedMsg[1024] = MESSAGE_PREFIX;
+    decl String:tmp[1024];
+    VFormat(tmp, sizeof(tmp), msg, 3);
+    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
+    PrintToChat(client, formattedMsg);
+}
+
+public PluginMessageToAll(const String:msg[], any:...) {
+    new String:formattedMsg[1024] = MESSAGE_PREFIX;
+    decl String:tmp[1024];
+    VFormat(tmp, sizeof(tmp), msg, 2);
+    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
+    PrintToChatAll(formattedMsg);
+}

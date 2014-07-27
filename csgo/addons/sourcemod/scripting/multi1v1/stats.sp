@@ -80,6 +80,8 @@ public DB_AddPlayer(client) {
                 TABLE_NAME, GetTime(), id);
             SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
         }
+
+        DB_FetchRatings(client);
     }
 }
 
@@ -89,30 +91,27 @@ public DB_AddPlayer(client) {
  */
 public DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
-    new Float:rating = 0.0;
-
     if (db != INVALID_HANDLE) {
-        SQL_LockDatabase(db);
         Format(g_sqlBuffer, sizeof(g_sqlBuffer), "SELECT rating FROM %s WHERE accountID = %d", TABLE_NAME, GetSteamAccountID(client));
-        new Handle:query = SQL_Query(db, g_sqlBuffer);
-
-        if (query == INVALID_HANDLE) {
-            new String:error[255];
-            SQL_GetError(db, error, sizeof(error));
-            LogError("Failed to query (error: %s)", error);
-            g_dbConnected = false;
-            CloseHandle(db);
-        } else if (SQL_FetchRow(query)) {
-            rating = SQL_FetchFloat(query, 0);
-            g_FetchedPlayerInfo[client] = true;
-        } else {
-            LogError("Couldn't fetch rating for %N", client);
-        }
-
-        CloseHandle(query);
-        SQL_UnlockDatabase(db);
+        SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, client);
     }
-    g_ratings[client] = rating;
+}
+
+
+public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any:data) {
+    new client = data;
+    g_FetchedPlayerInfo[client] = false;
+    if (!IsPlayer(client))
+        return;
+
+    if (hndl == INVALID_HANDLE) {
+        LogError("Query failed: (error: %s)", error);
+    } else if (SQL_FetchRow(hndl)) {
+        g_ratings[client] = SQL_FetchFloat(hndl, 0);
+        g_FetchedPlayerInfo[client] = true;
+    } else {
+        LogError("Couldn't fetch rating for %N", client);
+    }
 }
 
 /**
@@ -180,7 +179,7 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
             DB_FetchRatings(loser);
         }
 
-        // still couldn't fetch the ratings - give up
+        // give up - we don't have the ratings yet!
         if (!g_FetchedPlayerInfo[winner] || !g_FetchedPlayerInfo[loser]) {
             return;
         }
@@ -199,9 +198,9 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
             new int_loser = RoundToNearest(g_ratings[loser] - rating_delta);
             new int_winner = RoundToNearest(g_ratings[winner] + rating_delta);
 
-            PrintToChat(winner, " \x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
+            PluginMessage(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
                 int_winner, int_winner_d, loser, int_loser, int_loser_d);
-            PrintToChat(loser,  " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
+            PluginMessage(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
                 int_loser, int_loser_d, winner, int_winner, int_winner_d);
 
             g_ratings[winner] += rating_delta;
@@ -217,7 +216,7 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 static ForceLoss(client) {
     new Float:rating = g_ratings[client];
     new Float:delta = ELORatingDelta(rating, rating, K_FACTOR);
-    PrintToChat(client, " \x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
+    PluginMessage(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out", RoundToNearest(g_ratings[client] - delta), RoundToNearest(delta));
     g_ratings[client] -= delta;
     DB_WriteRatings(client);
 }
@@ -226,7 +225,7 @@ public ShowStatsForPlayer(client, target) {
     decl String:url[255];
     GetConVarString(g_hStatsWebsite, url, sizeof(url));
     if (StrEqual(url, "")) {
-        PrintToChat(client, "Sorry, there is no stats website for this server.");
+        PluginMessage(client, "Sorry, there is no stats website for this server.");
         return;
     }
 

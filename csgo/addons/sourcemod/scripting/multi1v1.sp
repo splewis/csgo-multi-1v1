@@ -1,5 +1,6 @@
 #define PLUGIN_VERSION "0.5.2"
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v0.5.x/csgo-multi-1v1.txt"
+#define MESSAGE_PREFIX "[\x05Multi1v1\x01] "
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -285,8 +286,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 
     for (new i = 0; i < Queue_Length(g_WaitingQueue); i++) {
         new client = GetArrayCell(g_WaitingQueue, i);
-        PrintToChat(client, " Sorry, all the arenas are currently \x03full.");
-        PrintToChat(client, " You are in position \x04%d \x01in the waiting queue", i + 1);
+        PluginMessage(client, "Sorry, all the arenas are currently \x03full.");
+        PluginMessage(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
     }
 
     new leader = Queue_Peek(g_RankingQueue);
@@ -424,9 +425,9 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     CS_SetMVPCount(client, g_roundsLeader[client]);
 
     if (IsValidClient(other)) {
-        PrintToChat(client, " You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
+        PluginMessage(client, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
     } else {
-        PrintToChat(client, " You are in arena \x04%d\x01 with \x07no opponent", arena);
+        PluginMessage(client, "You are in arena \x04%d\x01 with \x07no opponent", arena);
     }
 }
 
@@ -559,7 +560,7 @@ public Event_MatchOver(Handle:event, const String:name[], bool:dontBroadcast) {
     }
 
     if (IsValidClient(maxClient))
-        PrintToChatAll(" \x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map", maxClient, maxScore);
+        PluginMessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map", maxClient, maxScore);
 }
 
 /**
@@ -830,7 +831,7 @@ public UpdateArena(arena) {
             g_ArenaLosers[arena] = -1;
             g_ArenaPlayer2[arena] = -1;
             g_ArenaStatsUpdated[arena] = true;
-            PrintToChat(p1, " \x04Your opponent left!");
+            PluginMessage(p1, "\x04Your opponent left!");
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
             if (!g_ArenaStatsUpdated[arena])
@@ -838,7 +839,7 @@ public UpdateArena(arena) {
             g_ArenaLosers[arena] = -1;
             g_ArenaPlayer1[arena] = -1;
             g_ArenaStatsUpdated[arena] = true;
-            PrintToChat(p2, " \x04Your opponent left!");
+            PluginMessage(p2, "\x04Your opponent left!");
         }
     }
 }
