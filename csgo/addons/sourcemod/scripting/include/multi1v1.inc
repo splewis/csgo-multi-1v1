@@ -20,6 +20,16 @@ native Float:GetWins(client);
 native Float:GetLosses(client);
 
 /**
+ * Returns the maximum number of areans the map allows.
+ */
+native any:GetMaximumArenas();
+
+/**
+ * Returns the active number of arenas.
+ */
+native any:GetNumActiveArenas();
+
+/**
  * Returns a client's arena number, or -1 if they aren't in an arena.
  */
 native any:GetArenaNumber(client);

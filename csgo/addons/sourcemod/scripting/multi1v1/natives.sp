@@ -9,6 +9,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
    CreateNative("GetArenaNumber", Native_GetArenaNumber);
    CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
    CreateNative("GetOpponent", Native_GetOpponent);
+   CreateNative("GetMaxArenas", Native_GetMaxArenas);
+   CreateNative("GetNumActiveArenas", Native_GetNumActiveArenas);
    RegPluginLibrary("multi1v1");
    return APLRes_Success;
 }
@@ -71,4 +73,12 @@ public Native_GetOpponent(Handle:plugin, numParams) {
     if (IsValidClient(client))
         return GetOpponent(client);
     return -1;
+}
+
+public Native_GetMaxArenas(Handle:plugin, numParams) {
+    return g_maxArenas;
+}
+
+public Native_GetNumActiveArenas(Handle:plugin, numParams) {
+    return g_arenas;
 }
