@@ -170,7 +170,6 @@ public OnPluginStart() {
     HookEvent("player_death", Event_OnPlayerDeath);
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
-    HookEvent("round_freeze_end", Event_OnRoundFreezeEnd);
     HookEvent("round_end", Event_OnRoundEnd);
     HookEvent("cs_win_panel_match", Event_MatchOver);
 
@@ -224,7 +223,7 @@ public OnMapEnd() {
 }
 
 public OnClientPostAdminCheck(client) {
-    if (IsClientInGame(client) && !IsFakeClient(client) && GetConVarInt(g_hUseDataBase) != 0 && g_dbConnected) {
+    if (IsPlayer(client) && GetConVarInt(g_hUseDataBase) != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
 }
@@ -260,6 +259,8 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
  * Round pre-start, sets up who goes in which arena for this round.
  */
 public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadcast) {
+    g_roundStartTime = GetTime();
+
     // Here we add each player to the queue in their new ranking
     g_RankingQueue = Queue_Init();
 
@@ -291,7 +292,7 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     }
 
     new leader = Queue_Peek(g_RankingQueue);
-    if (IsValidClient(leader))
+    if (IsValidClient(leader) && Queue_Length(g_RankingQueue) >= 2)
         g_roundsLeader[leader]++;
 
     // Player placement logic for this round
@@ -385,11 +386,6 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     }
 
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
-}
-
-
-public Event_OnRoundFreezeEnd(Handle:event, const String:name[], bool:dontBroadcast) {
-    g_roundStartTime = GetTime();
 }
 
 /**
@@ -560,7 +556,8 @@ public Event_MatchOver(Handle:event, const String:name[], bool:dontBroadcast) {
     }
 
     if (IsValidClient(maxClient))
-        PluginMessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map", maxClient, maxScore);
+        PluginMessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map",
+                           maxClient, maxScore);
 }
 
 /**
@@ -781,13 +778,17 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
     }
 
     new bool:NormalFinish = AllDone && nPlayers >= 2;
-    new bool:WaitingPlayers = nPlayers < 2 && Queue_Length(g_WaitingQueue) > 0;  // so the round ends for the first players that join
+
+    // So the round ends for the first players that join
+    new bool:WaitingPlayers = nPlayers < 2 && Queue_Length(g_WaitingQueue) > 0;
 
     // This check is a sanity check on when the round passes what the round time cvar allowed
     new freeze_time_length = GetConVarInt(FindConVar("mp_freezetime"));
-    new bool:RoundTooLong = GetTime() - g_roundStartTime >= GetConVarInt(g_hRoundTime) + freeze_time_length;
+    new max_length = GetConVarInt(g_hRoundTime) + freeze_time_length;
+    new bool:RoundTooLong = GetTime() - g_roundStartTime >= max_length && nPlayers >= 2;
 
     if (NormalFinish || WaitingPlayers || RoundTooLong) {
+        g_RoundFinished = true;
         CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
     }

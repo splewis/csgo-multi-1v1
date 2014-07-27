@@ -31,7 +31,7 @@ public GiveWeaponMenu(client) {
  * Returns an appropriate round type for a pair of clients.
  */
 public RoundType:GetRoundType(any:client1, any:client2) {
-    if (!IsValidClient(client1) || !IsValidClient(client2) || IsFakeClient(client1) || IsFakeClient(client2))
+    if (!IsPlayer(client1) || !IsPlayer(client2))
         return RoundType_Rifle;
 
     new RoundType:roundType = RoundType_Rifle;
