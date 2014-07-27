@@ -556,7 +556,7 @@ public Event_MatchOver(Handle:event, const String:name[], bool:dontBroadcast) {
         }
     }
 
-    if (IsValidClient(maxClient))
+    if (IsActivePlayer(maxClient))
         PluginMessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map",
                            maxClient, maxScore);
 }
@@ -740,9 +740,9 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
     if (g_RoundFinished)
         return Plugin_Stop;
 
-    // check every arena, if it is still ongoing mark AllDone as false
+    // check every arena, if it is still ongoing mark allDone as false
     new nPlayers = 0;
-    new bool:AllDone = true;
+    new bool:allDone = true;
     for (new arena = 1; arena <= g_maxArenas; arena++) {
 
         new any:p1 = g_ArenaPlayer1[arena];
@@ -773,22 +773,24 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 
         // this arena has 2 players and hasn't been decided yet
         if (g_ArenaWinners[arena] == -1 && hasp1 && hasp2) {
-            AllDone = false;
+            allDone = false;
             break;
         }
     }
 
-    new bool:NormalFinish = AllDone && nPlayers >= 2;
+    new bool:normalFinish = allDone && nPlayers >= 2;
 
     // So the round ends for the first players that join
-    new bool:WaitingPlayers = nPlayers < 2 && Queue_Length(g_WaitingQueue) > 0;
+    new bool:waitingPlayers = nPlayers < 2 && Queue_Length(g_WaitingQueue) > 0;
 
     // This check is a sanity check on when the round passes what the round time cvar allowed
-    new freeze_time_length = GetConVarInt(FindConVar("mp_freezetime"));
-    new max_length = GetConVarInt(g_hRoundTime) + freeze_time_length;
-    new bool:RoundTooLong = GetTime() - g_roundStartTime >= max_length && nPlayers >= 2;
+    new freezeTimeLength = GetConVarInt(FindConVar("mp_freezetime"));
+    new maxRoundLength = GetConVarInt(g_hRoundTime) + freezeTimeLength;
+    new elapsedTime =  GetTime() - g_roundStartTime;
 
-    if (NormalFinish || WaitingPlayers || RoundTooLong) {
+    new bool:roundTimeExpired = elapsedTime >= maxRoundLength && nPlayers >= 2;
+
+    if (normalFinish || waitingPlayers || roundTimeExpired) {
         g_RoundFinished = true;
         CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
