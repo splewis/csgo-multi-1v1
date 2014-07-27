@@ -170,12 +170,10 @@ static Increment(client, const String:field[]) {
 }
 
 static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
-    // probability of each player winning
+    // probability of the winner winning
     new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
-
-    // constant factor, suppose we have two opponents of equal ratings:
-    // then they lose/gain K/2
-    new Float:winner_delta = K * (1.0 - pWinner);
+    new Float:pLoser = 1.0 - pWinner;
+    new Float:winner_delta = K * pLoser;
 
     return winner_delta;
 }
