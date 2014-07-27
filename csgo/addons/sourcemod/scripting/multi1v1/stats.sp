@@ -94,7 +94,7 @@ public DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
     if (db != INVALID_HANDLE) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "SELECT rating, awpRating, pistolRating, rifleRating FROM %s WHERE accountID = %d",
+               "SELECT rating, awpRating, pistolRating, rifleRating, wins, losses FROM %s WHERE accountID = %d",
                TABLE_NAME, GetSteamAccountID(client));
         SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, client);
     }
@@ -113,6 +113,8 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
         g_AwpRating[client] = SQL_FetchFloat(hndl, 1);
         g_PistolRating[client] = SQL_FetchFloat(hndl, 2);
         g_RifleRating[client] = SQL_FetchFloat(hndl, 3);
+        g_Wins[client] = SQL_FetchInt(hndl, 4);
+        g_Losses[client] = SQL_FetchInt(hndl, 5);
         g_FetchedPlayerInfo[client] = true;
     } else {
         LogError("Couldn't fetch rating for %N", client);

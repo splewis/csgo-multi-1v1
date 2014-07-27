@@ -46,6 +46,8 @@ new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
   */
 
 new bool:g_FetchedPlayerInfo[MAXPLAYERS+1];
+new any:g_Wins[MAXPLAYERS+1];
+new any:g_Losses[MAXPLAYERS+1];
 new Float:g_Rating[MAXPLAYERS+1];
 new Float:g_AwpRating[MAXPLAYERS+1];
 new Float:g_PistolRating[MAXPLAYERS+1];
@@ -807,6 +809,8 @@ public ResetClientVariables(client) {
     g_FetchedPlayerInfo[client] = false;
     g_GunsSelected[client] = false;
     g_RoundsLeader[client] = 0;
+    g_Wins[client] = 0;
+    g_Losses[client] = 0;
     g_Rating[client] = 0.0;
     g_AwpRating[client] = 0.0;
     g_PistolRating[client] = 0.0;

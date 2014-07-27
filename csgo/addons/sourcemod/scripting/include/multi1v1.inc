@@ -6,12 +6,18 @@
 /**
  * Returns if a client has a rating stored.
  */
-native bool:HasRating(client);
+native bool:HasStats(client);
 
 /**
- * Returns a client's rating.
+ * Functions for getting a players' 1v1-stats.
+ * You should confirm HasStats(client) is true before using any of these.
  */
 native Float:GetRating(client);
+native Float:GetAwpRating(client);
+native Float:GetPistolRating(client);
+native Float:GetRifleRating(client);
+native Float:GetWins(client);
+native Float:GetLosses(client);
 
 /**
  * Returns a client's arena number, or -1 if they aren't in an arena.
