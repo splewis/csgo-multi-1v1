@@ -1,8 +1,7 @@
-/** Double-include prevention */
-#if defined __MULTI1v1_INCLUDE__
+#if defined __MULTI1V1_INCLUDE__
   #endinput
 #endif
-#define __MULTI1v1_INCLUDE__
+#define __MULTI1V1_INCLUDE__
 
 /**
  * Returns if a client has a rating stored.
