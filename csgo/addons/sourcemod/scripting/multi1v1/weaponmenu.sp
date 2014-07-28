@@ -253,8 +253,6 @@ public MenuHandler_FlashChoice(Handle:menu, MenuAction:action, param1, param2) {
 }
 
 public FinishGunsMenu(client) {
-    if (!g_GunsSelected[client])
-        PluginMessage(client, "You can type \x04guns\x01 to see this menu in the future!");
     SetCookieBool(client, g_hSetCookies, true);
     g_GunsSelected[client] = true;
 }

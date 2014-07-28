@@ -4,6 +4,16 @@
 #define __MULTI1V1_INCLUDE__
 
 /**
+ * Prints a plugin-formatted message to a client.
+ */
+native Multi1v1Message(client, const String:fmt[], any:...);
+
+/**
+ * Prints a plugin-formatted message to all clients.
+ */
+native Multi1v1MessageToAll(const String:fmt[], any:...);
+
+/**
  * Returns the maximum number of areans the map allows.
  */
 native any:GetMaximumArenas();

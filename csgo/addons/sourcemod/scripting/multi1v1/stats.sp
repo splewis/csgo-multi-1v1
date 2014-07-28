@@ -192,23 +192,19 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
         }
 
         if (forceLoss) {
-            ForceLoss(winner);
-            ForceLoss(loser);
+            ForceLoss(winner, loser);
             return;
         }
 
         new Float:rating_delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
-            new int_winner_d = RoundToNearest(FloatAbs(rating_delta));
-            new int_loser_d = RoundToNearest(FloatAbs(rating_delta));
-            new int_loser = RoundToNearest(g_Rating[loser] - rating_delta);
-            new int_winner = RoundToNearest(g_Rating[winner] + rating_delta);
-
-            PluginMessage(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
-                int_winner, int_winner_d, loser, int_loser, int_loser_d);
-            PluginMessage(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
-                int_loser, int_loser_d, winner, int_winner, int_winner_d);
+            Call_StartForward(g_hOnRatingChange);
+            Call_PushCell(winner);
+            Call_PushCell(loser);
+            Call_PushCell(false);
+            Call_PushFloat(rating_delta);
+            Call_Finish();
 
             g_Rating[winner] += rating_delta;
             g_Rating[loser] -= rating_delta;
@@ -219,26 +215,32 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
     }
 }
 
-static ForceLoss(client) {
-    new Float:rating = g_Rating[client];
-    new Float:delta = ELORatingDelta(rating, rating, K_FACTOR);
-    PluginMessage(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out",
-                  RoundToNearest(g_Rating[client] - delta),
-                  RoundToNearest(delta));
+static ForceLoss(winner, loser) {
+    new Float:delta = K_FACTOR / 2.0;
 
-    g_Rating[client] -= delta;
-    DB_WriteRatings(client);
+    Call_StartForward(g_hOnRatingChange);
+    Call_PushCell(winner);
+    Call_PushCell(loser);
+    Call_PushCell(false);
+    Call_PushFloat(delta);
+    Call_Finish();
+
+    g_Rating[winner] -= delta;
+    g_Rating[loser] -= delta;
+    DB_WriteRatings(winner);
+    DB_WriteRatings(loser);
 }
 
-public ShowStatsForPlayer(client, target) {
-    decl String:url[255];
-    GetConVarString(g_hStatsWebsite, url, sizeof(url));
-    if (StrEqual(url, "")) {
-        PluginMessage(client, "Sorry, there is no stats website for this server.");
-        return;
+/**
+ * Creates a table given an array of table arguments.
+ */
+public SQL_CreateTable(Handle:db_connection, String:table_name[], String:fields[][], num_fields) {
+    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
+    for (new i = 0; i < num_fields; i++) {
+        StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), fields[i]);
+        if (i != num_fields - 1)
+            StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ", ");
     }
-
-    decl String:player_url[255];
-    Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
-    ShowMOTDPanel(client, "Multi-1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
+    StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ");");
+    SQL_FastQuery(db_connection, g_sqlBuffer);
 }

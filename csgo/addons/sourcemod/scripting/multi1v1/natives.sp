@@ -1,17 +1,37 @@
 // See include/multi1v1.inc for documentation.
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
-   CreateNative("GetMaxArenas", Native_GetMaxArenas);
-   CreateNative("GetNumActiveArenas", Native_GetNumActiveArenas);
-   CreateNative("IsInWaitingQueue", Native_IsInWaitingQueue);
-   CreateNative("GetWaitingQueue", Native_GetWaitingQueue);
-   CreateNative("HasStats", Native_HasStats);
-   CreateNative("GetRating", Native_GetRating);
-   CreateNative("GetArenaNumber", Native_GetArenaNumber);
-   CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
-   CreateNative("GetOpponent", Native_GetOpponent);
-   RegPluginLibrary("multi1v1");
-   return APLRes_Success;
+    CreateNative("Multi1v1Message", Native_Multi1v1Message);
+    CreateNative("Multi1v1MessageToAll", Native_Multi1v1MessageToAll);
+    CreateNative("GetMaxArenas", Native_GetMaxArenas);
+    CreateNative("GetNumActiveArenas", Native_GetNumActiveArenas);
+    CreateNative("IsInWaitingQueue", Native_IsInWaitingQueue);
+    CreateNative("GetWaitingQueue", Native_GetWaitingQueue);
+    CreateNative("HasStats", Native_HasStats);
+    CreateNative("GetRating", Native_GetRating);
+    CreateNative("GetArenaNumber", Native_GetArenaNumber);
+    CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
+    CreateNative("GetOpponent", Native_GetOpponent);
+    RegPluginLibrary("multi1v1");
+    return APLRes_Success;
+}
+
+public Native_Multi1v1Message(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    if (!IsPlayer(client))
+      return;
+
+    decl String:buffer[1024];
+    new writtenBytes;
+    FormatNativeString(0, 2, 3, sizeof(buffer), writtenBytes, buffer);
+    PrintToChat(client, "%s%s", MESSAGE_PREFIX, buffer);
+}
+
+public Native_Multi1v1MessageToAll(Handle:plugin, numParams) {
+    decl String:buffer[1024];
+    new writtenBytes;
+    FormatNativeString(0, 1, 2, sizeof(buffer), writtenBytes, buffer);
+    PrintToChatAll("%s%s", MESSAGE_PREFIX, buffer);
 }
 
 public Native_GetMaxArenas(Handle:plugin, numParams) {

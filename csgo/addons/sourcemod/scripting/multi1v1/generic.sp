@@ -1,33 +1,8 @@
+#define PLUGIN_VERSION "1.0.0-dev"
+#include <clientprefs>
+#define HIDE_RADAR_BIT 1<<12
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
                                  // this is for converting ints to strings when setting menu values/cookies
-
-/**
- * Switches a client to a new team.
- */
-public SwitchPlayerTeam(client, team) {
-    new previousTeam = GetClientTeam(client);
-    if (previousTeam == team)
-        return;
-
-    g_PluginTeamSwitch[client] = true;
-    if (team > CS_TEAM_SPECTATOR) {
-        CS_SwitchTeam(client, team);
-        CS_UpdateClientModel(client);
-    } else {
-        ChangeClientTeam(client, team);
-    }
-    g_PluginTeamSwitch[client] = false;
-}
-
-/**
- * Generic assertion function. Change the ASSERT_FUNCTION if you want.
- */
-public Assert(bool:value, const String:msg[] , any:...) {
-    if (!value) {
-        VFormat(assertBuffer, sizeof(assertBuffer), msg, 3);
-        ASSERT_MODE (assertBuffer);
-    }
-}
 
 /**
  * Removes the radar element from a client's HUD.
@@ -61,12 +36,6 @@ public bool:IsActivePlayer(client) {
         return false;
     new client_team = GetClientTeam(client);
     return (client_team == CS_TEAM_CT) || (client_team == CS_TEAM_T);
-}
-
-
-
-public bool:IsValidArena(arena) {
-    return arena > 0 && arena <= g_maxArenas;
 }
 
 /**
@@ -193,34 +162,4 @@ public CloseHandleArray(Handle:array) {
         CloseHandle(tmp);
     }
     CloseHandle(array);
-}
-
-/**
- * Creates a table given an array of table arguments.
- */
-public SQL_CreateTable(Handle:db_connection, String:table_name[], String:fields[][], num_fields) {
-    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
-    for (new i = 0; i < num_fields; i++) {
-        StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), fields[i]);
-        if (i != num_fields - 1)
-            StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ", ");
-    }
-    StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ");");
-    SQL_FastQuery(db_connection, g_sqlBuffer);
-}
-
-public PluginMessage(client, const String:msg[], any:...) {
-    new String:formattedMsg[1024] = MESSAGE_PREFIX;
-    decl String:tmp[1024];
-    VFormat(tmp, sizeof(tmp), msg, 3);
-    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
-    PrintToChat(client, formattedMsg);
-}
-
-public PluginMessageToAll(const String:msg[], any:...) {
-    new String:formattedMsg[1024] = MESSAGE_PREFIX;
-    decl String:tmp[1024];
-    VFormat(tmp, sizeof(tmp), msg, 2);
-    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
-    PrintToChatAll(formattedMsg);
 }
