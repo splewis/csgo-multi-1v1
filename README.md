@@ -18,6 +18,9 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 - Optional flashbangs: players can select to "allow flashbangs" - if both players allow them, they each get 1
 - ELO ranking system: optionally, player statistics can be stored in a database, see below for details
 
+### Extending the Plugin
+Work to make the plugin extensible is currently underway (and **not released***). For a preview, check [MODULES.md](MODULES.md).
+
 
 ### Download
 Stable releases are in the [GitHub Releases](https://github.com/splewis/csgo-multi-1v1/releases) section.
