@@ -19,7 +19,7 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 - ELO ranking system: optionally, player statistics can be stored in a database, see below for details
 
 ### Extending the Plugin
-Work to make the plugin extensible is currently underway (and **not released***). For a preview, check [MODULES.md](MODULES.md).
+Work to make the plugin extensible is currently underway (and **not released**). For a preview, check [MODULES.md](MODULES.md).
 
 
 ### Download
@@ -35,7 +35,7 @@ The easiest way to support my open development of this is to donate. You can do 
 
 ### Installation
 
-**Only Sourcemod 1.6 is supported.**
+**Only Sourcemod 1.6 is supported.** Releases are compiled using the 1.6 compiler and will not work on a server using 1.5. The reason for this is a change to how floating point values are handled, see the  [1.6 release notes](https://wiki.alliedmods.net/SourceMod_1.6.0_Release_Notes#Compatibility_Issues) for details.
 
 If you only want the plugin, either download **multi1v1.zip** or build it yourself.
 It should contain the plugin binary (**plugins/multi1v1.smx**) and the default game config (**cfg/sourcemod/multi1v1/game_cvars.cfg**).
