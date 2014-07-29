@@ -12,6 +12,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetArenaNumber", Native_GetArenaNumber);
     CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
     CreateNative("GetOpponent", Native_GetOpponent);
+    CreateNative("GetRoundsPlayed", Native_GetRoundsPlayed);
+    CreateNative("GetWins", Native_GetWins);
+    CreateNative("GetLosses", Native_GetLosses);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -65,6 +68,30 @@ public Native_GetRating(Handle:plugin, numParams) {
         return _:g_Rating[client];
 }
 
+
+public Native_GetRoundsPlayed(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    if (!IsValidClient(client))
+        return 0;
+    else
+        return g_Wins[client] + g_Losses[client];
+}
+
+public Native_GetWins(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    if (!IsValidClient(client))
+        return 0;
+    else
+        return g_Wins[client];
+}
+
+public Native_GetLosses(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    if (!IsValidClient(client))
+        return 0;
+    else
+        return g_Losses[client];
+}
 public Native_GetArenaNumber(Handle:plugin, numParams) {
     new client = GetNativeCell(1);
     if (!IsValidClient(client))

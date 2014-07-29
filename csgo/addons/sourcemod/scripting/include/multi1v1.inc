@@ -43,6 +43,7 @@ native bool:HasStats(client);
  * You should confirm HasStats(client) is true before using any of these.
  */
 native Float:GetRating(client);
+native Float:GetRoundsPlayed(client);
 native Float:GetWins(client);
 native Float:GetLosses(client);
 /**
