@@ -32,15 +32,13 @@ new Handle:g_hVersion = INVALID_HANDLE;
 new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 
 /** Saved data for database interaction - be careful when using these, they may not
-  *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
-  *  using one of these directly.
-  */
-
+ *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
+ *  using one of these directly.
+ */
 new bool:g_FetchedPlayerInfo[MAXPLAYERS+1];
 new any:g_Wins[MAXPLAYERS+1];
 new any:g_Losses[MAXPLAYERS+1];
 new Float:g_Rating[MAXPLAYERS+1];
-new String:g_sqlBuffer[1024];
 
 /** Database interactions **/
 new bool:g_dbConnected = false;
@@ -519,7 +517,12 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
         return;
 
-    Client_RemoveAllWeapons(client, "", true);
+    // Eclude knife: this can fail depending on the version of smlib (whether it maches or not)
+    Client_RemoveAllWeapons(client, "knife", true);
+
+    // In case it fails, give the knife back:
+    if (Client_GetWeaponBySlot(client, CS_SLOT_KNIFE) == INVALID_ENT_REFERENCE)
+        GivePlayerItem(client, "weapon_knife");
 
     new arena = g_Ranking[client];
     if (arena == -1) {
@@ -545,7 +548,6 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
         GivePlayerItem(client, "weapon_flashbang");
     }
 
-    GivePlayerItem(client, "weapon_knife");
 
     CreateTimer(0.0, RemoveRadar, client);
 }

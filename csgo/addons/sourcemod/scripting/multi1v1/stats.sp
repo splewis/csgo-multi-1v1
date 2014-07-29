@@ -230,17 +230,3 @@ static ForceLoss(winner, loser) {
     DB_WriteRatings(winner);
     DB_WriteRatings(loser);
 }
-
-/**
- * Creates a table given an array of table arguments.
- */
-public SQL_CreateTable(Handle:db_connection, String:table_name[], String:fields[][], num_fields) {
-    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
-    for (new i = 0; i < num_fields; i++) {
-        StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), fields[i]);
-        if (i != num_fields - 1)
-            StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ", ");
-    }
-    StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ");");
-    SQL_FastQuery(db_connection, g_sqlBuffer);
-}

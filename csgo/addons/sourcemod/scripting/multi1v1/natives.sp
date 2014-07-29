@@ -19,7 +19,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
 public Native_Multi1v1Message(Handle:plugin, numParams) {
     new client = GetNativeCell(1);
     if (!IsPlayer(client))
-      return;
+        return;
 
     decl String:buffer[1024];
     new writtenBytes;
