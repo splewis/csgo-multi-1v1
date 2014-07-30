@@ -3,6 +3,14 @@
 #endif
 #define __MULTI1V1_INCLUDE__
 
+/** The different round types **/
+enum RoundType {
+    RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
+    RoundType_Rifle = 0,
+    RoundType_Awp = 1,
+    RoundType_Pistol = 2
+};
+
 /**
  * Prints a plugin-formatted message to a client.
  */
@@ -46,6 +54,7 @@ native Float:GetRating(client);
 native Float:GetRoundsPlayed(client);
 native Float:GetWins(client);
 native Float:GetLosses(client);
+
 /**
  * Returns a client's arena number, or -1 if they aren't in an arena.
  */
@@ -60,3 +69,7 @@ native any:GetRoundsAtArena1(client);
  * Returns the clients current opponent, or -1 if they have none.
  */
 native any:GetOpponent(client);
+
+native bool:GetPlayerRifle(client, String:buffer[], size);
+native bool:GetPlayerPistol(client, String:buffer[], size);
+native bool:DoesPlayerAllowFlashbangs(client);

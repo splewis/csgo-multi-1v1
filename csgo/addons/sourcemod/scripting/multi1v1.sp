@@ -109,6 +109,8 @@ new Handle:g_hOnRankingQueueSet = INVALID_HANDLE;
 new Handle:g_hOnPostArenaRestart = INVALID_HANDLE;
 // forward OnRatingChange(winner, loser, bool:forceLoss, Float:delta)
 new Handle:g_hOnRatingChange = INVALID_HANDLE;
+// forward OnArenaSpawnDone(client)
+new Handle:g_hOnArenaSpawnDone = INVALID_HANDLE;
 
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
@@ -183,7 +185,8 @@ public OnPluginStart() {
     g_hOnPreArenaRestart = CreateGlobalForward("OnPreArenaRestart", ET_Ignore, Param_Cell);
     g_hOnRankingQueueSet =  CreateGlobalForward("OnRankingQueueSet", ET_Ignore, Param_Cell);
     g_hOnPostArenaRestart = CreateGlobalForward("OnPostArenaRestart", ET_Ignore);
-    g_hOnRatingChange = CreateGlobalForward("OnRatingChange", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Float);
+    g_hOnRatingChange = CreateGlobalForward("OnRatingChange", ET_Event, Param_Cell, Param_Cell, Param_Cell, Param_Float);
+    g_hOnArenaSpawnDone = CreateGlobalForward("OnArenaSpawnDone", ET_Event, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -548,8 +551,11 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
         GivePlayerItem(client, "weapon_flashbang");
     }
 
+    CreateTimer(0.1, RemoveRadar, client);
 
-    CreateTimer(0.0, RemoveRadar, client);
+    Call_StartForward(g_hOnArenaSpawnDone);
+    Call_PushCell(client);
+    Call_Finish();
 }
 
 /**

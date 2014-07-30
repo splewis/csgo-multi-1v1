@@ -15,6 +15,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetRoundsPlayed", Native_GetRoundsPlayed);
     CreateNative("GetWins", Native_GetWins);
     CreateNative("GetLosses", Native_GetLosses);
+    CreateNative("GetPlayerRifle", Native_GetPlayerRifle);
+    CreateNative("GetPlayerPistol", Native_GetPlayerPistol);
+    CreateNative("DoesPlayerAllowFlashbangs", Native_DoesPlayerAllowFlashbangs);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -113,4 +116,27 @@ public Native_GetOpponent(Handle:plugin, numParams) {
     if (IsValidClient(client))
         return GetOpponent(client);
     return -1;
+}
+
+public Native_GetPlayerRifle(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    if (!IsValidClient(client))
+        return false;
+    SetNativeString(2, g_PrimaryWeapon[client], GetNativeCell(3));
+    return true;
+}
+
+public Native_GetPlayerPistol(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    if (!IsValidClient(client))
+        return false;
+    SetNativeString(2, g_SecondaryWeapon[client], GetNativeCell(3));
+    return true;
+}
+
+public Native_DoesPlayerAllowFlashbangs(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    if (!IsValidClient(client))
+        return false;
+    return g_GiveFlash[client];
 }
