@@ -19,7 +19,7 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 - ELO ranking system: optionally, player statistics can be stored in a database, see below for details
 
 ### Extending the Plugin
-Work to make the plugin extensible is currently underway (and **not released**). For a preview, check [MODULES.md](MODULES.md).
+Work to make the plugin extensible is currently underway (and **not released**). For a preview, check [multi1v1.inc](csgo/addons/sourcemod/scripting/include/multi1v1.inc).
 
 
 ### Download
