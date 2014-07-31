@@ -28,6 +28,7 @@ new Handle:g_hBlockRadio = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
+new Handle:g_hStatsWebsite = INVALID_HANDLE;
 new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 
 /** Saved data for database interaction - be careful when using these, they may not
@@ -99,25 +100,13 @@ new Handle:g_hCTAngles = INVALID_HANDLE;
 /** Constant offsets values **/
 new g_iPlayers_HelmetOffset;
 
-/** Forwards **/
-// forward OnPreArenaRestart(Handle:queue)
-new Handle:g_hOnPreArenaRestart = INVALID_HANDLE;
-// forward OnRankingQueueSet(Handle:queue)
-new Handle:g_hOnRankingQueueSet = INVALID_HANDLE;
-// forward OnPostArenaRestart()
-new Handle:g_hOnPostArenaRestart = INVALID_HANDLE;
-// forward OnRatingChange(winner, loser, bool:forceLoss, Float:delta)
-new Handle:g_hOnRatingChange = INVALID_HANDLE;
-// forward OnArenaSpawnDone(client)
-new Handle:g_hOnArenaSpawnDone = INVALID_HANDLE;
-
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
+#include "multi1v1/stats.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/queue.sp"
 #include "multi1v1/radiocommands.sp"
 #include "multi1v1/spawns.sp"
-#include "multi1v1/stats.sp"
 #include "multi1v1/weaponmenu.sp"
 
 
@@ -145,6 +134,7 @@ public OnPluginStart() {
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
+    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
     g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Should players see the guns menu automatically on their first connect?");
 
     /** Config file **/
@@ -171,6 +161,7 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
+    HookEvent("cs_win_panel_match", Event_MatchOver);
 
     /** Commands **/
     AddCommandListener(Command_Say, "say");
@@ -179,13 +170,9 @@ public OnPluginStart() {
     AddCommandListener(Command_TeamJoin, "jointeam");
     AddRadioCommandListeners();
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
-
-    /** Forwards **/
-    g_hOnPreArenaRestart = CreateGlobalForward("OnPreArenaRestart", ET_Ignore, Param_Cell);
-    g_hOnRankingQueueSet =  CreateGlobalForward("OnRankingQueueSet", ET_Ignore, Param_Cell);
-    g_hOnPostArenaRestart = CreateGlobalForward("OnPostArenaRestart", ET_Ignore);
-    g_hOnRatingChange = CreateGlobalForward("OnPreRatingChange", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_FloatByRef);
-    g_hOnArenaSpawnDone = CreateGlobalForward("OnArenaSpawnDone", ET_Ignore, Param_Cell);
+    RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
+    RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
+    RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -207,6 +194,7 @@ public OnMapStart() {
     if (!g_dbConnected && GetConVarInt(g_hUseDataBase) != 0) {
         DB_Connect();
     }
+
     g_arenas = 1;
     g_totalRounds = 0;
     g_roundFinished = false;
@@ -258,6 +246,25 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
     return Plugin_Changed;
 }
 
+public Event_MatchOver(Handle:event, const String:name[], bool:dontBroadcast) {
+    new maxClient = -1;
+    new maxScore = -1;
+    for (new i = 1; i <= MaxClients; i++) {
+        if (!IsPlayer(i))
+            return;
+
+        new score = g_RoundsLeader[i];
+        if (maxClient == -1 || score > maxScore) {
+            maxClient = i;
+            maxScore = score;
+        }
+    }
+
+    if (IsPlayer(maxClient))
+        PluginMessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map",
+                           maxClient, maxScore);
+}
+
 /**
  * Round pre-start, sets up who goes in which arena for this round.
  */
@@ -266,10 +273,6 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 
     // Here we add each player to the queue in their new ranking
     g_rankingQueue = Queue_Init();
-
-    Call_StartForward(g_hOnPreArenaRestart);
-    Call_PushCell(g_rankingQueue);
-    Call_Finish();
 
     //  top arena
     AddPlayer(g_ArenaWinners[1]);
@@ -292,10 +295,11 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         AddPlayer(client);
     }
 
-    Call_StartForward(g_hOnRankingQueueSet);
-    Call_PushCell(g_rankingQueue);
-    Call_Finish();
-
+    for (new i = 0; i < Queue_Length(g_waitingQueue); i++) {
+        new client = GetArrayCell(g_waitingQueue, i);
+        PluginMessage(client, "Sorry, all the arenas are currently \x03full.");
+        PluginMessage(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
+    }
 
     new leader = Queue_Peek(g_rankingQueue);
     if (IsValidClient(leader) && Queue_Length(g_rankingQueue) >= 2)
@@ -391,10 +395,20 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         }
     }
 
-    CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
+    for (new i = 1; i <= MaxClients; i++) {
+        if (!IsActivePlayer(i))
+            continue;
 
-    Call_StartForward(g_hOnPostArenaRestart);
-    Call_Finish();
+        new other = GetOpponent(i);
+        new arena = g_Ranking[i];
+        if (IsValidClient(other)) {
+            PluginMessage(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
+        } else {
+            PluginMessage(i, "You are in arena \x04%d\x01 with \x07no opponent", arena);
+        }
+    }
+
+    CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
 
 /**
@@ -526,10 +540,6 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     new RoundType:roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
     GivePlayerArenaWeapons(client, roundType);
     CreateTimer(0.1, RemoveRadar, client);
-
-    Call_StartForward(g_hOnArenaSpawnDone);
-    Call_PushCell(client);
-    Call_Finish();
 }
 
 public GivePlayerArenaWeapons(client, RoundType:roundType) {

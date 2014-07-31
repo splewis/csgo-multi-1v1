@@ -4,8 +4,10 @@
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
                                  // this is for converting ints to strings when setting menu values/cookies
 
+
 #include <clientprefs>
 
+// Global buffer for sql queries
 new String:g_sqlBuffer[1024];
 
 /**

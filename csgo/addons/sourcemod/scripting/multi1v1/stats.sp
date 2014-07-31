@@ -151,7 +151,7 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
 /**
  * Increments a named field in the database.
  */
-static Increment(client, const String:field[]) {
+public Increment(client, const String:field[]) {
     if (db != INVALID_HANDLE) {
         new id = GetSteamAccountID(client);
         if (id >= 1) {
@@ -163,7 +163,7 @@ static Increment(client, const String:field[]) {
     }
 }
 
-static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
+public Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
     // probability of the winner winning
     new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
     new Float:pLoser = 1.0 - pWinner;
@@ -175,7 +175,7 @@ static Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-static UpdateRatings(winner, loser, bool:forceLoss=false) {
+public UpdateRatings(winner, loser, bool:forceLoss) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (!g_FetchedPlayerInfo[winner]) {
@@ -196,19 +196,15 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
             return;
         }
 
-        new Float:rating_delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
+        new Float:delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
-            Call_StartForward(g_hOnRatingChange);
-            Call_PushCell(winner);
-            Call_PushCell(loser);
-            Call_PushCell(false);
-            Call_PushFloatRef(rating_delta);
-            Call_Finish();
-
-            g_Rating[winner] += rating_delta;
-            g_Rating[loser] -= rating_delta;
-
+            new int_winner = RoundToNearest(g_Rating[winner] + delta);
+            new int_loser = RoundToNearest(g_Rating[loser] - delta);
+            new int_delta = RoundToNearest(delta);
+            g_Rating[winner] += delta;
+            g_Rating[loser] -= delta;
+            RatingMessage(winner, loser, int_winner, int_loser, int_delta);
             DB_WriteRatings(winner);
             DB_WriteRatings(loser);
         }
@@ -217,28 +213,49 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 
 static ForceLoss(winner, loser) {
     new Float:delta = K_FACTOR / 2.0;
-
-    Call_StartForward(g_hOnRatingChange);
-    Call_PushCell(winner);
-    Call_PushCell(loser);
-    Call_PushCell(false);
-    Call_PushFloatRef(delta);
-    Call_Finish();
-
     g_Rating[winner] -= delta;
     g_Rating[loser] -= delta;
     DB_WriteRatings(winner);
     DB_WriteRatings(loser);
+    ForceLossMessage(winner, RoundToNearest(g_Rating[winner]), RoundToNearest(delta));
+    ForceLossMessage(loser, RoundToNearest(g_Rating[loser]), RoundToNearest(delta));
 }
 
-public RatingMessage(winner, loser, int_winner, int_loser, int_delta) {
+static RatingMessage(winner, loser, int_winner, int_loser, int_delta) {
     PluginMessage(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
                     int_winner, int_delta, loser, int_loser, int_delta);
     PluginMessage(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
                     int_loser, int_delta, winner, int_winner, int_delta);
 }
 
-public ForceLossMessage(client, any:int_rating, any:int_delta) {
+static ForceLossMessage(client, any:int_rating, any:int_delta) {
     PluginMessage(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out",
                   int_rating, int_delta);
+}
+
+public Action:Command_Stats(client, args) {
+    new String:arg1[32];
+    if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
+        new target = FindTarget(client, arg1, true, false);
+        if (target != -1) {
+            ShowStatsForPlayer(client, target);
+        }
+    } else {
+        ShowStatsForPlayer(client, client);
+    }
+
+    return Plugin_Handled;
+}
+
+public ShowStatsForPlayer(client, target) {
+    decl String:url[255];
+    GetConVarString(g_hStatsWebsite, url, sizeof(url));
+    if (StrEqual(url, "")) {
+        PluginMessage(client, "Sorry, there is no stats website for this server.");
+        return;
+    }
+
+    decl String:player_url[255];
+    Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
+    ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
 }
