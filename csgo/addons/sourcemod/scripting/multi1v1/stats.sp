@@ -199,12 +199,13 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
         new Float:rating_delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
+            new Action:result;
             Call_StartForward(g_hOnRatingChange);
             Call_PushCell(winner);
             Call_PushCell(loser);
             Call_PushCell(false);
             Call_PushFloat(rating_delta);
-            Call_Finish();
+            Call_Finish(_:result);
 
             g_Rating[winner] += rating_delta;
             g_Rating[loser] -= rating_delta;
@@ -218,12 +219,13 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 static ForceLoss(winner, loser) {
     new Float:delta = K_FACTOR / 2.0;
 
+    new Action:result;
     Call_StartForward(g_hOnRatingChange);
     Call_PushCell(winner);
     Call_PushCell(loser);
     Call_PushCell(false);
     Call_PushFloat(delta);
-    Call_Finish();
+    Call_Finish(_:result);
 
     g_Rating[winner] -= delta;
     g_Rating[loser] -= delta;
