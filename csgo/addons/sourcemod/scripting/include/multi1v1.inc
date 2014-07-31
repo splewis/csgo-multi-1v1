@@ -55,3 +55,15 @@ native bool:DoesPlayerAllowFlashbangs(client);
 
 // Gives a player the weapons appropriate for a round type.
 native GivePlayerArenaWeapons(client, RoundType:roundType);
+
+// Checks if the database is connected and valid.
+native bool:HasDatabase();
+
+// Returns a handle to the database connection. Please check HasDatabase before using this.
+native Handle:GetDatabase();
+
+// Displays the rating change message to a pair of players.
+native RatingMessage(winner, loser, int_winner, int_loser, int_delta);
+
+// Displays the time running out force loss message to a player.
+native ForceLossMessage(client, int_rating, int_delta);
