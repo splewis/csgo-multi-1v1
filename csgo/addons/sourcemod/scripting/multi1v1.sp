@@ -1,5 +1,4 @@
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v1.x/csgo-multi-1v1.txt"
-#define MESSAGE_PREFIX "[\x05Multi1v1\x01] "
 #pragma semicolon 1
 
 #include <sourcemod>
@@ -185,7 +184,7 @@ public OnPluginStart() {
     g_hOnPreArenaRestart = CreateGlobalForward("OnPreArenaRestart", ET_Ignore, Param_Cell);
     g_hOnRankingQueueSet =  CreateGlobalForward("OnRankingQueueSet", ET_Ignore, Param_Cell);
     g_hOnPostArenaRestart = CreateGlobalForward("OnPostArenaRestart", ET_Ignore);
-    g_hOnRatingChange = CreateGlobalForward("OnRatingChange", ET_Hook, Param_Cell, Param_Cell, Param_Cell, Param_Float);
+    g_hOnRatingChange = CreateGlobalForward("OnPreRatingChange", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_FloatByRef);
     g_hOnArenaSpawnDone = CreateGlobalForward("OnArenaSpawnDone", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
@@ -843,4 +842,20 @@ public UpdateArena(arena) {
             g_ArenaStatsUpdated[arena] = true;
         }
     }
+}
+
+public PluginMessage(client, const String:msg[], any:...) {
+    new String:formattedMsg[1024] = MESSAGE_PREFIX;
+    decl String:tmp[1024];
+    VFormat(tmp, sizeof(tmp), msg, 3);
+    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
+    PrintToChat(client, formattedMsg);
+}
+
+public PluginMessageToAll(const String:msg[], any:...) {
+    new String:formattedMsg[1024] = MESSAGE_PREFIX;
+    decl String:tmp[1024];
+    VFormat(tmp, sizeof(tmp), msg, 2);
+    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
+    PrintToChatAll(formattedMsg);
 }

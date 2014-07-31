@@ -61,8 +61,7 @@ public OnPostArenaRestart() {
 // has no opponent.
 // The forceLoss variable is true only if the players let time run out.
 // In that case, you should consider both winner and loser 'losers' of the round.
-public Action:OnRatingChange(winner, loser, bool:forceLoss, Float:delta) {
+public OnRatingChange(winner, loser, bool:forceLoss, &Float:delta) {
     PrintToServer("%N beat %N, delta rating=%f, force loss(time ran out)=%d",
                   winner, loser, delta, forceLoss);
-    return Plugin_Continue;
 }

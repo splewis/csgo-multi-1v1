@@ -199,13 +199,12 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
         new Float:rating_delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
-            new Action:result;
             Call_StartForward(g_hOnRatingChange);
             Call_PushCell(winner);
             Call_PushCell(loser);
             Call_PushCell(false);
-            Call_PushFloat(rating_delta);
-            Call_Finish(_:result);
+            Call_PushFloatRef(rating_delta);
+            Call_Finish();
 
             g_Rating[winner] += rating_delta;
             g_Rating[loser] -= rating_delta;
@@ -219,16 +218,27 @@ static UpdateRatings(winner, loser, bool:forceLoss=false) {
 static ForceLoss(winner, loser) {
     new Float:delta = K_FACTOR / 2.0;
 
-    new Action:result;
     Call_StartForward(g_hOnRatingChange);
     Call_PushCell(winner);
     Call_PushCell(loser);
     Call_PushCell(false);
-    Call_PushFloat(delta);
-    Call_Finish(_:result);
+    Call_PushFloatRef(delta);
+    Call_Finish();
 
     g_Rating[winner] -= delta;
     g_Rating[loser] -= delta;
     DB_WriteRatings(winner);
     DB_WriteRatings(loser);
+}
+
+public RatingMessage(winner, loser, int_winner, int_loser, int_delta) {
+    PluginMessage(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
+                    int_winner, int_delta, loser, int_loser, int_delta);
+    PluginMessage(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
+                    int_loser, int_delta, winner, int_winner, int_delta);
+}
+
+public ForceLossMessage(client, any:int_rating, any:int_delta) {
+    PluginMessage(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out",
+                  int_rating, int_delta);
 }

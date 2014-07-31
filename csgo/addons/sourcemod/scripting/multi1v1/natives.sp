@@ -19,6 +19,10 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetPlayerPistol", Native_GetPlayerPistol);
     CreateNative("DoesPlayerAllowFlashbangs", Native_DoesPlayerAllowFlashbangs);
     CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
+    CreateNative("HasDatabase", Native_HasDatabase);
+    CreateNative("GetDatabase", Native_GetDatabase);
+    CreateNative("RatingMessage", Native_RatingMessage);
+    CreateNative("ForceLossMessage", Native_ForceLossMessage);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -148,4 +152,28 @@ public Native_GivePlayerArenaWeapons(Handle:plugin, numParams) {
     if (!IsValidClient(client))
         return;
     GivePlayerArenaWeapons(client, roundType);
+}
+
+public Native_HasDatabase(Handle:plugin, numParams) {
+    return GetConVarInt(g_hUseDataBase) != 0 && g_dbConnected && db != INVALID_HANDLE;
+}
+
+public Native_GetDatabase(Handle:plugin, numParams) {
+    return _:db;
+}
+
+public Native_RatingMessage(Handle:plugin, numParams) {
+    new winner = GetNativeCell(1);
+    new loser = GetNativeCell(2);
+    new int_winner = GetNativeCell(3);
+    new int_loser = GetNativeCell(4);
+    new int_delta = GetNativeCell(5);
+    RatingMessage(winner, loser, int_winner, int_loser, int_delta);
+}
+
+public Native_ForceLossMessage(Handle:plugin, numParams) {
+    new winner = GetNativeCell(1);
+    new int_rating = GetNativeCell(2);
+    new int_delta = GetNativeCell(3);
+    ForceLossMessage(winner, int_rating, int_delta);
 }
