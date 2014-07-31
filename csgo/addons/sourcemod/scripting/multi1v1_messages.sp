@@ -44,17 +44,17 @@ public OnRatingChange(winner, loser, bool:forceLoss, Float:delta) {
         return;
 
     new int_delta = RoundToNearest(delta);
-    new int_winner = RoundToNearest(GetRating(winner)) + int_delta;
-    new int_loser = RoundToNearest(GetRating(loser)) + int_delta;
+    new int_winner = RoundToNearest(GetRating(winner + delta));
+    new int_loser = RoundToNearest(GetRating(loser + delta));
 
     if (forceLoss) {
         ForceLossMessage(winner, int_delta, int_winner);
         ForceLossMessage(loser, int_delta, int_loser);
     } else {
         Multi1v1Message(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
-                      int_winner, delta, loser, int_loser, delta);
+                      int_winner, int_delta, loser, int_loser, int_delta);
         Multi1v1Message(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
-                      int_loser, delta, winner, int_winner, delta);
+                      int_loser, int_delta, winner, int_winner, int_delta);
     }
 }
 
