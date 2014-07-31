@@ -3,7 +3,7 @@
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
     CreateNative("Multi1v1Message", Native_Multi1v1Message);
     CreateNative("Multi1v1MessageToAll", Native_Multi1v1MessageToAll);
-    CreateNative("GetMaxArenas", Native_GetMaxArenas);
+    CreateNative("GetMaximumArenas", Native_GetMaximumArenas);
     CreateNative("GetNumActiveArenas", Native_GetNumActiveArenas);
     CreateNative("IsInWaitingQueue", Native_IsInWaitingQueue);
     CreateNative("GetWaitingQueue", Native_GetWaitingQueue);
@@ -18,6 +18,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetPlayerRifle", Native_GetPlayerRifle);
     CreateNative("GetPlayerPistol", Native_GetPlayerPistol);
     CreateNative("DoesPlayerAllowFlashbangs", Native_DoesPlayerAllowFlashbangs);
+    CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -40,7 +41,7 @@ public Native_Multi1v1MessageToAll(Handle:plugin, numParams) {
     PrintToChatAll("%s%s", MESSAGE_PREFIX, buffer);
 }
 
-public Native_GetMaxArenas(Handle:plugin, numParams) {
+public Native_GetMaximumArenas(Handle:plugin, numParams) {
     return g_maxArenas;
 }
 
@@ -139,4 +140,12 @@ public Native_DoesPlayerAllowFlashbangs(Handle:plugin, numParams) {
     if (!IsValidClient(client))
         return false;
     return g_GiveFlash[client];
+}
+
+public Native_GivePlayerArenaWeapons(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    new RoundType:roundType = RoundType:GetNativeCell(2);
+    if (!IsValidClient(client))
+        return;
+    GivePlayerArenaWeapons(client, roundType);
 }

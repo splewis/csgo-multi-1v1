@@ -185,8 +185,8 @@ public OnPluginStart() {
     g_hOnPreArenaRestart = CreateGlobalForward("OnPreArenaRestart", ET_Ignore, Param_Cell);
     g_hOnRankingQueueSet =  CreateGlobalForward("OnRankingQueueSet", ET_Ignore, Param_Cell);
     g_hOnPostArenaRestart = CreateGlobalForward("OnPostArenaRestart", ET_Ignore);
-    g_hOnRatingChange = CreateGlobalForward("OnRatingChange", ET_Event, Param_Cell, Param_Cell, Param_Cell, Param_Float);
-    g_hOnArenaSpawnDone = CreateGlobalForward("OnArenaSpawnDone", ET_Event, Param_Cell);
+    g_hOnRatingChange = CreateGlobalForward("OnRatingChange", ET_Hook, Param_Cell, Param_Cell, Param_Cell, Param_Float);
+    g_hOnArenaSpawnDone = CreateGlobalForward("OnArenaSpawnDone", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -520,42 +520,39 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
         return;
 
-    // Eclude knife: this can fail depending on the version of smlib (whether it maches or not)
-    Client_RemoveAllWeapons(client, "knife", true);
-
-    // In case it fails, give the knife back:
-    if (Client_GetWeaponBySlot(client, CS_SLOT_KNIFE) == INVALID_ENT_REFERENCE)
-        GivePlayerItem(client, "weapon_knife");
-
     new arena = g_Ranking[client];
-    if (arena == -1) {
+    if (arena == -1)
         LogError("player %N had arena -1 on his spawn", client);
-    }
 
     new RoundType:roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
+    GivePlayerArenaWeapons(client, roundType);
+    CreateTimer(0.1, RemoveRadar, client);
 
+    Call_StartForward(g_hOnArenaSpawnDone);
+    Call_PushCell(client);
+    Call_Finish();
+}
+
+public GivePlayerArenaWeapons(client, RoundType:roundType) {
+    Client_RemoveAllWeapons(client, "", true);
     if (roundType == RoundType_Rifle) {
-        if (GivePlayerItem(client, g_PrimaryWeapon[client]) == -1)
-            GivePlayerItem(client, "weapon_ak47");
+       GivePlayerItem(client, g_PrimaryWeapon[client]);
     } else if (roundType == RoundType_Awp) {
         GivePlayerItem(client, "weapon_awp");
     } else if (roundType == RoundType_Pistol) {
         RemoveVestHelm(client);
+    } else {
+        LogError("Unknown round type for %N: %d", client, roundType);
     }
 
-    if (GivePlayerItem(client, g_SecondaryWeapon[client]) == -1)
-        GivePlayerItem(client, "weapon_glock");
+    GivePlayerItem(client, g_SecondaryWeapon[client]);
 
     new other = GetOpponent(client);
     if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
         GivePlayerItem(client, "weapon_flashbang");
     }
 
-    CreateTimer(0.1, RemoveRadar, client);
-
-    Call_StartForward(g_hOnArenaSpawnDone);
-    Call_PushCell(client);
-    Call_Finish();
+    GivePlayerItem(client, "weapon_knife");
 }
 
 /**
@@ -646,7 +643,7 @@ public Action:Command_Say(client, const String:command[], argc) {
 
     StripQuotes(text);
 
-    new String:gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS" };
+    new String:gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS", "!guns" };
 
     for (new i = 0; i < 4; i++) {
         if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
