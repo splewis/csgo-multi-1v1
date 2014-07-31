@@ -2,13 +2,11 @@
 SMC = spcomp
 FLAGS = "-O2 -t4"
 SRC = csgo/addons/sourcemod/scripting/multi1v1.sp csgo/addons/sourcemod/scripting/multi1v1_example.sp
+OUT = $(SRC:%.sp=.smx)
 
 build: clean
 	mkdir -p csgo/addons/sourcemod/plugins
 	$(SMC) csgo/addons/sourcemod/scripting/multi1v1.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1
-	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_messages.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1_messages
-	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_viewstats.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1_viewstats
-	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_example.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1_example
 
 clean:
 	rm -rf *.smx *.zip csgo/addons/sourcemod/configs csgo/addons/sourcemod/plugins

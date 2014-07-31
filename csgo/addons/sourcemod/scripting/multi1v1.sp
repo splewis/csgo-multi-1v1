@@ -22,6 +22,7 @@
 #define WEAPON_LENGTH 32  // length of a weapon name string
 
 /** ConVar handles **/
+new Handle:g_hEloMatchMode = INVALID_HANDLE;
 new Handle:g_hVerboseSpawnModes = INVALID_HANDLE;
 new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hBlockRadio = INVALID_HANDLE;
@@ -101,12 +102,13 @@ new Handle:g_hCTAngles = INVALID_HANDLE;
 new g_iPlayers_HelmetOffset;
 
 /** multi1v1 function includes **/
+#include "multi1v1/arenasetup.sp"
 #include "multi1v1/generic.sp"
-#include "multi1v1/stats.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/queue.sp"
 #include "multi1v1/radiocommands.sp"
 #include "multi1v1/spawns.sp"
+#include "multi1v1/stats.sp"
 #include "multi1v1/weaponmenu.sp"
 
 
@@ -129,6 +131,7 @@ public OnPluginStart() {
     LoadTranslations("common.phrases");
 
     /** ConVars **/
+    g_hEloMatchMode = CreateConVar("sm_multi1v1_use_elo_match_mode", "0", "Setting to 1 will change the arena ordering from using a ladder system to matching players using their ratings.");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
@@ -273,6 +276,11 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 
     // Here we add each player to the queue in their new ranking
     g_rankingQueue = Queue_Init();
+
+    // TODO: elo matching rather than laddering!
+    // if (GetConVarInt(g_hEloMatchMode) == 0) {
+    // } else {
+    // }
 
     //  top arena
     AddPlayer(g_ArenaWinners[1]);
