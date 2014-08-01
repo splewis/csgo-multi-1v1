@@ -21,6 +21,8 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 ### Extending the Plugin
 Work to make the plugin extensible is currently underway (and **not released**). For a preview, check [multi1v1.inc](csgo/addons/sourcemod/scripting/include/multi1v1.inc).
 
+The general idea of everything I do with sourcemod plugins is to **keep it simple, stupid**. This plugin and its implementation details are no exception.
+
 
 ### Download
 Stable releases are in the [GitHub Releases](https://github.com/splewis/csgo-multi-1v1/releases) section.
@@ -59,11 +61,11 @@ To compile, you will need:
 
 
 ### Maps
-I have a [workshop collection](http://steamcommunity.com/sharedfiles/filedetails/?id=249376192) of maps I use. Not all of the maps are finished though, so don't blindly use them all. The "am_" prefix stands for aim_multi, reflecting the fact that the maps are similar to aim_ maps but there are multiple copies of them.
+I have a [workshop collection](http://steamcommunity.com/sharedfiles/filedetails/?id=279177557) of maps I use. Not all of the maps are finished though, so don't blindly use them all. The "am_" prefix stands for aim_multi, reflecting the fact that the maps are similar to aim_ maps but there are multiple copies of them.
 
 Guidelines for making a multi-1v1 map:
 - Create 1 arena and test it well, and when are you happy copy it
-- Create at least 9 arenas, I'd recommend at least 12, however. Any more than 16 is probably overkill.
+- Create at least 12 arenas, I'd recommend making at least **16**, however. Any more than 16 is probably overkill.
 - The players shouldn't be able to see each other on spawn
 - Each group of spawns (e.g. all CT spawns in arena 1) must be within 1600.0 units of each other, this is required to cluster spawns into the arenas and not configurable
 - Ensure that the arenas are sufficiently far apart so players don't hear shooting in other arenas

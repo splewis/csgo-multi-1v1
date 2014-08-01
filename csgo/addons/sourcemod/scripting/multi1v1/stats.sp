@@ -20,7 +20,9 @@ new String:g_TableFormat[][] = {
  */
 public DB_Connect() {
     new String:error[255];
-    db = SQL_Connect("multi1v1", true, error, sizeof(error));
+    new String:dbCfgName[255];
+    GetConVarString(g_hDatabaseName, dbCfgName, sizeof(dbCfgName));
+    db = SQL_Connect(dbCfgName, true, error, sizeof(error));
     if (db == INVALID_HANDLE) {
         g_dbConnected = false;
         LogError("Could not connect: %s", error);
@@ -111,7 +113,7 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
         g_Losses[client] = SQL_FetchInt(hndl, 2);
         g_FetchedPlayerInfo[client] = true;
     } else {
-        LogError("Couldn't fetch rating for %N", client);
+        LogError("Failed to fetch statistics for for %N", client);
     }
 }
 

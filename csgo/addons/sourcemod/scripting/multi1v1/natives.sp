@@ -32,7 +32,6 @@ public Native_IsInWaitingQueue(Handle:plugin, numParams) {
     return Queue_Inside(g_waitingQueue, client);
 }
 
-
 public Native_GetWaitingQueue(Handle:plugin, numParams) {
     return _:g_waitingQueue;
 }

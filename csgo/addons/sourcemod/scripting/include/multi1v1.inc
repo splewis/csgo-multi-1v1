@@ -35,9 +35,9 @@ native bool:HasStats(client);
 // Functions for getting a players' 1v1-stats.
 // You should confirm HasStats(client) is true before using any of these.
 native Float:GetRating(client);
-native Float:GetRoundsPlayed(client);
-native Float:GetWins(client);
-native Float:GetLosses(client);
+native GetRoundsPlayed(client);
+native GetWins(client);
+native GetLosses(client);
 
 // Returns a client's arena number, or -1 if they aren't in an arena.
 native any:GetArenaNumber(client);

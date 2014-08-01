@@ -22,15 +22,16 @@
 #define WEAPON_LENGTH 32  // length of a weapon name string
 
 /** ConVar handles **/
-new Handle:g_hEloMatchMode = INVALID_HANDLE;
-new Handle:g_hVerboseSpawnModes = INVALID_HANDLE;
-new Handle:g_hRoundTime = INVALID_HANDLE;
-new Handle:g_hBlockRadio = INVALID_HANDLE;
-new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
-new Handle:g_hVersion = INVALID_HANDLE;
-new Handle:g_hStatsWebsite = INVALID_HANDLE;
+new Handle:g_hBlockRadio = INVALID_HANDLE;
+new Handle:g_hDatabaseName = INVALID_HANDLE;
+new Handle:g_hEloMatchMode = INVALID_HANDLE;
 new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
+new Handle:g_hRoundTime = INVALID_HANDLE;
+new Handle:g_hStatsWebsite = INVALID_HANDLE;
+new Handle:g_hUseDataBase = INVALID_HANDLE;
+new Handle:g_hVerboseSpawnModes = INVALID_HANDLE;
+new Handle:g_hVersion = INVALID_HANDLE;
 
 /** Saved data for database interaction - be careful when using these, they may not
  *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
@@ -131,6 +132,7 @@ public OnPluginStart() {
     LoadTranslations("common.phrases");
 
     /** ConVars **/
+    g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
     g_hEloMatchMode = CreateConVar("sm_multi1v1_use_elo_match_mode", "0", "Setting to 1 will change the arena ordering from using a ladder system to matching players using their ratings.");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
