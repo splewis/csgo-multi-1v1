@@ -188,7 +188,7 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
             return;
         }
 
-        new bool:block = !g_BlockStatChanges[winner] && !g_BlockStatChanges[loser];
+        new bool:block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser];
         if (block)
             return;
 
@@ -197,15 +197,11 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
             return;
         }
 
-
         if (IsValidClient(winner) && IsValidClient(loser)) {
             new Float:delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
-            new int_winner = RoundToNearest(g_Rating[winner] + delta);
-            new int_loser = RoundToNearest(g_Rating[loser] - delta);
-            new int_delta = RoundToNearest(delta);
             g_Rating[winner] += delta;
             g_Rating[loser] -= delta;
-            RatingMessage(winner, loser, int_winner, int_loser, int_delta);
+            RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
             DB_WriteRatings(winner);
             DB_WriteRatings(loser);
         }
@@ -218,20 +214,20 @@ static ForceLoss(winner, loser) {
     g_Rating[loser] -= delta;
     DB_WriteRatings(winner);
     DB_WriteRatings(loser);
-    ForceLossMessage(winner, RoundToNearest(g_Rating[winner]), RoundToNearest(delta));
-    ForceLossMessage(loser, RoundToNearest(g_Rating[loser]), RoundToNearest(delta));
+    ForceLossMessage(winner, g_Rating[winner], delta);
+    ForceLossMessage(loser, g_Rating[loser], delta);
 }
 
-static RatingMessage(winner, loser, int_winner, int_loser, int_delta) {
-    Multi1v1Message(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
-                    int_winner, int_delta, loser, int_loser, int_delta);
-    Multi1v1Message(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
-                    int_loser, int_delta, winner, int_winner, int_delta);
+static RatingMessage(winner, loser, Float:winner_rating, Float:loser_rating, Float:delta) {
+    Multi1v1Message(winner, "\x04You \x01(rating \x04%.1f\x01, \x06+%.1f\x01) beat \x03%N \x01(rating \x03%.1f\x01, \x02-%.1f\x01)",
+                    winner_rating, delta, loser, loser_rating, delta);
+    Multi1v1Message(loser,  "\x04You \x01(rating \x04%.1f\x01, \x07-%.1f\x01) lost to \x03%N \x01(rating \x03%.1f\x01, \x06+%.1f\x01)",
+                    loser_rating, delta, winner, winner_rating, delta);
 }
 
-static ForceLossMessage(client, any:int_rating, any:int_delta) {
-    Multi1v1Message(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out",
-                  int_rating, int_delta);
+static ForceLossMessage(client, Float:rating, Float:delta) {
+    Multi1v1Message(client, "\x04You \x01(rating \x04%.1f\x01, \x07-%.1f\x01) let time run out",
+                   rating, delta);
 }
 
 public Action:Command_Stats(client, args) {
