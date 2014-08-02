@@ -91,12 +91,6 @@ new Handle:g_hPistolCookie = INVALID_HANDLE;
 new Handle:g_hFlashCookie = INVALID_HANDLE;
 new Handle:g_hSetCookies = INVALID_HANDLE;
 
-/** Handles to arrays of vectors of spawns/angles **/
-new Handle:g_hTSpawns = INVALID_HANDLE;
-new Handle:g_hTAngles = INVALID_HANDLE;
-new Handle:g_hCTSpawns = INVALID_HANDLE;
-new Handle:g_hCTAngles = INVALID_HANDLE;
-
 /** Fowards **/
 new Handle:g_hOnPreArenaRankingsSet = INVALID_HANDLE;
 new Handle:g_hOnPostArenaRankingsSet = INVALID_HANDLE;

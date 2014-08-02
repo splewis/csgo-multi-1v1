@@ -8,6 +8,10 @@ build: clean
 	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_sprweight.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1_sprweight
 	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_elomatcher.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1_elomatcher
 
+test: clean
+	mkdir -p csgo/addons/sourcemod/plugins
+	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_test.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1_test
+
 clean:
 	rm -rf *.smx *.zip csgo/addons/sourcemod/configs csgo/addons/sourcemod/plugins
 

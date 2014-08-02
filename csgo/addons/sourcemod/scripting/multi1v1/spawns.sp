@@ -1,5 +1,11 @@
 #define SAME_ARENA_THRESHOLD 1600.0
 
+/** Handles to arrays of vectors of spawns/angles **/
+new Handle:g_hTSpawns = INVALID_HANDLE;
+new Handle:g_hTAngles = INVALID_HANDLE;
+new Handle:g_hCTSpawns = INVALID_HANDLE;
+new Handle:g_hCTAngles = INVALID_HANDLE;
+
 /**
  * Loads the spawn positions from the map and updates global spawn arrays.
  */
