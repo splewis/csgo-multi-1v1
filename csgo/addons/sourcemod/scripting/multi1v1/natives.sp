@@ -15,6 +15,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetLosses", Native_GetLosses);
     CreateNative("HasDatabase", Native_HasDatabase);
     CreateNative("GetDatabase", Native_GetDatabase);
+    CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -90,8 +91,16 @@ public Native_GetRoundsAtArena1(Handle:plugin, numParams) {
 
 public Native_GetOpponent(Handle:plugin, numParams) {
     new client = GetNativeCell(1);
-    if (IsValidClient(client))
-        return GetOpponent(client);
+    if (IsValidClient(client)) {
+        new arena = g_Ranking[client];
+        new other = -1;
+        if (client != -1 && arena != -1) {
+            other = g_ArenaPlayer1[arena];
+            if (other == client)
+                other = g_ArenaPlayer2[arena];
+        }
+        return other;
+    }
     return -1;
 }
 
@@ -101,4 +110,29 @@ public Native_HasDatabase(Handle:plugin, numParams) {
 
 public Native_GetDatabase(Handle:plugin, numParams) {
     return _:db;
+}
+
+public Native_GivePlayerArenaWeapons(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    new RoundType:roundType = RoundType:GetNativeCell(2);
+
+    Client_RemoveAllWeapons(client, "", true);
+    if (roundType == RoundType_Rifle) {
+       GivePlayerItem(client, g_PrimaryWeapon[client]);
+    } else if (roundType == RoundType_Awp) {
+        GivePlayerItem(client, "weapon_awp");
+    } else if (roundType == RoundType_Pistol) {
+        RemoveVestHelm(client);
+    } else {
+        LogError("Unknown round type for %N: %d", client, roundType);
+    }
+
+    GivePlayerItem(client, g_SecondaryWeapon[client]);
+
+    new other = GetOpponent(client);
+    if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
+        GivePlayerItem(client, "weapon_flashbang");
+    }
+
+    GivePlayerItem(client, "weapon_knife");
 }

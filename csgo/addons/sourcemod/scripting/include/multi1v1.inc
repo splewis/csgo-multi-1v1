@@ -11,11 +11,23 @@ enum RoundType {
     RoundType_Pistol = 2
 };
 
+// Called before the plugin has put any players in the ranking queue.
+// It is always empty at this call.
+// The ranking queue is an adt array.
+forward OnPreArenaRankingsSet(Handle:rankingQueue);
+
+// Called after the plugin has finished putting players in the ranking queue for next round.
+// The ranking queue is an adt array.
+forward OnPostArenaRankingsSet(Handle:rankingQueue);
+
+// After a player's spawn is finished and they have been given their weapons.
+forward AfterPlayerSpawn(any:client);
+
 // Prints a plugin-formatted message to a client.
-native Multi1v1Message(client, const String:fmt[], any:...);
+// native Multi1v1Message(client, const String:fmt[], any:...);
 
 // Prints a plugin-formatted message to all clients.
-native Multi1v1MessageToAll(const String:fmt[], any:...);
+// native Multi1v1MessageToAll(const String:fmt[], any:...);
 
 // Returns the maximum number of areans the map allows.
 native any:GetMaximumArenas();
@@ -53,3 +65,5 @@ native bool:HasDatabase();
 
 // Returns a handle to the database connection. Please check HasDatabase before using this.
 native Handle:GetDatabase();
+
+native GivePlayerArenaWeapons(client, RoundType:roundType);

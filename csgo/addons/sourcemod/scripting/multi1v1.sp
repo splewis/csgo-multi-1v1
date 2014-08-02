@@ -12,7 +12,6 @@
 #include <updater>
 
 
-
 /***********************
  *                     *
  *  Global Variables   *
@@ -25,7 +24,6 @@
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
 new Handle:g_hBlockRadio = INVALID_HANDLE;
 new Handle:g_hDatabaseName = INVALID_HANDLE;
-new Handle:g_hEloMatchMode = INVALID_HANDLE;
 new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 new Handle:g_hRoundTime = INVALID_HANDLE;
 new Handle:g_hStatsWebsite = INVALID_HANDLE;
@@ -76,14 +74,6 @@ new bool:g_roundFinished = false;
 new Handle:g_rankingQueue = INVALID_HANDLE;
 new Handle:g_waitingQueue = INVALID_HANDLE;
 
-/** The different round types **/
-enum RoundType {
-    RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
-    RoundType_Rifle = 0,
-    RoundType_Awp = 1,
-    RoundType_Pistol = 2
-};
-
 /** Weapon menu choice cookies **/
 new Handle:g_hAllowPistolCookie = INVALID_HANDLE;
 new Handle:g_hAllowAWPCookie = INVALID_HANDLE;
@@ -99,11 +89,16 @@ new Handle:g_hTAngles = INVALID_HANDLE;
 new Handle:g_hCTSpawns = INVALID_HANDLE;
 new Handle:g_hCTAngles = INVALID_HANDLE;
 
+/** Fowards **/
+new Handle:g_hOnPreArenaRankingsSet = INVALID_HANDLE;
+new Handle:g_hOnPostArenaRankingsSet = INVALID_HANDLE;
+new Handle:g_hAfterPlayerSpawn = INVALID_HANDLE;
+
 /** Constant offsets values **/
 new g_iPlayers_HelmetOffset;
 
 /** multi1v1 function includes **/
-#include "multi1v1/arenasetup.sp"
+#include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/queue.sp"
@@ -111,6 +106,7 @@ new g_iPlayers_HelmetOffset;
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
 #include "multi1v1/weaponmenu.sp"
+
 
 
 
@@ -133,7 +129,6 @@ public OnPluginStart() {
 
     /** ConVars **/
     g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
-    g_hEloMatchMode = CreateConVar("sm_multi1v1_use_elo_match_mode", "0", "Setting to 1 will change the arena ordering from using a ladder system to matching players using their ratings.");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
@@ -178,6 +173,11 @@ public OnPluginStart() {
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
+
+    /** Fowards **/
+    g_hOnPreArenaRankingsSet = CreateGlobalForward("OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnPostArenaRankingsSet = CreateGlobalForward("OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -279,10 +279,9 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     // Here we add each player to the queue in their new ranking
     g_rankingQueue = Queue_Init();
 
-    // TODO: elo matching rather than laddering!
-    // if (GetConVarInt(g_hEloMatchMode) == 0) {
-    // } else {
-    // }
+    Call_StartForward(g_hOnPreArenaRankingsSet);
+    Call_PushCell(g_rankingQueue);
+    Call_Finish();
 
     //  top arena
     AddPlayer(g_ArenaWinners[1]);
@@ -310,6 +309,10 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         PluginMessage(client, "Sorry, all the arenas are currently \x03full.");
         PluginMessage(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
     }
+
+    Call_StartForward(g_hOnPostArenaRankingsSet);
+    Call_PushCell(g_rankingQueue);
+    Call_Finish();
 
     new leader = Queue_Peek(g_rankingQueue);
     if (IsValidClient(leader) && Queue_Length(g_rankingQueue) >= 2)
@@ -550,28 +553,10 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
     new RoundType:roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
     GivePlayerArenaWeapons(client, roundType);
     CreateTimer(0.1, RemoveRadar, client);
-}
 
-public GivePlayerArenaWeapons(client, RoundType:roundType) {
-    Client_RemoveAllWeapons(client, "", true);
-    if (roundType == RoundType_Rifle) {
-       GivePlayerItem(client, g_PrimaryWeapon[client]);
-    } else if (roundType == RoundType_Awp) {
-        GivePlayerItem(client, "weapon_awp");
-    } else if (roundType == RoundType_Pistol) {
-        RemoveVestHelm(client);
-    } else {
-        LogError("Unknown round type for %N: %d", client, roundType);
-    }
-
-    GivePlayerItem(client, g_SecondaryWeapon[client]);
-
-    new other = GetOpponent(client);
-    if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
-        GivePlayerItem(client, "weapon_flashbang");
-    }
-
-    GivePlayerItem(client, "weapon_knife");
+    Call_StartForward(g_hAfterPlayerSpawn);
+    Call_PushCell(client);
+    Call_Finish();
 }
 
 /**
@@ -702,20 +687,6 @@ public SwitchPlayerTeam(client, team) {
         ChangeClientTeam(client, team);
     }
     g_PluginTeamSwitch[client] = false;
-}
-
-/**
- * Tries to get the player's opponent in their arena.
- */
-public GetOpponent(client) {
-    new arena = g_Ranking[client];
-    new other = -1;
-    if (client != -1 && arena != -1) {
-        other = g_ArenaPlayer1[arena];
-        if (other == client)
-            other = g_ArenaPlayer2[arena];
-    }
-    return other;
 }
 
 /**

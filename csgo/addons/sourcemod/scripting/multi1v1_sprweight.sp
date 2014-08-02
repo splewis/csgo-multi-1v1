@@ -43,5 +43,4 @@ public Float:ReportWeight(reporter, victim) {
     WEIGHT(reporter_rounds > 5000);
 
     return weight;
-
 }
