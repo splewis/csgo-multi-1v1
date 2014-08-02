@@ -21,7 +21,11 @@ forward OnPreArenaRankingsSet(Handle:rankingQueue);
 forward OnPostArenaRankingsSet(Handle:rankingQueue);
 
 // After a player's spawn is finished and they have been given their weapons.
-forward AfterPlayerSpawn(any:client);
+forward AfterPlayerSpawn(client);
+
+// Called once per player, per round.
+// Called after they have been moved to the right team and teleported to the right spawn location.
+forward AfterPlayerSetup(client);
 
 // When a round is decided. Not guaranteed to be called for
 // a client every round.
@@ -82,4 +86,8 @@ native BlockChatMessages(client);
 
 native UnblockChatMessages(client);
 
+// Sets an offset value for arena numbering when giving
+// players "Arena %d" team tags and the print outs
+// about what arena the player is in. Is 0 by default.
+// Set to 1 to make arena 1 show as arena 2, etc.
 native SetArenaOffsetValue(value);

@@ -91,10 +91,11 @@ new Handle:g_hPistolCookie = INVALID_HANDLE;
 new Handle:g_hFlashCookie = INVALID_HANDLE;
 new Handle:g_hSetCookies = INVALID_HANDLE;
 
-/** Fowards **/
+/** Forwards **/
 new Handle:g_hOnPreArenaRankingsSet = INVALID_HANDLE;
 new Handle:g_hOnPostArenaRankingsSet = INVALID_HANDLE;
 new Handle:g_hAfterPlayerSpawn = INVALID_HANDLE;
+new Handle:g_hAfterPlayerSetup = INVALID_HANDLE;
 new Handle:g_hOnRoundWon = INVALID_HANDLE;
 
 /** Constant offsets values **/
@@ -180,6 +181,7 @@ public OnPluginStart() {
     g_hOnPreArenaRankingsSet = CreateGlobalForward("OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnPostArenaRankingsSet = CreateGlobalForward("OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
+    g_hAfterPlayerSetup = CreateGlobalForward("AfterPlayerSetup", ET_Ignore, Param_Cell);
     g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 
     /** Compute any constant offsets **/
@@ -440,6 +442,10 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     Format(buffer, sizeof(buffer), "Arena %d", arena);
     CS_SetClientClanTag(client, buffer);
     CS_SetMVPCount(client, g_RoundsLeader[client]);
+
+    Call_StartForward(g_hAfterPlayerSetup);
+    Call_PushCell(client);
+    Call_Finish();
 }
 
 /**
