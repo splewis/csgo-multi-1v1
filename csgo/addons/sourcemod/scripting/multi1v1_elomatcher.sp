@@ -13,5 +13,5 @@ public Plugin:myinfo = {
 };
 
 OnPostArenaRankingsSet(Handle:rankingQueue) {
-
+    LogError("[OnPostArenaRankingsSet] Unimplemented");
 }

@@ -12,13 +12,18 @@
 #include <updater>
 
 
+
 /***********************
  *                     *
  *  Global Variables   *
  *                     *
  ***********************/
 
-#define WEAPON_LENGTH 32  // length of a weapon name string
+#define WEAPON_LENGTH 32
+#define K_FACTOR 8.0
+#define DISTRIBUTION_SPREAD 1000.0
+#define DEFAULT_RATING 1500.0
+#define TABLE_NAME "multi1v1_stats"
 
 /** ConVar handles **/
 new Handle:g_hAutoUpdate = INVALID_HANDLE;
@@ -54,6 +59,8 @@ new bool:g_GunsSelected[MAXPLAYERS+1];
 new RoundType:g_Preference[MAXPLAYERS+1];
 new String:g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 new String:g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
+new bool:g_BlockStatChanges[MAXPLAYERS+1];
+new bool:g_BlockChatMessages[MAXPLAYERS+1];
 
 /** Arena arrays **/
 new bool:g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
@@ -66,6 +73,7 @@ new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
 new any:g_RoundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
+new g_arenaOffsetValue = 0;
 new g_roundStartTime = 0;
 new g_maxArenas = 0; // maximum number of arenas the map can support
 new g_arenas = 1; // number of active arenas
@@ -93,6 +101,7 @@ new Handle:g_hCTAngles = INVALID_HANDLE;
 new Handle:g_hOnPreArenaRankingsSet = INVALID_HANDLE;
 new Handle:g_hOnPostArenaRankingsSet = INVALID_HANDLE;
 new Handle:g_hAfterPlayerSpawn = INVALID_HANDLE;
+new Handle:g_hOnRoundWon = INVALID_HANDLE;
 
 /** Constant offsets values **/
 new g_iPlayers_HelmetOffset;
@@ -161,7 +170,6 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
-    HookEvent("cs_win_panel_match", Event_MatchOver);
 
     /** Commands **/
     AddCommandListener(Command_Say, "say");
@@ -178,6 +186,7 @@ public OnPluginStart() {
     g_hOnPreArenaRankingsSet = CreateGlobalForward("OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnPostArenaRankingsSet = CreateGlobalForward("OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
+    g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -200,6 +209,7 @@ public OnMapStart() {
         DB_Connect();
     }
 
+    g_arenaOffsetValue = 0;
     g_arenas = 1;
     g_totalRounds = 0;
     g_roundFinished = false;
@@ -249,25 +259,6 @@ public Event_OnFullConnect(Handle:event, const String:name[], bool:dontBroadcast
 public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast) {
     dontBroadcast = true;
     return Plugin_Changed;
-}
-
-public Event_MatchOver(Handle:event, const String:name[], bool:dontBroadcast) {
-    new maxClient = -1;
-    new maxScore = -1;
-    for (new i = 1; i <= MaxClients; i++) {
-        if (!IsPlayer(i))
-            return;
-
-        new score = g_RoundsLeader[i];
-        if (maxClient == -1 || score > maxScore) {
-            maxClient = i;
-            maxScore = score;
-        }
-    }
-
-    if (IsPlayer(maxClient))
-        Multi1v1MessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map",
-                           maxClient, maxScore);
 }
 
 /**
@@ -409,15 +400,15 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
     }
 
     for (new i = 1; i <= MaxClients; i++) {
-        if (!IsActivePlayer(i))
+        if (!IsActivePlayer(i) || g_BlockChatMessages[i])
             continue;
 
         new other = GetOpponent(i);
         new arena = g_Ranking[i];
         if (IsValidClient(other)) {
-            Multi1v1Message(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
+            Multi1v1Message(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena - g_arenaOffsetValue, other);
         } else {
-            Multi1v1Message(i, "You are in arena \x04%d\x01 with \x07no opponent", arena);
+            Multi1v1Message(i, "You are in arena \x04%d\x01 with \x07no opponent", arena - g_arenaOffsetValue);
         }
     }
 
@@ -485,7 +476,7 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
         if (IsPlayer(winner) && IsPlayer(loser)) {
 
             // also skip the update if we already did it (a player got a kill earlier in the round)
-            if (winner != loser && GetConVarInt(g_hUseDataBase) != 0 && !g_ArenaStatsUpdated[arena]) {
+            if (winner != loser && !g_ArenaStatsUpdated[arena]) {
                 DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
                 g_ArenaStatsUpdated[arena] = true;
             }
@@ -790,6 +781,8 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
  * Resets all client variables to their default.
  */
 public ResetClientVariables(client) {
+    g_BlockChatMessages[client] = false;
+    g_BlockStatChanges[client] = false;
     g_FetchedPlayerInfo[client] = false;
     g_GunsSelected[client] = false;
     g_RoundsLeader[client] = 0;

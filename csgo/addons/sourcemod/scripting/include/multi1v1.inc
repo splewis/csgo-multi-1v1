@@ -23,6 +23,10 @@ forward OnPostArenaRankingsSet(Handle:rankingQueue);
 // After a player's spawn is finished and they have been given their weapons.
 forward AfterPlayerSpawn(any:client);
 
+// When a round is decided. Not guaranteed to be called for
+// a client every round.
+forward OnRoundWon(winner, loser, bool:forceLoss);
+
 // Prints a plugin-formatted message to a client.
 native Multi1v1Message(client, const String:fmt[], any:...);
 
@@ -67,3 +71,15 @@ native bool:HasDatabase();
 native Handle:GetDatabase();
 
 native GivePlayerArenaWeapons(client, RoundType:roundType);
+
+native Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K);
+
+native BlockRatingChanges(client);
+
+native UnblockRatingChanges(client);
+
+native BlockChatMessages(client);
+
+native UnblockChatMessages(client);
+
+native SetArenaOffsetValue(value);

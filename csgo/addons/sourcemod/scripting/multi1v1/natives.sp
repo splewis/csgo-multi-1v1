@@ -18,6 +18,12 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
     CreateNative("Multi1v1Message", Native_Multi1v1Message);
     CreateNative("Multi1v1MessageToAll", Native_Multi1v1MessageToAll);
+    CreateNative("ELORatingDelta", Native_ELORatingDelta);
+    CreateNative("BlockRatingChanges", Native_BlockRatingChanges);
+    CreateNative("UnblockRatingChanges", Native_UnblockRatingChanges);
+    CreateNative("BlockChatMessages", Native_BlockChatMessages);
+    CreateNative("UnblockChatMessages", Native_UnblockChatMessages);
+    CreateNative("SetArenaOffsetValue", Native_SetArenaOffsetValue);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -160,4 +166,38 @@ public Native_Multi1v1MessageToAll(Handle:plugin, numParams) {
     Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
 
     PrintToChatAll(finalMsg);
+}
+
+public Native_ELORatingDelta(Handle:plugin, numParams) {
+    new Float:winner_rating = Float:GetNativeCell(1);
+    new Float:loser_rating = Float:GetNativeCell(2);
+    new Float:K = Float:GetNativeCell(3);
+    new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
+    new Float:pLoser = 1.0 - pWinner;
+    new Float:winner_delta = K * pLoser;
+    return _:winner_delta;
+}
+
+public Native_BlockRatingChanges(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    g_BlockStatChanges[client] = true;
+}
+
+public Native_UnblockRatingChanges(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    g_BlockStatChanges[client] = false;
+}
+
+public Native_BlockChatMessages(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    g_BlockChatMessages[client] = true;
+}
+
+public Native_UnblockChatMessages(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    g_BlockChatMessages[client] = false;
+}
+
+public Native_SetArenaOffsetValue(Handle:plugin, numParams) {
+    g_arenaOffsetValue = GetNativeCell(1);
 }

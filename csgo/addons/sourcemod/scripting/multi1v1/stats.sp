@@ -1,8 +1,3 @@
-#define TABLE_NAME "multi1v1_stats"
-#define K_FACTOR 8.0
-#define DISTRIBUTION_SPREAD 1000.0
-#define DEFAULT_RATING 1500.0
-
 new String:g_TableFormat[][] = {
     "accountID INT NOT NULL PRIMARY KEY default 0",
     "auth varchar(64) NOT NULL default ''",
@@ -138,6 +133,15 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
             return;
         }
 
+        Call_StartForward(g_hOnRoundWon);
+        Call_PushCell(winner);
+        Call_PushCell(loser);
+        Call_PushCell(forceLoss);
+        Call_Finish();
+
+        if (GetConVarInt(g_hUseDataBase) == 0)
+            return;
+
         Increment(loser, "losses");
         if (forceLoss)
             Increment(winner, "losses");
@@ -165,15 +169,6 @@ public Increment(client, const String:field[]) {
     }
 }
 
-public Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
-    // probability of the winner winning
-    new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
-    new Float:pLoser = 1.0 - pWinner;
-    new Float:winner_delta = K * pLoser;
-
-    return winner_delta;
-}
-
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
@@ -193,14 +188,18 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
             return;
         }
 
+        new bool:block = !g_BlockStatChanges[winner] && !g_BlockStatChanges[loser];
+        if (block)
+            return;
+
         if (forceLoss) {
             ForceLoss(winner, loser);
             return;
         }
 
-        new Float:delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
+            new Float:delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
             new int_winner = RoundToNearest(g_Rating[winner] + delta);
             new int_loser = RoundToNearest(g_Rating[loser] - delta);
             new int_delta = RoundToNearest(delta);
