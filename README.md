@@ -45,7 +45,7 @@ Extract these to the appropriate folders, tweak mul1v1.cfg if you want. The file
 
 
 ### Web Interface
-There is a work-in-progress open-source web interface being developed under the [web/](https://github.com/splewis/csgo-multi-1v1/tree/master/web) directory. Check its [readme](https://github.com/splewis/csgo-multi-1v1/blob/master/web/readme.md) for more details.
+There is a work-in-progress open-source web interface being developed under the [web](https://github.com/splewis/csgo-multi-1v1/tree/master/web) directory. Check its [readme](https://github.com/splewis/csgo-multi-1v1/blob/master/web/readme.md) for more details.
 
 
 ### Building
@@ -56,8 +56,8 @@ The build process is managed by the Makefile.
 		make package  # packages the files to multi1v1.zip
 
 To compile, you will need:
-- [SMLib](http://www.sourcemodplugins.org/smlib/) (required)
-- [Updater](https://forums.alliedmods.net/showthread.php?t=169095) (optional)
+- [SMLib](http://www.sourcemodplugins.org/smlib/)
+- [Updater](https://forums.alliedmods.net/showthread.php?t=169095)
 
 
 ### Maps
