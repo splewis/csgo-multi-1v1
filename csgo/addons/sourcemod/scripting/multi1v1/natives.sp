@@ -16,6 +16,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("HasDatabase", Native_HasDatabase);
     CreateNative("GetDatabase", Native_GetDatabase);
     CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
+    CreateNative("Multi1v1Message", Native_Multi1v1Message);
+    CreateNative("Multi1v1MessageToAll", Native_Multi1v1MessageToAll);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -135,4 +137,27 @@ public Native_GivePlayerArenaWeapons(Handle:plugin, numParams) {
     }
 
     GivePlayerItem(client, "weapon_knife");
+}
+
+public Native_Multi1v1Message(Handle:plugin, numParams) {
+    new client = GetNativeCell(1);
+    decl String:buffer[1024];
+    new bytesWritten = 0;
+    FormatNativeString(0, 2, 3, sizeof(buffer), bytesWritten, buffer);
+
+    decl String:finalMsg[1024];
+    Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
+
+    PrintToChat(client, finalMsg);
+}
+
+public Native_Multi1v1MessageToAll(Handle:plugin, numParams) {
+    decl String:buffer[1024];
+    new bytesWritten = 0;
+    FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
+
+    decl String:finalMsg[1024];
+    Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
+
+    PrintToChatAll(finalMsg);
 }

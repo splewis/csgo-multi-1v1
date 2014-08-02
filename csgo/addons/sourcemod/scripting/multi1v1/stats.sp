@@ -224,14 +224,14 @@ static ForceLoss(winner, loser) {
 }
 
 static RatingMessage(winner, loser, int_winner, int_loser, int_delta) {
-    PluginMessage(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
+    Multi1v1Message(winner, "\x04You \x01(rating \x04%d\x01, \x06+%d\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%d\x01)",
                     int_winner, int_delta, loser, int_loser, int_delta);
-    PluginMessage(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
+    Multi1v1Message(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%d\x01)",
                     int_loser, int_delta, winner, int_winner, int_delta);
 }
 
 static ForceLossMessage(client, any:int_rating, any:int_delta) {
-    PluginMessage(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out",
+    Multi1v1Message(client, "\x04You \x01(rating \x04%d\x01, \x07-%d\x01) let time run out",
                   int_rating, int_delta);
 }
 
@@ -253,7 +253,7 @@ public ShowStatsForPlayer(client, target) {
     decl String:url[255];
     GetConVarString(g_hStatsWebsite, url, sizeof(url));
     if (StrEqual(url, "")) {
-        PluginMessage(client, "Sorry, there is no stats website for this server.");
+        Multi1v1Message(client, "Sorry, there is no stats website for this server.");
         return;
     }
 

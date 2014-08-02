@@ -266,7 +266,7 @@ public Event_MatchOver(Handle:event, const String:name[], bool:dontBroadcast) {
     }
 
     if (IsPlayer(maxClient))
-        PluginMessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map",
+        Multi1v1MessageToAll("\x04%N \x01had the most wins \x03(%d) \x01in arena 1 this map",
                            maxClient, maxScore);
 }
 
@@ -306,8 +306,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 
     for (new i = 0; i < Queue_Length(g_waitingQueue); i++) {
         new client = GetArrayCell(g_waitingQueue, i);
-        PluginMessage(client, "Sorry, all the arenas are currently \x03full.");
-        PluginMessage(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
+        Multi1v1Message(client, "Sorry, all the arenas are currently \x03full.");
+        Multi1v1Message(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
     }
 
     Call_StartForward(g_hOnPostArenaRankingsSet);
@@ -415,9 +415,9 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         new other = GetOpponent(i);
         new arena = g_Ranking[i];
         if (IsValidClient(other)) {
-            PluginMessage(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
+            Multi1v1Message(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena, other);
         } else {
-            PluginMessage(i, "You are in arena \x04%d\x01 with \x07no opponent", arena);
+            Multi1v1Message(i, "You are in arena \x04%d\x01 with \x07no opponent", arena);
         }
     }
 
@@ -833,20 +833,4 @@ public UpdateArena(arena) {
             g_ArenaStatsUpdated[arena] = true;
         }
     }
-}
-
-public PluginMessage(client, const String:msg[], any:...) {
-    new String:formattedMsg[1024] = MESSAGE_PREFIX;
-    decl String:tmp[1024];
-    VFormat(tmp, sizeof(tmp), msg, 3);
-    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
-    PrintToChat(client, formattedMsg);
-}
-
-public PluginMessageToAll(const String:msg[], any:...) {
-    new String:formattedMsg[1024] = MESSAGE_PREFIX;
-    decl String:tmp[1024];
-    VFormat(tmp, sizeof(tmp), msg, 2);
-    StrCat(formattedMsg, sizeof(formattedMsg), tmp);
-    PrintToChatAll(formattedMsg);
 }
