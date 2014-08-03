@@ -3,6 +3,14 @@
 #endif
 #define __MULTI1V1_INCLUDE__
 
+//************* WARNING*****************
+//
+// This file and its implementations
+// are not finished, any code that relies
+// on it WILL break in the future!
+//
+//************* WARNING******************
+
 // The different round types
 enum RoundType {
     RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
@@ -16,15 +24,19 @@ enum RoundType {
 // The ranking queue is an adt array.
 forward OnPreArenaRankingsSet(Handle:rankingQueue);
 
-// Called after the plugin has finished putting players in the ranking queue for next round.
-// The ranking queue is an adt array.
+// Called after the plugin has finished putting players in the ranking queue
+// for next round. The ranking queue is an adt array.
+// You could reorder the players or add a new player here.
+// Warning: if you add players check the maximum number of arenas
+// using GetMaximumArenas.
 forward OnPostArenaRankingsSet(Handle:rankingQueue);
 
 // After a player's spawn is finished and they have been given their weapons.
+// This may get called for the same client multiple times per round!
 forward AfterPlayerSpawn(client);
 
-// Called once per player, per round.
-// Called after they have been moved to the right team and teleported to the right spawn location.
+// Called after aclient they have been moved to the right team and teleported
+// to the right spawn location. This will only be called once per round.
 forward AfterPlayerSetup(client);
 
 // When a round is decided. Not guaranteed to be called for
@@ -77,16 +89,15 @@ native bool:HasDatabase();
 // Returns a handle to the database connection. Please check HasDatabase before using this.
 native Handle:GetDatabase();
 
+// Gives a player their weapons according to a round type.
 native GivePlayerArenaWeapons(client, RoundType:roundType);
 
-native Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K);
-
+// These are helpers you can use to supress normal plugin behavior.
+// You can block rating changes and the chat messages about
+// 'you are in arena %d facing off against %N' using these.
 native BlockRatingChanges(client);
-
 native UnblockRatingChanges(client);
-
 native BlockChatMessages(client);
-
 native UnblockChatMessages(client);
 
 // Sets an offset value for arena numbering when giving

@@ -256,3 +256,10 @@ public ShowStatsForPlayer(client, target) {
     Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
     ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
 }
+
+public Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
+    new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
+    new Float:pLoser = 1.0 - pWinner;
+    new Float:winner_delta = K * pLoser;
+    return winner_delta;
+}
