@@ -12,6 +12,22 @@ public Plugin:myinfo = {
     url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
-OnPostArenaRankingsSet(Handle:rankingQueue) {
-    LogError("[OnPostArenaRankingsSet] Unimplemented");
+OnPreArenaRankingsSet(Handle:rankingQueue) {
+    // TODO: take this (empty) adt array and fill in players, matched
+    // according to their elo rankins.
+    // Relevent functions:
+    //
+    // native bool:HasDatabase();
+    // native bool:HasStats(client);
+    // native Float:GetRating(client);
+    // native bool:IsActivePlayer(client);
+    //
+    // It might be a good idea to do *nothing* if HasDatabase is false.
+    // It's okay to *not* add players to the queue as well.
+    //
+    // Use IsInArena to determine who should be added.
+    // Also check for players in the queue (GetQueue())
+    // if there is space for them (GetMaximumArenas() * 2).
+
+    LogError("[OnPreArenaRankingsSet] Unimplemented");
 }

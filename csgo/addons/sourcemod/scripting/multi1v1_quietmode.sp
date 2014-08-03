@@ -13,5 +13,10 @@ public Plugin:myinfo = {
 };
 
 public OnPostArenaRankingsSet(Handle:rankingQueue) {
+    // TODO:
+    // For each client, set it so:
+    //  - they can hear their opponent
+    //  - they can't hear anyone else
+    //  Using SetListenOverride() and GetOpponent()
     LogError("[OnPostArenaRankingsSet] Unimplemented");
 }

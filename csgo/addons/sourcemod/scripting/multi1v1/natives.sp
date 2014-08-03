@@ -1,6 +1,7 @@
 // See include/multi1v1.inc for documentation.
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
+    CreateNative("IsInArena", Native_IsInArena);
     CreateNative("GetMaximumArenas", Native_GetMaximumArenas);
     CreateNative("GetNumActiveArenas", Native_GetNumActiveArenas);
     CreateNative("IsInWaitingQueue", Native_IsInWaitingQueue);
@@ -26,6 +27,11 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("SetArenaOffsetValue", Native_SetArenaOffsetValue);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
+}
+
+public Native_IsInArena(Handle:plugin, numParams) {
+    new client = GetNativeCell(0);
+    return g_Ranking[client] > 0;
 }
 
 public Native_GetMaximumArenas(Handle:plugin, numParams) {

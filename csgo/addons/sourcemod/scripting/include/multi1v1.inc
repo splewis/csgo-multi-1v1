@@ -31,6 +31,9 @@ forward AfterPlayerSetup(client);
 // a client every round.
 forward OnRoundWon(winner, loser, bool:forceLoss);
 
+// Returns if a player is actively in an arena.
+native bool:IsInArena(client);
+
 // Prints a plugin-formatted message to a client.
 native Multi1v1Message(client, const String:fmt[], any:...);
 
