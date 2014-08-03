@@ -3,7 +3,7 @@ SMC = spcomp
 FLAGS = "-O2 -t4"
 
 build: clean
-	mkdir -p csgo/addons/sourcemod/plugins
+	mkdir -p csgo/addons/sourcemod/plugins/disabled
 	$(SMC) csgo/addons/sourcemod/scripting/multi1v1.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/multi1v1
 	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_sprweight.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/disabled/multi1v1_sprweight
 	$(SMC) csgo/addons/sourcemod/scripting/multi1v1_elomatcher.sp ${FLAGS} -o=csgo/addons/sourcemod/plugins/disabled/multi1v1_elomatcher
