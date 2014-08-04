@@ -291,7 +291,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
         AddPlayer(client);
     }
 
-    for (new i = 0; i < Queue_Length(g_waitingQueue); i++) {
+    new queueLength = Queue_Length(g_waitingQueue);
+    for (new i = 0; i < queueLength; i++) {
         new client = GetArrayCell(g_waitingQueue, i);
         Multi1v1Message(client, "Sorry, all the arenas are currently \x03full.");
         Multi1v1Message(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
@@ -439,7 +440,7 @@ public SetupPlayer(client, arena, other, bool:onCT) {
 
     // Set clan tags to the arena number
     decl String:buffer[32];
-    Format(buffer, sizeof(buffer), "Arena %d", arena);
+    Format(buffer, sizeof(buffer), "Arena %d", arena - g_arenaOffsetValue);
     CS_SetClientClanTag(client, buffer);
     CS_SetMVPCount(client, g_RoundsLeader[client]);
 
