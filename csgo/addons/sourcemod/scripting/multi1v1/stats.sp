@@ -199,9 +199,9 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
             new Float:delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
+            RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
             g_Rating[winner] += delta;
             g_Rating[loser] -= delta;
-            RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
             DB_WriteRatings(winner);
             DB_WriteRatings(loser);
         }
