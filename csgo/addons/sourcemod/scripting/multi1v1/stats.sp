@@ -5,6 +5,9 @@ new String:g_TableFormat[][] = {
     "wins INT NOT NULL default 0",
     "losses INT NOT NULL default 0",
     "rating FLOAT NOT NULL default 1500.0",
+    "rifleRating FLOAT NOT NULL default 1500.0",
+    "pistolRating FLOAT NOT NULL default 1500.0",
+    "awpRating FLOAT NOT NULL default 1500.0",
     "lastTime INT default 0 NOT NULL",
     "recentRounds INT default 0 NOT NULL"
 };
@@ -35,9 +38,7 @@ public DB_Connect() {
  */
 public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], any:data) {
     if (!StrEqual("", error)) {
-        g_dbConnected = false;
         LogError("Last Connect SQL Error: %s", error);
-        CloseHandle(db);
     }
 }
 
@@ -60,8 +61,8 @@ public DB_AddPlayer(client) {
 
         // insert if not already in the table
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s', %f);",
-               TABLE_NAME, id, auth, sanitized_name, DEFAULT_RATING);
+               "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s');",
+               TABLE_NAME, id, auth, sanitized_name);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
         // update the player name
@@ -88,7 +89,7 @@ public DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
     if (db != INVALID_HANDLE) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "SELECT rating, wins, losses FROM %s WHERE accountID = %d",
+               "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d",
                TABLE_NAME, GetSteamAccountID(client));
         SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, client);
     }
@@ -104,8 +105,11 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
         LogError("Query failed: (error: %s)", error);
     } else if (SQL_FetchRow(hndl)) {
         g_Rating[client] = SQL_FetchFloat(hndl, 0);
-        g_Wins[client] = SQL_FetchInt(hndl, 1);
-        g_Losses[client] = SQL_FetchInt(hndl, 2);
+        g_RifleRating[client] = SQL_FetchFloat(hndl, 1);
+        g_PistolRating[client] = SQL_FetchFloat(hndl, 2);
+        g_AwpRating[client] = SQL_FetchFloat(hndl, 3);
+        g_Wins[client] = SQL_FetchInt(hndl, 4);
+        g_Losses[client] = SQL_FetchInt(hndl, 5);
         g_FetchedPlayerInfo[client] = true;
     } else {
         LogError("Failed to fetch statistics for for %N", client);
@@ -202,6 +206,22 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
             RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
             g_Rating[winner] += delta;
             g_Rating[loser] -= delta;
+
+            // rndTypeUpdate(RoundType:roundType, Float:ratingArray[])
+            #define rndTypeUpdate(%1,%2) \
+            if (g_roundTypes[arena] == %1) { \
+                delta = ELORatingDelta(%2[winner], %2[loser], K_FACTOR); \
+                %2[winner] += delta; \
+                %2[loser] -= delta; \
+            }
+
+            new arena = g_Ranking[winner];
+            if (arena > 0) {
+                rndTypeUpdate(RoundType_Rifle, g_RifleRating)
+                rndTypeUpdate(RoundType_Pistol, g_PistolRating)
+                rndTypeUpdate(RoundType_Awp, g_AwpRating)
+            }
+
             DB_WriteRatings(winner);
             DB_WriteRatings(loser);
         }
@@ -219,15 +239,17 @@ static ForceLoss(winner, loser) {
 }
 
 static RatingMessage(winner, loser, Float:winner_rating, Float:loser_rating, Float:delta) {
-    Multi1v1Message(winner, "\x04You \x01(rating \x04%.1f\x01, \x06+%.1f\x01) beat \x03%N \x01(rating \x03%.1f\x01, \x02-%.1f\x01)",
-                    winner_rating, delta, loser, loser_rating, delta);
-    Multi1v1Message(loser,  "\x04You \x01(rating \x04%.1f\x01, \x07-%.1f\x01) lost to \x03%N \x01(rating \x03%.1f\x01, \x06+%.1f\x01)",
-                    loser_rating, delta, winner, winner_rating, delta);
+    new winner_int = RoundToNearest(winner_rating);
+    new loser_int = RoundToNearest(loser_rating);
+    Multi1v1Message(winner, "\x04You \x01(rating \x04%d\x01, \x06+%.1f\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%.1f\x01)",
+                    winner_int, delta, loser, loser_int, delta);
+    Multi1v1Message(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%.1f\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%.1f\x01)",
+                    loser_int, delta, winner, winner_int, delta);
 }
 
 static ForceLossMessage(client, Float:rating, Float:delta) {
     Multi1v1Message(client, "\x04You \x01(rating \x04%.1f\x01, \x07-%.1f\x01) let time run out",
-                   rating, delta);
+                    rating, delta);
 }
 
 public Action:Command_Stats(client, args) {

@@ -22,7 +22,6 @@
 #define WEAPON_LENGTH 32
 #define K_FACTOR 8.0
 #define DISTRIBUTION_SPREAD 1000.0
-#define DEFAULT_RATING 1500.0
 #define TABLE_NAME "multi1v1_stats"
 
 /** ConVar handles **/
@@ -44,6 +43,9 @@ new bool:g_FetchedPlayerInfo[MAXPLAYERS+1];
 new any:g_Wins[MAXPLAYERS+1];
 new any:g_Losses[MAXPLAYERS+1];
 new Float:g_Rating[MAXPLAYERS+1];
+new Float:g_RifleRating[MAXPLAYERS+1];
+new Float:g_AwpRating[MAXPLAYERS+1];
+new Float:g_PistolRating[MAXPLAYERS+1];
 
 /** Database interactions **/
 new bool:g_dbConnected = false;
@@ -790,6 +792,9 @@ public ResetClientVariables(client) {
     g_Wins[client] = 0;
     g_Losses[client] = 0;
     g_Rating[client] = 0.0;
+    g_RifleRating[client] = 0.0;
+    g_PistolRating[client] = 0.0;
+    g_AwpRating[client] = 0.0;
     g_Ranking[client] = -1;
     g_LetTimeExpire[client] = false;
     g_AllowAWP[client] = false;
