@@ -105,3 +105,5 @@ native UnblockChatMessages(client);
 // about what arena the player is in. Is 0 by default.
 // Set to 1 to make arena 1 show as arena 2, etc.
 native SetArenaOffsetValue(value);
+
+native Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K);

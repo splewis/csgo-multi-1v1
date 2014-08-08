@@ -61,7 +61,7 @@ public DB_AddPlayer(client) {
 
         // insert if not already in the table
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "INSERT IGNORE INTO %s (accountID,auth,name,rating) VALUES (%d, '%s', '%s');",
+               "INSERT IGNORE INTO %s (accountID,auth,name) VALUES (%d, '%s', '%s');",
                TABLE_NAME, id, auth, sanitized_name);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
 
@@ -122,8 +122,9 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
 public DB_WriteRatings(client) {
     if (g_FetchedPlayerInfo[client]) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "UPDATE %s set rating = %f WHERE accountID = %d",
-               TABLE_NAME, g_Rating[client], GetSteamAccountID(client));
+               "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d",
+               TABLE_NAME, g_Rating[client], g_RifleRating[client], g_AwpRating[client], g_PistolRating[client],
+               GetSteamAccountID(client));
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
@@ -203,9 +204,9 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
             new Float:delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
-            RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
             g_Rating[winner] += delta;
             g_Rating[loser] -= delta;
+            RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
 
             // rndTypeUpdate(RoundType:roundType, Float:ratingArray[])
             #define rndTypeUpdate(%1,%2) \
@@ -277,11 +278,4 @@ public ShowStatsForPlayer(client, target) {
     decl String:player_url[255];
     Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
     ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
-}
-
-public Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K) {
-    new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
-    new Float:pLoser = 1.0 - pWinner;
-    new Float:winner_delta = K * pLoser;
-    return winner_delta;
 }

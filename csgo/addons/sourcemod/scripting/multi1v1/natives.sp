@@ -24,6 +24,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("BlockChatMessages", Native_BlockChatMessages);
     CreateNative("UnblockChatMessages", Native_UnblockChatMessages);
     CreateNative("SetArenaOffsetValue", Native_SetArenaOffsetValue);
+    CreateNative("ELORatingDelta", Native_ELORatingDelta);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -195,4 +196,15 @@ public Native_UnblockChatMessages(Handle:plugin, numParams) {
 
 public Native_SetArenaOffsetValue(Handle:plugin, numParams) {
     g_arenaOffsetValue = GetNativeCell(1);
+}
+
+
+public Native_ELORatingDelta(Handle:plugin, numParams) {
+    new Float:winner_rating = GetNativeCell(1);
+    new Float:loser_rating = GetNativeCell(2);
+    new Float:K = GetNativeCell(3);
+    new Float:pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
+    new Float:pLoser = 1.0 - pWinner;
+    new Float:winner_delta = K * pLoser;
+    return _:winner_delta;
 }
