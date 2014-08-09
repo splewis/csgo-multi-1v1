@@ -68,7 +68,7 @@ To compile, you will need:
 
 
 ### Maps
-I have a [workshop collection](http://steamcommunity.com/sharedfiles/filedetails/?id=279177557) of maps I use. Not all of the maps are finished though, so don't blindly use them all. The "am_" prefix stands for aim_multi, reflecting the fact that the maps are similar to aim_ maps but there are multiple copies of them.
+I have a [workshop collection](http://steamcommunity.com/sharedfiles/filedetails/?id=249376192) of maps I know of. The "am_" prefix stands for aim_multi, reflecting the fact that the maps are similar to aim_ maps but there are multiple copies of them.
 
 Guidelines for making a multi-1v1 map:
 - Create 1 arena and test it well, and when are you happy copy it
@@ -131,7 +131,7 @@ The time comes from [GetTime](http://docs.sourcemod.net/api/index.php?fastload=s
 
 
 ### Clientprefs Usage/Cookies
-Player choices (round type preferences, weapon choices) can be saved so they persist across maps for players (via the SourceMod clientprefs API). Installing SQLite should be sufficient for this to work. 
+Player choices (round type preferences, weapon choices) can be saved so they persist across maps for players (via the SourceMod clientprefs API). Installing SQLite should be sufficient for this to work.
 
 If you have a game-hosting specific provider, they may already have SQLite installed
 
