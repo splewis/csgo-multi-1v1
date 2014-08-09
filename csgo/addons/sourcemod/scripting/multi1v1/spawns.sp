@@ -91,14 +91,14 @@ public Spawns_MapStart() {
             for (new j = 0; j < GetArraySize(ct_spawns); j++) {
                 new Float:vec[3];
                 GetArrayArray(ct_spawns, j, vec);
-                LogMessage("  CT Spawn %d: %f %f %f", j, vec[0], vec[1], vec[2]);
+                LogMessage("  CT Spawn %d: %f %f %f", j + 1, vec[0], vec[1], vec[2]);
             }
 
             new Handle:t_spawns = GetArrayCell(g_hTSpawns, i);
             for (new j = 0; j < GetArraySize(t_spawns); j++) {
                 new Float:vec[3];
                 GetArrayArray(t_spawns, j, vec);
-                LogMessage("  T Spawn  %d: %f %f %f", j, vec[0], vec[1], vec[2]);
+                LogMessage("  T Spawn  %d: %f %f %f", j + 1, vec[0], vec[1], vec[2]);
             }
 
         }
