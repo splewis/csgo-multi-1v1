@@ -25,6 +25,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("UnblockChatMessages", Native_UnblockChatMessages);
     CreateNative("SetArenaOffsetValue", Native_SetArenaOffsetValue);
     CreateNative("ELORatingDelta", Native_ELORatingDelta);
+    CreateNative("GetNumSpawnsInArena", Native_GetNumSpawnsInArena);
+    CreateNative("GetArenaSpawn", Native_GetArenaSpawn);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -198,7 +200,6 @@ public Native_SetArenaOffsetValue(Handle:plugin, numParams) {
     g_arenaOffsetValue = GetNativeCell(1);
 }
 
-
 public Native_ELORatingDelta(Handle:plugin, numParams) {
     new Float:winner_rating = GetNativeCell(1);
     new Float:loser_rating = GetNativeCell(2);
@@ -207,4 +208,21 @@ public Native_ELORatingDelta(Handle:plugin, numParams) {
     new Float:pLoser = 1.0 - pWinner;
     new Float:winner_delta = K * pLoser;
     return _:winner_delta;
+}
+
+public Native_GetNumSpawnsInArena(Handle:plugin, numParams) {
+    new arena = GetNativeCell(1);
+    new Handle:ct = Handle:GetArrayCell(g_hCTSpawns, arena);
+    new Handle:t = Handle:GetArrayCell(g_hTSpawns, arena);
+    return Min(GetArraySize(ct), GetArraySize(t));
+}
+
+public Native_GetArenaSpawn(Handle:plugin, numParams) {
+    new arena = GetNativeCell(1);
+    new team = GetNativeCell(2);
+    new Float:origin[3];
+    new Float:angle[3];
+    GetNativeArray(3, origin, sizeof(origin));
+    GetNativeArray(4, angle, sizeof(angle));
+    GetSpawn(arena, team, origin, angle);
 }

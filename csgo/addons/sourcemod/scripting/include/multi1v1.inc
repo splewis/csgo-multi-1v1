@@ -107,3 +107,7 @@ native UnblockChatMessages(client);
 native SetArenaOffsetValue(value);
 
 native Float:ELORatingDelta(Float:winner_rating, Float:loser_rating, Float:K);
+
+native GetNumSpawnsInArena(arena);
+
+native GetArenaSpawn(arena, team, Float:origin[3], Float:angle[3]);

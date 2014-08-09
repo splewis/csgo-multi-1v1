@@ -84,6 +84,12 @@ new bool:g_roundFinished = false;
 new Handle:g_rankingQueue = INVALID_HANDLE;
 new Handle:g_waitingQueue = INVALID_HANDLE;
 
+/** Handles to arrays of vectors of spawns/angles **/
+new Handle:g_hTSpawns = INVALID_HANDLE;
+new Handle:g_hTAngles = INVALID_HANDLE;
+new Handle:g_hCTSpawns = INVALID_HANDLE;
+new Handle:g_hCTAngles = INVALID_HANDLE;
+
 /** Weapon menu choice cookies **/
 new Handle:g_hAllowPistolCookie = INVALID_HANDLE;
 new Handle:g_hAllowAWPCookie = INVALID_HANDLE;
@@ -495,6 +501,10 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
     new victim = GetClientOfUserId(GetEventInt(event, "userid"));
     new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     new arena = g_Ranking[victim];
+
+    // If we've already decided the arena, don't worry about anything else in it
+    if (g_ArenaStatsUpdated[arena])
+        return;
 
     if (!IsValidClient(attacker) || attacker == victim) {
         new p1 = g_ArenaPlayer1[arena];
