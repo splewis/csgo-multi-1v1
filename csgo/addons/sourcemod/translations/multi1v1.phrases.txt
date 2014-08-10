@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"NoOpponent"
+	{
+		"#format"	"{1:c},{2:i},{3:c},{4:c}"
+		"en"			"You are in arena {1}{2} {3}with {4}no opponent"
+	}
+	"FacingOff"
+	{
+		"#format"	"{1:c},{2:i},{3:c},{4:c},{5:N}"
+		"en"			"You are in arena {1}{2}, {3}facing off against {4}{5}"
+	}
+	"ArenasFull"
+	{
+		"#format"	"{1:c}"
+		"en"			"Sorry, all the arenas are currently {1}full."
+	}
+	"QueuePosition"
+	{
+		"#format"	"{1:c},{2:i},{3:c}"
+		"en"			"You are in position {1}{2} {3}in the waiting queue."
+	}
+}
