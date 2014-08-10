@@ -105,6 +105,7 @@ new Handle:g_hOnPostArenaRankingsSet = INVALID_HANDLE;
 new Handle:g_hAfterPlayerSpawn = INVALID_HANDLE;
 new Handle:g_hAfterPlayerSetup = INVALID_HANDLE;
 new Handle:g_hOnRoundWon = INVALID_HANDLE;
+new Handle:g_hOnStatsCached = INVALID_HANDLE;
 
 /** Constant offsets values **/
 new g_iPlayers_HelmetOffset;
@@ -138,6 +139,7 @@ public Plugin:myinfo = {
 
 public OnPluginStart() {
     LoadTranslations("common.phrases");
+    LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
     g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
@@ -191,6 +193,7 @@ public OnPluginStart() {
     g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
     g_hAfterPlayerSetup = CreateGlobalForward("AfterPlayerSetup", ET_Ignore, Param_Cell);
     g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+    g_hOnStatsCached = CreateGlobalForward("OnStatsCached", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -302,6 +305,8 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     new queueLength = Queue_Length(g_waitingQueue);
     for (new i = 0; i < queueLength; i++) {
         new client = GetArrayCell(g_waitingQueue, i);
+        // Multi1v1Message(client, "%t", "ArenasFull", PURPLE);
+        // Multi1v1Message(client, "%t", "QueuePosition", GREEN, i + 1, WHITE);
         Multi1v1Message(client, "Sorry, all the arenas are currently \x03full.");
         Multi1v1Message(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
     }
@@ -411,8 +416,10 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         new other = GetOpponent(i);
         new arena = g_Ranking[i];
         if (IsValidClient(other)) {
+            // Multi1v1Message(i, "%t", "FacingOff", WHITE, arena - g_arenaOffsetValue, PURPLE, other);
             Multi1v1Message(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena - g_arenaOffsetValue, other);
         } else {
+            // Multi1v1Message(i, "%t", "NoOpponent", WHITE, arena - g_arenaOffsetValue, WHITE, RED);
             Multi1v1Message(i, "You are in arena \x04%d\x01 with \x07no opponent", arena - g_arenaOffsetValue);
         }
     }

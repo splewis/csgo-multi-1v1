@@ -7,6 +7,22 @@
 #include <clientprefs>
 #include <cstrike>
 
+#define WHITE 0x01
+#define DARKRED 0x02
+#define PURPLE 0x03
+#define GREEN 0x04
+#define MOSSGREEN 0x05
+#define LIMEGREEN 0x06
+#define RED 0x07
+#define GRAY 0x08
+#define YELLOW 0x09
+#define DARKGREY 0x0A
+#define BLUE 0x0B
+#define DARKBLUE 0x0C
+#define LIGHTBLUE 0x0D
+#define PINK 0x0E
+#define LIGHTRED 0x0F
+
 // Global buffer for sql queries
 new String:g_sqlBuffer[1024];
 
