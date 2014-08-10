@@ -5,7 +5,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetMaximumArenas", Native_GetMaximumArenas);
     CreateNative("GetNumActiveArenas", Native_GetNumActiveArenas);
     CreateNative("IsInWaitingQueue", Native_IsInWaitingQueue);
-    CreateNative("GetWaitingQueue", Native_GetWaitingQueue);
     CreateNative("HasStats", Native_HasStats);
     CreateNative("GetRating", Native_GetRating);
     CreateNative("GetArenaNumber", Native_GetArenaNumber);
@@ -47,10 +46,6 @@ public Native_GetNumActiveArenas(Handle:plugin, numParams) {
 public Native_IsInWaitingQueue(Handle:plugin, numParams) {
     new client = GetNativeCell(1);
     return Queue_Inside(g_waitingQueue, client);
-}
-
-public Native_GetWaitingQueue(Handle:plugin, numParams) {
-    return _:g_waitingQueue;
 }
 
 public Native_HasStats(Handle:plugin, numParams) {
@@ -134,7 +129,7 @@ public Native_GivePlayerArenaWeapons(Handle:plugin, numParams) {
 
     Client_RemoveAllWeapons(client, "", true);
     if (roundType == RoundType_Rifle) {
-       GivePlayerItem(client, g_PrimaryWeapon[client]);
+        GivePlayerItem(client, g_PrimaryWeapon[client]);
     } else if (roundType == RoundType_Awp) {
         GivePlayerItem(client, "weapon_awp");
     } else if (roundType == RoundType_Pistol) {

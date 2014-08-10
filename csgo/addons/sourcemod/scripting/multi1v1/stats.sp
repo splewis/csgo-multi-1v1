@@ -111,6 +111,10 @@ public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any
         g_Wins[client] = SQL_FetchInt(hndl, 4);
         g_Losses[client] = SQL_FetchInt(hndl, 5);
         g_FetchedPlayerInfo[client] = true;
+        Call_StartForward(g_hOnStatsCached);
+        Call_PushCell(client);
+        Call_Finish();
+
     } else {
         LogError("Failed to fetch statistics for for %N", client);
     }

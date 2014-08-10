@@ -35,13 +35,16 @@ forward OnPostArenaRankingsSet(Handle:rankingQueue);
 // This may get called for the same client multiple times per round!
 forward AfterPlayerSpawn(client);
 
-// Called after aclient they have been moved to the right team and teleported
+// Called after a client they have been moved to the right team and teleported
 // to the right spawn location. This will only be called once per round.
 forward AfterPlayerSetup(client);
 
 // When a round is decided. Not guaranteed to be called for
 // a client every round.
 forward OnRoundWon(winner, loser, bool:forceLoss);
+
+// Called when a client's stats are received from the database.
+forward OnStatsCached(client);
 
 // Returns if a player is actively in an arena.
 native bool:IsInArena(client);
@@ -60,9 +63,6 @@ native any:GetNumActiveArenas();
 
 // Returns if a player is inside the waiting queue.
 native bool:IsInWaitingQueue(client);
-
-// Returns a handle to the (adt array) waiting queue.
-native Handle:GetWaitingQueue();
 
 // Returns if a client has a rating stored.
 native bool:HasStats(client);
