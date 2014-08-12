@@ -660,7 +660,7 @@ public Action:Command_Say(client, const String:command[], argc) {
 
     new String:gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS", "!guns" };
 
-    for (new i = 0; i < 4; i++) {
+    for (new i = 0; i < sizeof(gunsChatCommands); i++) {
         if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
             Command_Guns(client, 0);
             return Plugin_Handled;
