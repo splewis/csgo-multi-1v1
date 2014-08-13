@@ -133,11 +133,12 @@ public Native_GivePlayerArenaWeapons(Handle:plugin, numParams) {
     } else if (roundType == RoundType_Awp) {
         GivePlayerItem(client, "weapon_awp");
     } else if (roundType == RoundType_Pistol) {
-        RemoveVestHelm(client);
+        // Do nothing!
     } else {
         LogError("Unknown round type for %N: %d", client, roundType);
     }
 
+    GiveVestHelm(client, roundType);
     GivePlayerItem(client, g_SecondaryWeapon[client]);
 
     new other = GetOpponent(client);

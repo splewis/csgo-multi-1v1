@@ -701,32 +701,39 @@ public SwitchPlayerTeam(client, team) {
 }
 
 /**
- * Removes helmet and kevlar if the client has an upgraded pistol.
+ * Gives helmet and kevlar, if appropriate.
  */
-public RemoveVestHelm(client) {
+public GiveVestHelm(client, RoundType:roundType) {
     if (!IsValidClient(client))
         return;
 
-    // remove helmet
-    SetEntData(client, g_iPlayers_HelmetOffset, 0);
+    if (roundType == RoundType_Awp || RoundType == RoundType_Rifle) {
+        SetEntData(client, g_iPlayers_HelmetOffset, 1);
+        Client_SetArmor(client, 100);
+    } else if (roundType == RoundType_Pistol) {
+        SetEntData(client, g_iPlayers_HelmetOffset, 0);
+        new String:kevlarAllowed[][] = {
+            "weapon_glock",
+            "weapon_hkp2000",
+            "weapon_usp_silencer"
+        };
 
-    // remove kevlar if needed
-    new String:kevlarAllowed[][] = {
-        "weapon_glock",
-        "weapon_hkp2000",
-        "weapon_usp_silencer"
-    };
-
-    new bool:removeKevlar = true;
-    for (new i = 0; i < 3; i++) {
-        if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
-            removeKevlar = false;
-            break;
+        new bool:giveKevlar = false;
+        for (new i = 0; i < 3; i++) {
+            if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
+                giveKevlar = true;
+                break;
+            }
         }
-    }
 
-    if (removeKevlar) {
-        Client_SetArmor(client, 0);
+        if (giveKevlar) {
+            Client_SetArmor(client, 100);
+        } else {
+            Client_SetArmor(client, 0);
+        }
+
+    } else {
+        LogError("[GiveVestHelm] Unexpected round type = %d", roundType);
     }
 }
 
