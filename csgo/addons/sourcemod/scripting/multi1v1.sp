@@ -30,7 +30,6 @@ new Handle:g_hBlockRadio = INVALID_HANDLE;
 new Handle:g_hDatabaseName = INVALID_HANDLE;
 new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 new Handle:g_hRoundTime = INVALID_HANDLE;
-new Handle:g_hStatsWebsite = INVALID_HANDLE;
 new Handle:g_hUseDataBase = INVALID_HANDLE;
 new Handle:g_hVerboseSpawnModes = INVALID_HANDLE;
 new Handle:g_hVersion = INVALID_HANDLE;
@@ -102,6 +101,7 @@ new Handle:g_hSetCookies = INVALID_HANDLE;
 /** Forwards **/
 new Handle:g_hOnPreArenaRankingsSet = INVALID_HANDLE;
 new Handle:g_hOnPostArenaRankingsSet = INVALID_HANDLE;
+new Handle:g_hOnArenasReady = INVALID_HANDLE;
 new Handle:g_hAfterPlayerSpawn = INVALID_HANDLE;
 new Handle:g_hAfterPlayerSetup = INVALID_HANDLE;
 new Handle:g_hOnRoundWon = INVALID_HANDLE;
@@ -148,7 +148,6 @@ public OnPluginStart() {
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
-    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
     g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Should players see the guns menu automatically on their first connect?");
 
     /** Config file **/
@@ -183,13 +182,11 @@ public OnPluginStart() {
     AddCommandListener(Command_TeamJoin, "jointeam");
     AddRadioCommandListeners();
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
-    RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
-    RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
-    RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
 
     /** Fowards **/
     g_hOnPreArenaRankingsSet = CreateGlobalForward("OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnPostArenaRankingsSet = CreateGlobalForward("OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnArenasReady = CreateGlobalForward("OnAreanasReady", ET_Ignore);
     g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
     g_hAfterPlayerSetup = CreateGlobalForward("AfterPlayerSetup", ET_Ignore, Param_Cell);
     g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
@@ -345,6 +342,9 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     }
 
     Queue_Destroy(g_rankingQueue);
+
+    Call_StartForward(g_hOnArenasReady);
+    Call_Finish();
 }
 
 /**
