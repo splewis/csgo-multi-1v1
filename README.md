@@ -140,4 +140,8 @@ If you have a game-hosting specific provider, they may already have SQLite insta
 First, check the [issue tracker](https://github.com/splewis/csgo-multi-1v1/issues?state=open) to ask questions or make a suggestion.
 If you have a suggestion you can mark it as an enhancement.
 
-Feel free to implement things yourself and add them and make a pull request. Try to follow the code style already used, however.
+Guidelines
+- Create a fork on github, clone that, then create a branch to work on (git checkout -b myfeature)
+- Follow the code-style already used as much as you can
+- Submit a pull request when you're happy with the new feature/enhancement/bugfix
+- Favor readability and correctness over all else
