@@ -113,6 +113,7 @@ new g_iPlayers_HelmetOffset;
 /** multi1v1 function includes **/
 #include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
+#include "multi1v1/hide.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/queue.sp"
 #include "multi1v1/radiocommands.sp"
@@ -174,6 +175,8 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
+
+    AddTempEntHook("Shotgun Shot", Hook_ShotgunShot);
 
     /** Commands **/
     AddCommandListener(Command_Say, "say");
@@ -422,7 +425,12 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
             // Multi1v1Message(i, "%t", "NoOpponent", WHITE, arena - g_arenaOffsetValue, WHITE, RED);
             Multi1v1Message(i, "You are in arena \x04%d\x01 with \x07no opponent", arena - g_arenaOffsetValue);
         }
+
+
+        SDKHook(i, SDKHook_SetTransmit, Hook_SetTransmit);
     }
+
+
 
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
 }
