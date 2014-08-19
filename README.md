@@ -54,11 +54,7 @@ There is a work-in-progress open-source web interface being developed under the 
 
 
 ### Building
-The build process is managed by the Makefile.
-
-		make          # builds the .smx file
-		make clean    # clears .smx files, .zip files
-		make package  # packages the files to multi1v1.zip
+The build process is managed by my [smbuilder](https://github.com/splewis/sm-builder) project. You can still compile multi1v1.sp without it, however.
 
 To compile, you will need:
 - [SMLib](http://www.sourcemodplugins.org/smlib/)
