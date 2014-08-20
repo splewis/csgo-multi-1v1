@@ -707,7 +707,7 @@ public GiveVestHelm(client, RoundType:roundType) {
     if (!IsValidClient(client))
         return;
 
-    if (roundType == RoundType_Awp || RoundType == RoundType_Rifle) {
+    if (roundType == RoundType_Awp || roundType == RoundType_Rifle) {
         SetEntData(client, g_iPlayers_HelmetOffset, 1);
         Client_SetArmor(client, 100);
     } else if (roundType == RoundType_Pistol) {

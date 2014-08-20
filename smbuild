@@ -6,7 +6,7 @@ Plugin(source='scripting/multi1v1_online_stats_viewer.sp')
 
 Package(name='multi1v1_all',
         extends=['multi1v1_basic'],
-		plugins=['multi1v1_sprweight', 'multi1v1_elomatcher', 'multi1v1_quietmode', 'multi1v1_online_stats_viewer'],
+        plugins=['multi1v1_sprweight', 'multi1v1_elomatcher', 'multi1v1_quietmode', 'multi1v1_online_stats_viewer'],
 )
 
 Package(name='multi1v1_basic',
