@@ -246,13 +246,10 @@ static ForceLoss(int winner, int loser) {
 static RatingMessage(int winner, int loser, float winner_rating, float loser_rating, float delta) {
     int winner_int = RoundToNearest(winner_rating);
     int loser_int = RoundToNearest(loser_rating);
-    Multi1v1Message(winner, "\x04You \x01(rating \x04%d\x01, \x06+%.1f\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%.1f\x01)",
-                    winner_int, delta, loser, loser_int, delta);
-    Multi1v1Message(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%.1f\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%.1f\x01)",
-                    loser_int, delta, winner, winner_int, delta);
+    Multi1v1Message(winner, "%t", "WonMessage", winner_int, delta, loser, loser_int, delta);
+    Multi1v1Message(loser, "%t", "LossMessage", loser_int, delta, winner, winner_int, delta);
 }
 
 static ForceLossMessage(int client, float rating, float delta) {
-    Multi1v1Message(client, "\x04You \x01(rating \x04%.1f\x01, \x07-%.1f\x01) let time run out",
-                    rating, delta);
+    Multi1v1Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
 }

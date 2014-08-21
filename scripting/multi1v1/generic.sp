@@ -4,26 +4,13 @@
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
                                  // this is for converting ints to strings when setting menu values/cookies
 
+new String:g_ColorNames[][] = {"{NORMAL}", "{DARK_RED}", "{PURPLE}", "{GREEN}", "{MOSS_GREEN}", "{LIGHT_GREEN}", "{LIGHT_RED}", "{GRAY}", "{ORANGE}", "{LIGHT_BLUE}", "{DARK_BLUE}", "{PURPLE}", "{CARRIAGE_RETURN}"};
+new String:g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",         "\x05",     "\x06",          "\x07",        "\x08",   "\x09",     "\x0B",         "\x0C",        "\x0E",     "\n"};
+
 #include <clientprefs>
 #include <cstrike>
 
-#define WHITE 0x01
-#define DARKRED 0x02
-#define PURPLE 0x03
-#define GREEN 0x04
-#define MOSSGREEN 0x05
-#define LIMEGREEN 0x06
-#define RED 0x07
-#define GRAY 0x08
-#define YELLOW 0x09
-#define DARKGREY 0x0A
-#define BLUE 0x0B
-#define DARKBLUE 0x0C
-#define LIGHTBLUE 0x0D
-#define PINK 0x0E
-#define LIGHTRED 0x0F
-
-// Global buffer for sql queries
+/* Global buffer for sql queries */
 char g_sqlBuffer[1024];
 
 /**
@@ -199,4 +186,10 @@ public void SQL_CreateTable(Handle db_connection, char table_name[], char fields
     }
     StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ");");
     SQL_FastQuery(db_connection, g_sqlBuffer);
+}
+
+public Colorize(String:msg[], size) {
+    for (new i = 0; i < sizeof(g_ColorNames); i ++) {
+        ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
+    }
 }

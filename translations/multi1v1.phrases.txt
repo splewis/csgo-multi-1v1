@@ -2,22 +2,36 @@
 {
 	"NoOpponent"
 	{
-		"#format"	"{1:c},{2:i},{3:c},{4:c}"
-		"en"			"You are in arena {1}{2} {3}with {4}no opponent"
+		"#format"	"{1:i}"
+		"en"			"You are in arena {GREEN}{1} {NORMAL}with {DARK_RED}no opponent."
 	}
 	"FacingOff"
 	{
-		"#format"	"{1:c},{2:i},{3:c},{4:c},{5:N}"
-		"en"			"You are in arena {1}{2}, {3}facing off against {4}{5}"
+		"#format"	"{1:i},{2:N}"
+		"en"			"You are in arena {GREEN}{1}{NORMAL}, facing off against {PURPLE}{2}."
 	}
 	"ArenasFull"
 	{
-		"#format"	"{1:c}"
-		"en"			"Sorry, all the arenas are currently {1}full."
+		"en"			"Sorry, all the arenas are currently {PURPLE}full."
 	}
 	"QueuePosition"
 	{
-		"#format"	"{1:c},{2:i},{3:c}"
-		"en"			"You are in position {1}{2} {3}in the waiting queue."
+		"#format"	"{1:i}"
+		"en"			"You are in position {GREEN}{1} {NORMAL}in the waiting queue."
+	}
+	"WonMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) beat {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+	}
+	"LossMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}lost to {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+	}
+	"TimeRanOut"
+	{
+		"#format"	"{1:i},{2:.1f}"
+		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) let time run out."
 	}
 }

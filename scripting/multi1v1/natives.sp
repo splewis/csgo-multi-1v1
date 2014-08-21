@@ -157,6 +157,7 @@ public Native_Multi1v1Message(Handle plugin, numParams) {
 
     char finalMsg[1024];
     Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
+    Colorize(finalMsg, sizeof(finalMsg));
 
     PrintToChat(client, finalMsg);
 }
@@ -168,6 +169,7 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
 
     char finalMsg[1024];
     Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
+    Colorize(finalMsg, sizeof(finalMsg));
 
     PrintToChatAll(finalMsg);
 }

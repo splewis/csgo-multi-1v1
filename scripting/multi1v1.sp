@@ -302,10 +302,8 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
     int queueLength = Queue_Length(g_waitingQueue);
     for (int i = 0; i < queueLength; i++) {
         int client = GetArrayCell(g_waitingQueue, i);
-        // Multi1v1Message(client, "%t", "ArenasFull", PURPLE);
-        // Multi1v1Message(client, "%t", "QueuePosition", GREEN, i + 1, WHITE);
-        Multi1v1Message(client, "Sorry, all the arenas are currently \x03full.");
-        Multi1v1Message(client, "You are in position \x04%d \x01in the waiting queue", i + 1);
+        Multi1v1Message(client, "%t", "ArenasFull");
+        Multi1v1Message(client, "%t", "QueuePosition", i + 1);
     }
 
     Call_StartForward(g_hOnPostArenaRankingsSet);
@@ -416,11 +414,9 @@ public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcas
         int other = GetOpponent(i);
         int arena = g_Ranking[i];
         if (IsValidClient(other)) {
-            // Multi1v1Message(i, "%t", "FacingOff", GREEN, arena - g_arenaOffsetValue, WHITE, PURPLE, other);
-            Multi1v1Message(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena - g_arenaOffsetValue, other);
+            Multi1v1Message(i, "%t", "FacingOff", arena - g_arenaOffsetValue, other);
         } else {
-            // Multi1v1Message(i, "%t", "NoOpponent", GREEN, arena - g_arenaOffsetValue, WHITE, RED);
-            Multi1v1Message(i, "You are in arena \x04%d\x01 with \x07no opponent", arena - g_arenaOffsetValue);
+            Multi1v1Message(i, "%t", "NoOpponent", arena - g_arenaOffsetValue);
         }
     }
 
