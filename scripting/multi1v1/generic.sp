@@ -24,47 +24,48 @@
 #define LIGHTRED 0x0F
 
 // Global buffer for sql queries
-new String:g_sqlBuffer[1024];
+char g_sqlBuffer[1024];
 
 /**
  * Removes the radar element from a client's HUD.
  */
-public Action:RemoveRadar(Handle:timer, any:client) {
+public Action RemoveRadar(Handle timer, int client) {
     if (IsValidClient(client) && !IsFakeClient(client)) {
-        new flags = GetEntProp(client, Prop_Send, "m_iHideHUD");
+        int flags = GetEntProp(client, Prop_Send, "m_iHideHUD");
         SetEntProp(client, Prop_Send, "m_iHideHUD", flags | (HIDE_RADAR_BIT));
     }
+    return Plugin_Continue;
 }
 
 /**
  * Function to identify if a client is valid and in game.
  */
-public bool:IsValidClient(client) {
+public bool IsValidClient(int client) {
     return client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client);
 }
 
 /**
  * Returns if a player is on an active/player team.
  */
-public bool:IsPlayer(client) {
+public bool IsPlayer(int client) {
     return IsValidClient(client) && !IsFakeClient(client);
 }
 
 /**
  * Returns if a player is on an active/player team.
  */
-public bool:IsActivePlayer(client) {
+public bool IsActivePlayer(int client) {
     if (!IsPlayer(client))
         return false;
-    new client_team = GetClientTeam(client);
+    int client_team = GetClientTeam(client);
     return (client_team == CS_TEAM_CT) || (client_team == CS_TEAM_T);
 }
 
 /**
  * Adds an integer to a menu as a string choice.
  */
-public AddMenuInt(Handle:menu, any:value, String:display[]) {
-    decl String:buffer[INTEGER_STRING_LENGTH];
+public void AddMenuInt(Handle menu, int value, char display[]) {
+    char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     AddMenuItem(menu, buffer, display);
 }
@@ -72,8 +73,8 @@ public AddMenuInt(Handle:menu, any:value, String:display[]) {
 /**
  * Gets an integer to a menu from a string choice.
  */
-public any:GetMenuInt(Handle:menu, any:param2) {
-    decl String:choice[INTEGER_STRING_LENGTH];
+public int GetMenuInt(Handle menu, any:param2) {
+    char choice[INTEGER_STRING_LENGTH];
     GetMenuItem(menu, param2, choice, sizeof(choice));
     return StringToInt(choice);
 }
@@ -81,8 +82,8 @@ public any:GetMenuInt(Handle:menu, any:param2) {
 /**
  * Adds a boolean to a menu as a string choice.
  */
-public AddMenuBool(Handle:menu, bool:value, String:display[]) {
-    new convertedInt = value ? 1 : 0;
+public void AddMenuBool(Handle menu, bool value, char display[]) {
+    int convertedInt = value ? 1 : 0;
     AddMenuInt(menu, convertedInt, display);
 }
 
@@ -96,8 +97,8 @@ public bool:GetMenuBool(Handle:menu, any:param2) {
 /**
  * Sets a cookie to an integer value by converting it to a string.
  */
-public SetCookieInt(any:client, Handle:cookie, any:value) {
-    decl String:buffer[INTEGER_STRING_LENGTH];
+public void SetCookieInt(int client, Handle cookie, int value) {
+    char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     SetClientCookie(client, cookie, buffer);
 }
@@ -105,8 +106,8 @@ public SetCookieInt(any:client, Handle:cookie, any:value) {
 /**
  * Fetches the value of a cookie that is an integer.
  */
-public any:GetCookieInt(client, Handle:cookie) {
-    decl String:buffer[INTEGER_STRING_LENGTH];
+public int GetCookieInt(int client, Handle:cookie) {
+    char buffer[INTEGER_STRING_LENGTH];
     GetClientCookie(client, cookie, buffer, sizeof(buffer));
     return StringToInt(buffer);
 }
@@ -114,23 +115,23 @@ public any:GetCookieInt(client, Handle:cookie) {
 /**
  * Sets a cookie to a boolean value.
  */
-public SetCookieBool(any:client, Handle:cookie, bool:value) {
-    new convertedInt = value ? 1 : 0;
+public void SetCookieBool(int client, Handle cookie, bool value) {
+    int convertedInt = value ? 1 : 0;
     SetCookieInt(client, cookie, convertedInt);
 }
 
 /**
  * Gets a cookie that represents a boolean.
  */
-public bool:GetCookieBool(any:client, Handle:cookie) {
+public bool GetCookieBool(int client, Handle cookie) {
     return GetCookieInt(client, cookie) != 0;
 }
 
 /**
  * Returns a random index from an array.
  */
-public any:GetArrayRandomIndex(Handle:array) {
-    new len = GetArraySize(array);
+public int GetArrayRandomIndex(Handle array) {
+    int len = GetArraySize(array);
     if (len == 0)
         ThrowError("Can't get random index from empty array");
     return GetRandomInt(0, len - 1);
@@ -139,15 +140,15 @@ public any:GetArrayRandomIndex(Handle:array) {
 /**
  * Returns a random element from an array.
  */
-public any:GetArrayCellRandom(Handle:array) {
+public any:GetArrayCellRandom(Handle array) {
     return GetArrayCell(array, GetArrayRandomIndex(array));
 }
 
 /**
  * Pushes an element to an array multiple times.
  */
-public PushArrayCellReplicated(Handle:array, any:value, any:times) {
-    for (new i = 0; i < times; i++)
+public void PushArrayCellReplicated(Handle array, any:value, any:times) {
+    for (int i = 0; i < times; i++)
         PushArrayCell(array, value);
 }
 
@@ -159,14 +160,14 @@ public any:Min(any:x, any:y) {
  * Given an array of vectors, returns the index of the index
  * that minimizes the euclidean distance between the vectors.
  */
-public NearestNeighborIndex(Float:vec[3], Handle:others) {
-    new closestIndex = -1;
-    new Float:closestDistance = 1.0e300;
-    for (new i = 0; i < GetArraySize(others); i++) {
-        new Float:tmp[3];
+public int NearestNeighborIndex(float vec[3], Handle others) {
+    int closestIndex = -1;
+    float closestDistance = 0.0;
+    for (int i = 0; i < GetArraySize(others); i++) {
+        float tmp[3];
         GetArrayArray(others, i, tmp);
-        new Float:dist = GetVectorDistance(vec, tmp);
-        if (dist < closestDistance) {
+        float dist = GetVectorDistance(vec, tmp);
+        if (closestIndex < 0 || dist < closestDistance) {
             closestDistance = dist;
             closestIndex = i;
         }
@@ -178,9 +179,9 @@ public NearestNeighborIndex(Float:vec[3], Handle:others) {
 /**
  * Closes all handles within an array of handles.
  */
-public CloseHandleArray(Handle:array) {
-    for (new i = 0; i < GetArraySize(array); i++) {
-        new Handle:tmp = GetArrayCell(array, i);
+public void CloseHandleArray(Handle array) {
+    for (int i = 0; i < GetArraySize(array); i++) {
+        Handle tmp = GetArrayCell(array, i);
         CloseHandle(tmp);
     }
     CloseHandle(array);
@@ -189,9 +190,9 @@ public CloseHandleArray(Handle:array) {
 /**
  * Creates a table given an array of table arguments.
  */
-public SQL_CreateTable(Handle:db_connection, String:table_name[], String:fields[][], num_fields) {
+public void SQL_CreateTable(Handle db_connection, char table_name[], char fields[][], int num_fields) {
     Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
-    for (new i = 0; i < num_fields; i++) {
+    for (int i = 0; i < num_fields; i++) {
         StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), fields[i]);
         if (i != num_fields - 1)
             StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ", ");

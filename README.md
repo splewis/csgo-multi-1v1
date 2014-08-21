@@ -5,6 +5,8 @@ This is home of my CS:GO multi-1v1 arena plugin. It sets up any number of player
 
 Work toward a stable 1.0.0 is underway. Note that is readme reflects the 1.0.0 development version, rather than the latest release's readme.
 
+The 1.0.0 version will rely on sourcemod 1.7, and won't be released until sourcemod 1.7 is released.
+
 Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php?t=241056).
 
 ### Features

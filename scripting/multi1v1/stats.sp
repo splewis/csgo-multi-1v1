@@ -1,4 +1,4 @@
-new String:g_TableFormat[][] = {
+char g_TableFormat[][] = {
     "accountID INT NOT NULL PRIMARY KEY default 0",
     "auth varchar(64) NOT NULL default ''",
     "name varchar(64) NOT NULL default ''",
@@ -17,8 +17,8 @@ new String:g_TableFormat[][] = {
  * Creates the stats (TABLE_NAME) if needed.
  */
 public DB_Connect() {
-    new String:error[255];
-    new String:dbCfgName[255];
+    char error[255];
+    char dbCfgName[255];
     GetConVarString(g_hDatabaseName, dbCfgName, sizeof(dbCfgName));
     db = SQL_Connect(dbCfgName, true, error, sizeof(error));
     if (db == INVALID_HANDLE) {
@@ -36,7 +36,7 @@ public DB_Connect() {
 /**
  * Generic SQL threaded query error callback.
  */
-public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], any:data) {
+public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], any:data) {
     if (!StrEqual("", error)) {
         LogError("Last Connect SQL Error: %s", error);
     }
@@ -47,16 +47,16 @@ public SQLErrorCheckCallback(Handle:owner, Handle:hndl, const String:error[], an
  */
 public DB_AddPlayer(client) {
     if (db != INVALID_HANDLE) {
-        new id = GetSteamAccountID(client);
+        int id = GetSteamAccountID(client);
 
         // player name
-        decl String:name[64];
+        char name[64];
         GetClientName(client, name, sizeof(name));
-        decl String:sanitized_name[64];
+        char sanitized_name[64];
         SQL_EscapeString(db, name, sanitized_name, sizeof(name));
 
         // steam id
-        decl String:auth[64];
+        char auth[64];
         GetClientAuthString(client, auth, sizeof(auth));
 
         // insert if not already in the table
@@ -95,8 +95,8 @@ public DB_FetchRatings(client) {
     }
 }
 
-public Callback_FetchRating(Handle:owner, Handle:hndl, const String:error[], any:data) {
-    new client = data;
+public Callback_FetchRating(Handle owner, Handle hndl, const char error[], any:data) {
+    int client = data;
     g_FetchedPlayerInfo[client] = false;
     if (!IsPlayer(client))
         return;
@@ -148,7 +148,7 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
         Call_PushCell(forceLoss);
         Call_Finish();
 
-        if (GetConVarInt(g_hUseDataBase) == 0)
+        if (GetConVarInt(g_hUseDatabase) == 0)
             return;
 
         Increment(loser, "losses");
@@ -166,9 +166,9 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
 /**
  * Increments a named field in the database.
  */
-public Increment(client, const String:field[]) {
+public Increment(int client, const char field[]) {
     if (db != INVALID_HANDLE) {
-        new id = GetSteamAccountID(client);
+        int id = GetSteamAccountID(client);
         if (id >= 1) {
             Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                 "UPDATE %s SET %s = %s + 1 WHERE accountID = %d",
@@ -181,7 +181,7 @@ public Increment(client, const String:field[]) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-public UpdateRatings(winner, loser, bool:forceLoss) {
+public UpdateRatings(int winner, int loser, bool forceLoss) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (!g_FetchedPlayerInfo[winner]) {
@@ -197,7 +197,7 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
             return;
         }
 
-        new bool:block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser];
+        bool block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser];
         if (block)
             return;
 
@@ -207,12 +207,12 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
         }
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
-            new Float:delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
+            float delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
             g_Rating[winner] += delta;
             g_Rating[loser] -= delta;
             RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
 
-            // rndTypeUpdate(RoundType:roundType, Float:ratingArray[])
+            // rndTypeUpdate(RoundType roundType, float ratingArray[])
             #define rndTypeUpdate(%1,%2) \
             if (g_roundTypes[arena] == %1) { \
                 delta = ELORatingDelta(%2[winner], %2[loser], K_FACTOR); \
@@ -220,7 +220,7 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
                 %2[loser] -= delta; \
             }
 
-            new arena = g_Ranking[winner];
+            int arena = g_Ranking[winner];
             if (arena > 0) {
                 rndTypeUpdate(RoundType_Rifle, g_RifleRating)
                 rndTypeUpdate(RoundType_Pistol, g_PistolRating)
@@ -233,8 +233,8 @@ public UpdateRatings(winner, loser, bool:forceLoss) {
     }
 }
 
-static ForceLoss(winner, loser) {
-    new Float:delta = K_FACTOR / 2.0;
+static ForceLoss(int winner, int loser) {
+    float delta = K_FACTOR / 2.0;
     g_Rating[winner] -= delta;
     g_Rating[loser] -= delta;
     DB_WriteRatings(winner);
@@ -243,16 +243,16 @@ static ForceLoss(winner, loser) {
     ForceLossMessage(loser, g_Rating[loser], delta);
 }
 
-static RatingMessage(winner, loser, Float:winner_rating, Float:loser_rating, Float:delta) {
-    new winner_int = RoundToNearest(winner_rating);
-    new loser_int = RoundToNearest(loser_rating);
+static RatingMessage(int winner, int loser, float winner_rating, float loser_rating, float delta) {
+    int winner_int = RoundToNearest(winner_rating);
+    int loser_int = RoundToNearest(loser_rating);
     Multi1v1Message(winner, "\x04You \x01(rating \x04%d\x01, \x06+%.1f\x01) beat \x03%N \x01(rating \x03%d\x01, \x02-%.1f\x01)",
                     winner_int, delta, loser, loser_int, delta);
     Multi1v1Message(loser,  "\x04You \x01(rating \x04%d\x01, \x07-%.1f\x01) lost to \x03%N \x01(rating \x03%d\x01, \x06+%.1f\x01)",
                     loser_int, delta, winner, winner_int, delta);
 }
 
-static ForceLossMessage(client, Float:rating, Float:delta) {
+static ForceLossMessage(int client, float rating, float delta) {
     Multi1v1Message(client, "\x04You \x01(rating \x04%.1f\x01, \x07-%.1f\x01) let time run out",
                     rating, delta);
 }

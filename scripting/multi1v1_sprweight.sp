@@ -13,20 +13,20 @@ public Plugin:myinfo = {
 };
 
 
-public Float:ReportWeight(reporter, victim) {
+public float ReportWeight(int reporter, int victim) {
     if (!IsPlayer(reporter) || !IsPlayer(victim))
         return -1.0;
 
     if (!HasStats(reporter) || !HasStats(victim))
         return 2.0;
 
-    new Float:weight = 1.0;
+    float weight = 1.0;
     #define WEIGHT(%1) if (%1) weight += 1.0
 
-    new Float:reporter_rating = GetRating(reporter);
-    new Float:victim_rating = GetRating(victim);
-    new any:reporter_rounds = GetRoundsPlayed(reporter);
-    new any:victim_rounds = GetRoundsPlayed(victim);
+    float reporter_rating = GetRating(reporter);
+    float victim_rating = GetRating(victim);
+    int reporter_rounds = GetRoundsPlayed(reporter);
+    int victim_rounds = GetRoundsPlayed(victim);
 
     WEIGHT(reporter_rating > 1700.0);
     WEIGHT(reporter_rating > 1800.0);

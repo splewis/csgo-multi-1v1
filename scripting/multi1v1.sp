@@ -7,6 +7,7 @@
 #include <cstrike>
 #include <clientprefs>
 #include <smlib>
+#include "include/multi1v1.inc"
 
 #undef REQUIRE_PLUGIN
 #include <updater>
@@ -25,93 +26,92 @@
 #define TABLE_NAME "multi1v1_stats"
 
 /** ConVar handles **/
-new Handle:g_hAutoUpdate = INVALID_HANDLE;
-new Handle:g_hBlockRadio = INVALID_HANDLE;
-new Handle:g_hDatabaseName = INVALID_HANDLE;
-new Handle:g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
-new Handle:g_hRoundTime = INVALID_HANDLE;
-new Handle:g_hUseDataBase = INVALID_HANDLE;
-new Handle:g_hVerboseSpawnModes = INVALID_HANDLE;
-new Handle:g_hVersion = INVALID_HANDLE;
+Handle g_hAutoUpdate = INVALID_HANDLE;
+Handle g_hBlockRadio = INVALID_HANDLE;
+Handle g_hDatabaseName = INVALID_HANDLE;
+Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
+Handle g_hRoundTime = INVALID_HANDLE;
+Handle g_hUseDatabase = INVALID_HANDLE;
+Handle g_hVerboseSpawnModes = INVALID_HANDLE;
+Handle g_hVersion = INVALID_HANDLE;
 
 /** Saved data for database interaction - be careful when using these, they may not
  *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
  *  using one of these directly.
  */
-new bool:g_FetchedPlayerInfo[MAXPLAYERS+1];
-new any:g_Wins[MAXPLAYERS+1];
-new any:g_Losses[MAXPLAYERS+1];
-new Float:g_Rating[MAXPLAYERS+1];
-new Float:g_RifleRating[MAXPLAYERS+1];
-new Float:g_AwpRating[MAXPLAYERS+1];
-new Float:g_PistolRating[MAXPLAYERS+1];
+bool g_FetchedPlayerInfo[MAXPLAYERS+1];
+int g_Wins[MAXPLAYERS+1];
+int g_Losses[MAXPLAYERS+1];
+float g_Rating[MAXPLAYERS+1];
+float g_RifleRating[MAXPLAYERS+1];
+float g_AwpRating[MAXPLAYERS+1];
+float g_PistolRating[MAXPLAYERS+1];
 
 /** Database interactions **/
-new bool:g_dbConnected = false;
-new Handle:db = INVALID_HANDLE;
+bool g_dbConnected = false;
+Handle db = INVALID_HANDLE;
 
 /** Client arrays **/
-new g_Ranking[MAXPLAYERS+1] = -1;      // which arena each player is in
-new bool:g_PluginTeamSwitch[MAXPLAYERS+1] = false;  // Flags the teamswitches as being done by the plugin
-new bool:g_AllowAWP[MAXPLAYERS+1];
-new bool:g_AllowPistol[MAXPLAYERS+1];
-new bool:g_GiveFlash[MAXPLAYERS+1];
-new bool:g_GunsSelected[MAXPLAYERS+1];
-new RoundType:g_Preference[MAXPLAYERS+1];
-new String:g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
-new String:g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
-new bool:g_BlockStatChanges[MAXPLAYERS+1];
-new bool:g_BlockChatMessages[MAXPLAYERS+1];
+int g_Ranking[MAXPLAYERS+1]; // which arena each player is in
+bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
+bool g_AllowAWP[MAXPLAYERS+1];
+bool g_AllowPistol[MAXPLAYERS+1];
+bool g_GiveFlash[MAXPLAYERS+1];
+bool g_GunsSelected[MAXPLAYERS+1];
+RoundType g_Preference[MAXPLAYERS+1];
+char g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
+char g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
+bool g_BlockStatChanges[MAXPLAYERS+1];
+bool g_BlockChatMessages[MAXPLAYERS+1];
 
 /** Arena arrays **/
-new bool:g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
-new g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
-new g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
-new g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
-new g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
-new RoundType:g_roundTypes[MAXPLAYERS+1];
-new bool:g_LetTimeExpire[MAXPLAYERS+1] = false;
-new any:g_RoundsLeader[MAXPLAYERS+1] = 0;
+bool g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
+int g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
+int g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
+int g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
+int g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
+RoundType g_roundTypes[MAXPLAYERS+1];
+bool g_LetTimeExpire[MAXPLAYERS+1] = false;
+int g_RoundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
-new g_arenaOffsetValue = 0;
-new g_roundStartTime = 0;
-new g_maxArenas = 0; // maximum number of arenas the map can support
-new g_arenas = 1; // number of active arenas
-new g_totalRounds = 0; // rounds played on this map so far
-new bool:g_roundFinished = false;
-new Handle:g_rankingQueue = INVALID_HANDLE;
-new Handle:g_waitingQueue = INVALID_HANDLE;
+int g_arenaOffsetValue = 0;
+int g_roundStartTime = 0;
+int g_maxArenas = 0; // maximum number of arenas the map can support
+int g_arenas = 1; // number of active arenas
+int g_totalRounds = 0; // rounds played on this map so far
+bool g_roundFinished = false;
+Handle g_rankingQueue = INVALID_HANDLE;
+Handle g_waitingQueue = INVALID_HANDLE;
 
 /** Handles to arrays of vectors of spawns/angles **/
-new Handle:g_hTSpawns = INVALID_HANDLE;
-new Handle:g_hTAngles = INVALID_HANDLE;
-new Handle:g_hCTSpawns = INVALID_HANDLE;
-new Handle:g_hCTAngles = INVALID_HANDLE;
+Handle g_hTSpawns = INVALID_HANDLE;
+Handle g_hTAngles = INVALID_HANDLE;
+Handle g_hCTSpawns = INVALID_HANDLE;
+Handle g_hCTAngles = INVALID_HANDLE;
 
 /** Weapon menu choice cookies **/
-new Handle:g_hAllowPistolCookie = INVALID_HANDLE;
-new Handle:g_hAllowAWPCookie = INVALID_HANDLE;
-new Handle:g_hPreferenceCookie = INVALID_HANDLE;
-new Handle:g_hRifleCookie = INVALID_HANDLE;
-new Handle:g_hPistolCookie = INVALID_HANDLE;
-new Handle:g_hFlashCookie = INVALID_HANDLE;
-new Handle:g_hSetCookies = INVALID_HANDLE;
+Handle g_hAllowPistolCookie = INVALID_HANDLE;
+Handle g_hAllowAWPCookie = INVALID_HANDLE;
+Handle g_hPreferenceCookie = INVALID_HANDLE;
+Handle g_hRifleCookie = INVALID_HANDLE;
+Handle g_hPistolCookie = INVALID_HANDLE;
+Handle g_hFlashCookie = INVALID_HANDLE;
+Handle g_hSetCookies = INVALID_HANDLE;
 
 /** Forwards **/
-new Handle:g_hOnPreArenaRankingsSet = INVALID_HANDLE;
-new Handle:g_hOnPostArenaRankingsSet = INVALID_HANDLE;
-new Handle:g_hOnArenasReady = INVALID_HANDLE;
-new Handle:g_hAfterPlayerSpawn = INVALID_HANDLE;
-new Handle:g_hAfterPlayerSetup = INVALID_HANDLE;
-new Handle:g_hOnRoundWon = INVALID_HANDLE;
-new Handle:g_hOnStatsCached = INVALID_HANDLE;
+Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
+Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
+Handle g_hOnArenasReady = INVALID_HANDLE;
+Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
+Handle g_hAfterPlayerSetup = INVALID_HANDLE;
+Handle g_hOnRoundWon = INVALID_HANDLE;
+Handle g_hOnStatsCached = INVALID_HANDLE;
 
 /** Constant offsets values **/
-new g_iPlayers_HelmetOffset;
+int g_iPlayers_HelmetOffset;
 
 /** multi1v1 function includes **/
-#include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/queue.sp"
@@ -146,7 +146,7 @@ public OnPluginStart() {
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
-    g_hUseDataBase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
+    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
     g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Should players see the guns menu automatically on their first connect?");
 
@@ -200,7 +200,7 @@ public OnPluginStart() {
     }
 }
 
-public OnLibraryAdded(const String:name[]) {
+public OnLibraryAdded(const char name[]) {
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
@@ -209,7 +209,7 @@ public OnLibraryAdded(const String:name[]) {
 public OnMapStart() {
     Spawns_MapStart();
     g_waitingQueue = Queue_Init();
-    if (!g_dbConnected && GetConVarInt(g_hUseDataBase) != 0) {
+    if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
         DB_Connect();
     }
 
@@ -217,7 +217,7 @@ public OnMapStart() {
     g_arenas = 1;
     g_totalRounds = 0;
     g_roundFinished = false;
-    for (new i = 0; i <= MAXPLAYERS; i++) {
+    for (int i = 0; i <= MAXPLAYERS; i++) {
         g_ArenaPlayer1[i] = -1;
         g_ArenaPlayer2[i] = -1;
         g_ArenaWinners[i] = -1;
@@ -233,7 +233,7 @@ public OnMapEnd() {
 }
 
 public OnClientPostAdminCheck(client) {
-    if (IsPlayer(client) && GetConVarInt(g_hUseDataBase) != 0 && g_dbConnected) {
+    if (IsPlayer(client) && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
 }
@@ -252,15 +252,15 @@ public OnClientPostAdminCheck(client) {
  * if a player does not select a team but leaves their mouse over one, they are
  * put on that team and spawned, so we can't allow that.
  */
-public Event_OnFullConnect(Handle:event, const String:name[], bool:dontBroadcast) {
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+public Event_OnFullConnect(Handle event, const char name[], bool dontBroadcast) {
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
 }
 
 /**
  * Silences team join/switch events.
  */
-public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBroadcast) {
+public Action:Event_OnPlayerTeam(Handle event, const char name[], bool dontBroadcast) {
     dontBroadcast = true;
     return Plugin_Changed;
 }
@@ -268,7 +268,7 @@ public Action:Event_OnPlayerTeam(Handle:event, const String:name[], bool:dontBro
 /**
  * Round pre-start, sets up who goes in which arena for this round.
  */
-public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadcast) {
+public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast) {
     g_roundStartTime = GetTime();
 
     // Here we add each player to the queue in their new ranking
@@ -283,7 +283,7 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     AddPlayer(g_ArenaWinners[2]);
 
     // middle arenas
-    for (new i = 2; i <= g_arenas - 1; i++) {
+    for (int i = 2; i <= g_arenas - 1; i++) {
         AddPlayer(g_ArenaLosers[i - 1]);
         AddPlayer(g_ArenaWinners[i + 1]);
     }
@@ -295,13 +295,13 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     }
 
     while (Queue_Length(g_rankingQueue) < 2*g_maxArenas && Queue_Length(g_waitingQueue) > 0) {
-        new client = Queue_Dequeue(g_waitingQueue);
+        int client = Queue_Dequeue(g_waitingQueue);
         AddPlayer(client);
     }
 
-    new queueLength = Queue_Length(g_waitingQueue);
-    for (new i = 0; i < queueLength; i++) {
-        new client = GetArrayCell(g_waitingQueue, i);
+    int queueLength = Queue_Length(g_waitingQueue);
+    for (int i = 0; i < queueLength; i++) {
+        int client = GetArrayCell(g_waitingQueue, i);
         // Multi1v1Message(client, "%t", "ArenasFull", PURPLE);
         // Multi1v1Message(client, "%t", "QueuePosition", GREEN, i + 1, WHITE);
         Multi1v1Message(client, "Sorry, all the arenas are currently \x03full.");
@@ -312,21 +312,21 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
     Call_PushCell(g_rankingQueue);
     Call_Finish();
 
-    new leader = Queue_Peek(g_rankingQueue);
+    int leader = Queue_Peek(g_rankingQueue);
     if (IsValidClient(leader) && Queue_Length(g_rankingQueue) >= 2)
         g_RoundsLeader[leader]++;
 
     // Player placement logic for this round
     g_arenas = 0;
-    for (new arena = 1; arena <= g_maxArenas; arena++) {
-        new p1 = Queue_Dequeue(g_rankingQueue);
-        new p2 = Queue_Dequeue(g_rankingQueue);
+    for (int arena = 1; arena <= g_maxArenas; arena++) {
+        int p1 = Queue_Dequeue(g_rankingQueue);
+        int p2 = Queue_Dequeue(g_rankingQueue);
         g_ArenaPlayer1[arena] = p1;
         g_ArenaPlayer2[arena] = p2;
-        g_roundTypes[arena] = GetRoundType(p1, p2);
+        g_roundTypes[arena] = GetRoundType  (p1, p2);
 
-        new bool:realp1 = IsValidClient(p1);
-        new bool:realp2 = IsValidClient(p2);
+        bool realp1 = IsValidClient(p1);
+        bool realp2 = IsValidClient(p2);
 
         if (realp1) {
             g_Ranking[p1] = arena;
@@ -350,10 +350,10 @@ public Event_OnRoundPreStart(Handle:event, const String:name[], bool:dontBroadca
 /**
  * Function to add a player to the ranking queue with some validity checks.
  */
-public AddPlayer(client) {
-    new bool:player = IsPlayer(client);
-    new bool:space = Queue_Length(g_rankingQueue) < 2 *g_maxArenas;
-    new bool:alreadyin = Queue_Inside(g_rankingQueue, client);
+public AddPlayer(int client) {
+    bool player = IsPlayer(client);
+    bool space = Queue_Length(g_rankingQueue) < 2 *g_maxArenas;
+    bool alreadyin = Queue_Inside(g_rankingQueue, client);
     if (player && space && !alreadyin) {
         Queue_Enqueue(g_rankingQueue, client);
     }
@@ -366,9 +366,9 @@ public AddPlayer(client) {
 /**
  * Round poststart - puts players in their arena and gives them weapons.
  */
-public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadcast) {
+public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcast) {
     g_roundFinished = false;
-    for (new arena = 1; arena <= g_maxArenas; arena++) {
+    for (int arena = 1; arena <= g_maxArenas; arena++) {
         g_ArenaWinners[arena] = -1;
         g_ArenaLosers[arena] = -1;
         if (g_ArenaPlayer2[arena] == -1) {
@@ -376,9 +376,9 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         }
     }
 
-    for (new i = 1; i <= g_maxArenas; i++) {
-        new p1 = g_ArenaPlayer1[i];
-        new p2 = g_ArenaPlayer2[i];
+    for (int i = 1; i <= g_maxArenas; i++) {
+        int p1 = g_ArenaPlayer1[i];
+        int p2 = g_ArenaPlayer2[i];
         if (IsValidClient(p1)) {
             SetupPlayer(p1, i, p2, true);
         }
@@ -387,7 +387,7 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         }
     }
 
-    for (new i = 1; i <= MAXPLAYERS; i++) {
+    for (int i = 1; i <= MAXPLAYERS; i++) {
         g_ArenaStatsUpdated[i] = false;
         g_LetTimeExpire[i] = false;
     }
@@ -397,11 +397,11 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
 
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
-    if (GetConVarInt(g_hUseDataBase) != 0) {
+    if (GetConVarInt(g_hUseDatabase) != 0) {
         if (!g_dbConnected)
             DB_Connect();
         if (g_dbConnected) {
-            for (new i = 1; i <= MaxClients; i++) {
+            for (int i = 1; i <= MaxClients; i++) {
                 if (IsValidClient(i) && !IsFakeClient(i) && !g_FetchedPlayerInfo[i]) {
                     DB_FetchRatings(i);
                 }
@@ -409,17 +409,17 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
         }
     }
 
-    for (new i = 1; i <= MaxClients; i++) {
+    for (int i = 1; i <= MaxClients; i++) {
         if (!IsActivePlayer(i) || g_BlockChatMessages[i])
             continue;
 
-        new other = GetOpponent(i);
-        new arena = g_Ranking[i];
+        int other = GetOpponent(i);
+        int arena = g_Ranking[i];
         if (IsValidClient(other)) {
-            // Multi1v1Message(i, "%t", "FacingOff", WHITE, arena - g_arenaOffsetValue, PURPLE, other);
+            // Multi1v1Message(i, "%t", "FacingOff", GREEN, arena - g_arenaOffsetValue, WHITE, PURPLE, other);
             Multi1v1Message(i, "You are in arena \x04%d\x01, facing off against \x03%N", arena - g_arenaOffsetValue, other);
         } else {
-            // Multi1v1Message(i, "%t", "NoOpponent", WHITE, arena - g_arenaOffsetValue, WHITE, RED);
+            // Multi1v1Message(i, "%t", "NoOpponent", GREEN, arena - g_arenaOffsetValue, WHITE, RED);
             Multi1v1Message(i, "You are in arena \x04%d\x01 with \x07no opponent", arena - g_arenaOffsetValue);
         }
     }
@@ -433,18 +433,18 @@ public Event_OnRoundPostStart(Handle:event, const String:name[], bool:dontBroadc
  *  - sets the score/mvp count
  *  - prints out who the opponent is
  */
-public SetupPlayer(client, arena, other, bool:onCT) {
-    new Float:angles[3];
-    new Float:spawn[3];
+public SetupPlayer(int client, int arena, int other, bool onCT) {
+    float angles[3];
+    float spawn[3];
 
-    new team = onCT ? CS_TEAM_CT : CS_TEAM_T;
+    int team = onCT ? CS_TEAM_CT : CS_TEAM_T;
     SwitchPlayerTeam(client, team);
     GetSpawn(arena, team, spawn, angles);
 
     CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);
 
-    new score = 0;
+    int score = 0;
     // Arbitrary scores for ordering players in the scoreboard
     if (g_ArenaPlayer1[arena] == client)
         score = 3*g_arenas - 3*arena + 1;
@@ -454,7 +454,7 @@ public SetupPlayer(client, arena, other, bool:onCT) {
     CS_SetClientContributionScore(client, score);
 
     // Set clan tags to the arena number
-    decl String:buffer[32];
+    char buffer[32];
     Format(buffer, sizeof(buffer), "Arena %d", arena - g_arenaOffsetValue);
     CS_SetClientClanTag(client, buffer);
     CS_SetMVPCount(client, g_RoundsLeader[client]);
@@ -471,14 +471,14 @@ public SetupPlayer(client, arena, other, bool:onCT) {
  *  - throws all the players into a queue according to their standing from this round
  *  - updates globals g_Ranking, g_ArenaPlayer1, g_ArenaPlayer2 for the next round setup
  */
-public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
+public Event_OnRoundEnd(Handle event, const char name[], bool dontBroadcast) {
     g_totalRounds++;
     g_roundFinished = true;
 
     // If time ran out and we have no winners/losers, set them
-    for (new arena = 1; arena <= g_maxArenas; arena++) {
-        new p1 = g_ArenaPlayer1[arena];
-        new p2 = g_ArenaPlayer2[arena];
+    for (int arena = 1; arena <= g_maxArenas; arena++) {
+        int p1 = g_ArenaPlayer1[arena];
+        int p2 = g_ArenaPlayer2[arena];
         if (g_ArenaWinners[arena] == -1) {
             g_ArenaWinners[arena] = p1;
             g_ArenaLosers[arena] = p2;
@@ -487,8 +487,8 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
                 g_LetTimeExpire[p2] = true;
             }
         }
-        new winner = g_ArenaWinners[arena];
-        new loser = g_ArenaLosers[arena];
+        int winner = g_ArenaWinners[arena];
+        int loser = g_ArenaLosers[arena];
         if (IsPlayer(winner) && IsPlayer(loser)) {
 
             // also skip the update if we already did it (a player got a kill earlier in the round)
@@ -504,18 +504,18 @@ public Event_OnRoundEnd(Handle:event, const String:name[], bool:dontBroadcast) {
 /**
  * Player death event, updates g_arenaWinners/g_arenaLosers for the arena that was just decided.
  */
-public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast) {
-    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
-    new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
-    new arena = g_Ranking[victim];
+public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) {
+    int victim = GetClientOfUserId(GetEventInt(event, "userid"));
+    int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+    int arena = g_Ranking[victim];
 
     // If we've already decided the arena, don't worry about anything else in it
     if (g_ArenaStatsUpdated[arena])
         return;
 
     if (!IsValidClient(attacker) || attacker == victim) {
-        new p1 = g_ArenaPlayer1[arena];
-        new p2 = g_ArenaPlayer2[arena];
+        int p1 = g_ArenaPlayer1[arena];
+        int p2 = g_ArenaPlayer2[arena];
 
         if (victim == p1) {
             if (IsValidClient(p2)) {
@@ -552,16 +552,16 @@ public Event_OnPlayerDeath(Handle:event, const String:name[], bool:dontBroadcast
  * Player spawn event - gives the appropriate weapons to a player for his arena.
  * Warning: do NOT assume this is called before or after the round start event!
  */
-public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast) {
-    new client = GetClientOfUserId(GetEventInt(event, "userid"));
+public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) {
+    int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
         return;
 
-    new arena = g_Ranking[client];
+    int arena = g_Ranking[client];
     if (arena == -1)
         LogError("player %N had arena -1 on his spawn", client);
 
-    new RoundType:roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
+    RoundType roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
     GivePlayerArenaWeapons(client, roundType);
     CreateTimer(0.1, RemoveRadar, client);
 
@@ -573,19 +573,19 @@ public Event_OnPlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast
 /**
  * Resets variables for connecting player.
  */
-public OnClientConnected(client) {
+public OnClientConnected(int client) {
     ResetClientVariables(client);
 }
 
 /**
  * Writes back player stats and resets the player client index data.
  */
-public OnClientDisconnect(client) {
-    if (GetConVarInt(g_hUseDataBase) != 0)
+public OnClientDisconnect(int client) {
+    if (GetConVarInt(g_hUseDatabase) != 0)
         DB_WriteRatings(client);
 
     Queue_Drop(g_waitingQueue, client);
-    new arena = g_Ranking[client];
+    int arena = g_Ranking[client];
     UpdateArena(arena);
     ResetClientVariables(client);
 }
@@ -593,7 +593,7 @@ public OnClientDisconnect(client) {
 /**
  * Updates client weapon settings according to their cookies.
  */
-public OnClientCookiesCached(client) {
+public OnClientCookiesCached(int client) {
     if (IsFakeClient(client))
         return;
     UpdatePreferencesOnCookies(client);
@@ -610,15 +610,15 @@ public OnClientCookiesCached(client) {
 /**
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
-public Action:Command_TeamJoin(client, const String:command[], argc) {
+public Action:Command_TeamJoin(int client, const char command[], argc) {
     if (!IsValidClient(client))
         return Plugin_Handled;
 
 
-    decl String:arg[4];
+    char arg[4];
     GetCmdArg(1, arg, sizeof(arg));
-    new team_to = StringToInt(arg);
-    new team_from = GetClientTeam(client);
+    int team_to = StringToInt(arg);
+    int team_from = GetClientTeam(client);
 
     // Note that if a player selects auto-select they will have team_to and team_from equal to CS_TEAM_NONE but will get auto-moved
     if (IsFakeClient(client) || g_PluginTeamSwitch[client] || (team_from == team_to && team_from != CS_TEAM_NONE)) {
@@ -631,7 +631,7 @@ public Action:Command_TeamJoin(client, const String:command[], argc) {
         // player voluntarily joining spec
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         CS_SetClientClanTag(client, "");
-        new arena = g_Ranking[client];
+        int arena = g_Ranking[client];
         g_Ranking[client] = -1;
         UpdateArena(arena);
     } else {
@@ -652,15 +652,15 @@ public JoinGame(client) {
  * Hook for player chat actions, gives player the guns menu.
  */
 public Action:Command_Say(client, const String:command[], argc) {
-    decl String:text[192];
+    char text[192];
     if (GetCmdArgString(text, sizeof(text)) < 1)
         return Plugin_Continue;
 
     StripQuotes(text);
 
-    new String:gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS", "!guns" };
+    char gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS", "!guns" };
 
-    for (new i = 0; i < sizeof(gunsChatCommands); i++) {
+    for (int i = 0; i < sizeof(gunsChatCommands); i++) {
         if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
             Command_Guns(client, 0);
             return Plugin_Handled;
@@ -685,8 +685,8 @@ public Action:Command_Guns(client, args) {
 /**
  * Switches a client to a new team.
  */
-public SwitchPlayerTeam(client, team) {
-    new previousTeam = GetClientTeam(client);
+public SwitchPlayerTeam(int client, int team) {
+    int previousTeam = GetClientTeam(client);
     if (previousTeam == team)
         return;
 
@@ -703,7 +703,7 @@ public SwitchPlayerTeam(client, team) {
 /**
  * Gives helmet and kevlar, if appropriate.
  */
-public GiveVestHelm(client, RoundType:roundType) {
+public GiveVestHelm(int client, RoundType roundType) {
     if (!IsValidClient(client))
         return;
 
@@ -712,14 +712,14 @@ public GiveVestHelm(client, RoundType:roundType) {
         Client_SetArmor(client, 100);
     } else if (roundType == RoundType_Pistol) {
         SetEntData(client, g_iPlayers_HelmetOffset, 0);
-        new String:kevlarAllowed[][] = {
+        char kevlarAllowed[][] = {
             "weapon_glock",
             "weapon_hkp2000",
             "weapon_usp_silencer"
         };
 
-        new bool:giveKevlar = false;
-        for (new i = 0; i < 3; i++) {
+        bool giveKevlar = false;
+        for (int i = 0; i < 3; i++) {
             if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
                 giveKevlar = true;
                 break;
@@ -740,20 +740,20 @@ public GiveVestHelm(client, RoundType:roundType) {
 /**
  * Timer for checking round end conditions, since rounds typically won't end naturally.
  */
-public Action:Timer_CheckRoundComplete(Handle:timer) {
+public Action:Timer_CheckRoundComplete(Handle timer) {
     // This is a check in case the round ended naturally, we won't force another end
     if (g_roundFinished)
         return Plugin_Stop;
 
     // check every arena, if it is still ongoing mark allDone as false
-    new nPlayers = 0;
-    new bool:allDone = true;
-    for (new arena = 1; arena <= g_maxArenas; arena++) {
+    int nPlayers = 0;
+    bool allDone = true;
+    for (int arena = 1; arena <= g_maxArenas; arena++) {
 
-        new any:p1 = g_ArenaPlayer1[arena];
-        new any:p2 = g_ArenaPlayer2[arena];
-        new bool:hasp1 = IsActivePlayer(p1);
-        new bool:hasp2 = IsActivePlayer(p2);
+        int p1 = g_ArenaPlayer1[arena];
+        int p2 = g_ArenaPlayer2[arena];
+        bool hasp1 = IsActivePlayer(p1);
+        bool hasp2 = IsActivePlayer(p2);
 
         if (hasp1)
             nPlayers++;
@@ -783,17 +783,17 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
         }
     }
 
-    new bool:normalFinish = allDone && nPlayers >= 2;
+    bool normalFinish = allDone && nPlayers >= 2;
 
     // So the round ends for the first players that join
-    new bool:waitingPlayers = nPlayers < 2 && Queue_Length(g_waitingQueue) > 0;
+    bool waitingPlayers = nPlayers < 2 && Queue_Length(g_waitingQueue) > 0;
 
     // This check is a sanity check on when the round passes what the round time cvar allowed
-    new freezeTimeLength = GetConVarInt(FindConVar("mp_freezetime"));
-    new maxRoundLength = GetConVarInt(g_hRoundTime) + freezeTimeLength;
-    new elapsedTime =  GetTime() - g_roundStartTime;
+    int freezeTimeLength = GetConVarInt(FindConVar("mp_freezetime"));
+    int maxRoundLength = GetConVarInt(g_hRoundTime) + freezeTimeLength;
+    int elapsedTime =  GetTime() - g_roundStartTime;
 
-    new bool:roundTimeExpired = elapsedTime >= maxRoundLength && nPlayers >= 2;
+    bool roundTimeExpired = elapsedTime >= maxRoundLength && nPlayers >= 2;
 
     if (normalFinish || waitingPlayers || roundTimeExpired) {
         g_roundFinished = true;
@@ -807,7 +807,7 @@ public Action:Timer_CheckRoundComplete(Handle:timer) {
 /**
  * Resets all client variables to their default.
  */
-public ResetClientVariables(client) {
+public ResetClientVariables(int client) {
     g_BlockChatMessages[client] = false;
     g_BlockStatChanges[client] = false;
     g_FetchedPlayerInfo[client] = false;
@@ -833,12 +833,12 @@ public ResetClientVariables(client) {
  * Updates an arena in case a player disconnects or leaves.
  * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
-public UpdateArena(arena) {
+public UpdateArena(int arena) {
     if (arena != -1) {
-        new p1 = g_ArenaPlayer1[arena];
-        new p2 = g_ArenaPlayer2[arena];
-        new hasp1 = IsActivePlayer(p1);
-        new hasp2 = IsActivePlayer(p2);
+        int p1 = g_ArenaPlayer1[arena];
+        int p2 = g_ArenaPlayer2[arena];
+        bool hasp1 = IsActivePlayer(p1);
+        bool hasp2 = IsActivePlayer(p2);
 
         if (hasp1 && !hasp2) {
             g_ArenaWinners[arena] = p1;

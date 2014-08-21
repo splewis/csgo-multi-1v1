@@ -12,7 +12,7 @@ public Plugin:myinfo = {
     url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
-public OnPostArenaRankingsSet(Handle:rankingQueue) {
+public OnPostArenaRankingsSet(Handle rankingQueue) {
     // TODO:
     // For each client, set it so:
     //  - they can hear their opponent

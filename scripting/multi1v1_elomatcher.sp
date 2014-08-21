@@ -12,15 +12,15 @@ public Plugin:myinfo = {
     url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
-OnPreArenaRankingsSet(Handle:rankingQueue) {
+OnPreArenaRankingsSet(Handle rankingQueue) {
     // TODO: take this (empty) adt array and fill in players, matched
     // according to their elo rankins.
     // Relevent functions:
     //
-    // native bool:HasDatabase();
-    // native bool:HasStats(client);
-    // native Float:GetRating(client);
-    // native bool:IsActivePlayer(client);
+    // native bool HasDatabase();
+    // native bool HasStats(client);
+    // native float GetRating(client);
+    // native bool IsActivePlayer(client);
     //
     // It might be a good idea to do *nothing* if HasDatabase is false.
     // It's okay to *not* add players to the queue as well.
