@@ -4,34 +4,41 @@
 	{
 		"#format"	"{1:i}"
 		"en"			"You are in arena {GREEN}{1} {NORMAL}with {DARK_RED}no opponent."
+		"pl"			"Jestes na arenie {GREEN}{1} {DARK_RED}bez przeciwnika."
 	}
 	"FacingOff"
 	{
 		"#format"	"{1:i},{2:N}"
 		"en"			"You are in arena {GREEN}{1}{NORMAL}, facing off against {PURPLE}{2}."
+		"pl"			"Walczysz na arenie {GREEN}{1}{NORMAL}, przeciwko {PURPLE}{2}."
 	}
 	"ArenasFull"
 	{
 		"en"			"Sorry, all the arenas are currently {PURPLE}full."
+		"pl"			"Przepraszamy, wszystkie areny sa{PURPLE}pelne."
 	}
 	"QueuePosition"
 	{
 		"#format"	"{1:i}"
 		"en"			"You are in position {GREEN}{1} {NORMAL}in the waiting queue."
+		"pl"			"Jestes {GREEN}{1} {NORMAL}w kolejce."
 	}
 	"WonMessage"
 	{
 		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
 		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) beat {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 	}
 	"LossMessage"
 	{
 		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
 		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}lost to {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
 	"TimeRanOut"
 	{
 		"#format"	"{1:i},{2:.1f}"
 		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) let time run out."
+		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
 	}
 }
