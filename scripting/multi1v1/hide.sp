@@ -1,14 +1,24 @@
+public bool:CanSee(entity, client) {
+    if (!IsValidClient(entity) || !IsValidClient(client) || entity == client)
+        return true;
 
-public Action:Hook_ShotgunShot(const String:te_name[], const Players[], numClients, Float:delay) {
+    // block the transmisson
+    if (GetOpponent(entity) != client)
+        return false;
+
+    // transmit by default
+    return true;
+}
+
+public Action:Hook_ShotgunShot(const String:te_name[], const players[], numClients, Float:delay) {
     new shooterIndex = TE_ReadNum("m_iPlayer") + 1;
-    PrintToChatAll("shot by %N", shooterIndex);
 
     // Check which clients need to be excluded.
     decl newClients[MaxClients], client, i;
     new newTotal = 0;
 
     for (i = 0; i < numClients; i++) {
-        client = Players[i];
+        client = players[i];
         if (CanSee(shooterIndex, i)) {
             // client should be able to hear it
             newClients[newTotal] = client;
@@ -42,21 +52,15 @@ public Action:Hook_ShotgunShot(const String:te_name[], const Players[], numClien
     return Plugin_Stop;
 }
 
-
-
-public bool:CanSee(entity, client) {
-    if (!IsValidClient(entity) || !IsValidClient(client) || entity == client)
-        return true;
-
-    // block the transmisson
-    if (GetOpponent(entity) != client)
-        return false;
-
-    // transmit by default
-    return true;
-
-}
-
 public Action:Hook_SetTransmit(entity, client) {
     return CanSee(entity, client) ? Plugin_Continue : Plugin_Handled;
+}
+
+public Action:Event_PlayerHurt(Handle:event, const String:name[], bool:dontBroadcast) {
+    new victim = GetClientOfUserId(GetEventInt(event, "userid"));
+    new attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+    if (!CanSee(attacker, victim)) {
+        return Plugin_Stop;
+    }
+    return Plugin_Continue;
 }

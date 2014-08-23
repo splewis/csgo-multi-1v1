@@ -176,6 +176,7 @@ public OnPluginStart() {
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
 
+    HookEvent("player_hurt", Event_PlayerHurt, EventHookMode_Pre);
     AddTempEntHook("Shotgun Shot", Hook_ShotgunShot);
 
     /** Commands **/
