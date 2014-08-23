@@ -7,7 +7,7 @@
 		"pl"			"Jestes na arenie {GREEN}{1} {DARK_RED}bez przeciwnika."
 		"sv"			"Du är i arena {GREEN}{1} {DARK_RED}utan en motståndare."
 		"es"			""
-		"pt_p"			""
+		"pt_p"			"Está na arena {GREEN}{1} {NORMAL}sem {DARK_RED}oponentes."
 		"ua"			""
 		"de"			"Du bist in Arena {GREEN}{1} {NORMAL}ohne {DARK_RED}einen Gegner."
 	}
@@ -18,7 +18,7 @@
 		"pl"			"Walczysz na arenie {GREEN}{1}{NORMAL}, przeciwko {PURPLE}{2}."
 		"sv"			"Du är i arena {GREEN}{1}{NORMAL}, du möter {PURPLE}{2}."
 		"es"			""
-		"pt_p"			""
+		"pt_p"			"Está na arena {GREEN}{1}{NORMAL}, a enfrentar {PURPLE}{2}."
 		"ua"			""
 		"de"			"Du bist in der Arena {GREEN}{1}{NORMAL}, du trittst an gegen {PURPLE}{2}."
 	}
@@ -28,7 +28,7 @@
 		"pl"			"Przepraszamy, wszystkie areny sa{PURPLE}pelne."
 		"sv"			"Tyvärr, alla arenor är just nu {PURPLE}fulla."
 		"es"			""
-		"pt_p"			""
+		"pt_p"			"Lamentamos, todas as arenas estão atualmente {PURPLE}cheias"
 		"ua"			""
 		"de"			"Entschuldige, zurzeit sind alle Arenen {PURPLE}besetzt."
 	}
@@ -39,7 +39,7 @@
 		"pl"			"Jestes {GREEN}{1} {NORMAL}w kolejce."
 		"sv"			"Du är i kö, din vänteplats är {GREEN}{1} {NORMAL}i kön."
 		"es"			""
-		"pt_p"			""
+		"pt_p"			"Está na posição {GREEN}{1} {NORMAL}na fila de espera."
 		"ua"			""
 		"de"			"Du bist Nummer {GREEN}{1} {NORMAL}in der Warteschlange."
 	}
@@ -50,7 +50,7 @@
 		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) vann över {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 		"es"			""
-		"pt_p"			""
+		"pt_p"			"{GREEN}Voçê {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) derrotou {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 		"ua"			""
 		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) hast gewonnen gegen {PURPLE}{3} {NORMAL}(Wertung {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 	}
@@ -61,7 +61,7 @@
 		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}förlorade emot {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 		"es"			""
-		"pt_p"			""
+		"pt_p"			"{GREEN}Voçê {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}perdeu para {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 		"ua"			""
 		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}hast verloren gegen {PURPLE}{3} {NORMAL}(Wertung {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
@@ -72,7 +72,7 @@
 		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
 		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) lät tiden gå ut."
 		"es"			""
-		"pt_p"			""
+		"pt_p"			"{GREEN}Voçê {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) deixou o tempo acabar."
 		"ua"			""
 		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) hast die Zeit auslaufen lassen."
 	}
