@@ -50,7 +50,7 @@
 		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) vann över {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 		"es"			""
-		"pt_p"			"{GREEN}Voçê {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) derrotou {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) derrotou {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 		"ua"			""
 		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) hast gewonnen gegen {PURPLE}{3} {NORMAL}(Wertung {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 	}
@@ -61,7 +61,7 @@
 		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}förlorade emot {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 		"es"			""
-		"pt_p"			"{GREEN}Voçê {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}perdeu para {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}perdeu para {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 		"ua"			""
 		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}hast verloren gegen {PURPLE}{3} {NORMAL}(Wertung {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
@@ -72,7 +72,7 @@
 		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
 		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) lät tiden gå ut."
 		"es"			""
-		"pt_p"			"{GREEN}Voçê {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) deixou o tempo acabar."
+		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) deixou o tempo acabar."
 		"ua"			""
 		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) hast die Zeit auslaufen lassen."
 	}
