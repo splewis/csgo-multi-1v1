@@ -27,8 +27,7 @@ The general idea of everything I do with sourcemod plugins is to **keep it simpl
 A few plugin modules, created using the include above, are also included. They are all optional and included in the download under ``plugins/disabled``.
 
 - **multi1v1_sprweight**: provides a weight function used by my [smart-player-reports](https://github.com/splewis/smart-player-reports) plugin
-- **multi1v1_elomatcher**: provides a different way of ordering players rather than a ladder by matching up similar elo ratings
-- **multi1v1_quietmode**: makes it so players can only hear and talk to the opponents in their arena
+- **multi1v1_elomatcher**: provides a different way of ordering players rather than a ladder by matching up similar elo ratings (this is currently not implemented yet!)
 
 These modules, and any other ideas you have, are relatively simple and are easy to contribute to. Feel free to implement one and send a pull request.
 
