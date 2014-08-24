@@ -31,7 +31,7 @@
 		"#format"	"{1:i}"
 		"en"			"You are in position {GREEN}{1} {NORMAL}in the waiting queue."
 		"pl"			"Jestes {GREEN}{1} {NORMAL}w kolejce."
-		"sv"			"Du är i kö, din vänteplats är {GREEN}{1} {NORMAL}i kön."
+		"sv"			"Din position i kön är {GREEN}{1}"
 		"pt_p"			"Está na posição {GREEN}{1} {NORMAL}na fila de espera."
 		"de"			"Du bist Nummer {GREEN}{1} {NORMAL}in der Warteschlange."
 	}
