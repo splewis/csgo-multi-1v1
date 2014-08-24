@@ -26,6 +26,7 @@
 #define TABLE_NAME "multi1v1_stats"
 
 /** ConVar handles **/
+Handle g_hAlwaysGivePistol = INVALID_HANDLE;
 Handle g_hAutoUpdate = INVALID_HANDLE;
 Handle g_hBlockRadio = INVALID_HANDLE;
 Handle g_hDatabaseName = INVALID_HANDLE;
@@ -142,6 +143,7 @@ public OnPluginStart() {
     LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
+    g_hAlwaysGivePistol = CreateConVar("sm_multi1v1_always_give_pistol", "1", "Whether pistols will be given in non-pistol rounds, e.g. awp and rifle rounds.");
     g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);

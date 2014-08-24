@@ -139,7 +139,10 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
     }
 
     GiveVestHelm(client, roundType);
-    GivePlayerItem(client, g_SecondaryWeapon[client]);
+
+    if (GetConVarInt(g_hAlwaysGivePistol) != 0 || roundType == RoundType_Pistol) {
+        GivePlayerItem(client, g_SecondaryWeapon[client]);
+    }
 
     int other = GetOpponent(client);
     if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
