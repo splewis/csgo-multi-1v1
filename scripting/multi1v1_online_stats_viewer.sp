@@ -14,10 +14,9 @@ public Plugin:myinfo = {
 };
 
 public OnPluginStart() {
+    LoadTranslations("common.phrases");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
-
     AutoExecConfig(true, "multi1v1_online_stats_viewer", "sourcemod/multi1v1");
-
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
