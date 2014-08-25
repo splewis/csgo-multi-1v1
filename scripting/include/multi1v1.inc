@@ -51,13 +51,13 @@ forward OnRoundWon(int winner, int loser, bool forceLoss);
 forward OnStatsCached(int client);
 
 // Returns if a player is actively in an arena.
-native bool:IsInArena(int client);
+native bool IsInArena(int client);
 
 // Prints a plugin-formatted message to a client.
-native Multi1v1Message(int client, const char format[], any:...);
+native void Multi1v1Message(int client, const char format[], any:...);
 
 // Prints a plugin-formatted message to all clients.
-native Multi1v1MessageToAll(const char format[], any:...);
+native void Multi1v1MessageToAll(const char format[], any:...);
 
 // Returns the maximum number of areans the map allows.
 native int GetMaximumArenas();
@@ -90,9 +90,6 @@ native int GetOpponent(int client);
 // Checks if the database is connected and valid.
 native bool HasDatabase();
 
-// Returns a handle to the database connection. Please check HasDatabase before using this.
-native Handle GetDatabase();
-
 // Gives a player their weapons according to a round type.
 native void GivePlayerArenaWeapons(int client, RoundType roundType);
 
@@ -110,8 +107,14 @@ native void UnblockChatMessages(int client);
 // Set to 1 to make arena 1 show as arena 2, etc.
 native void SetArenaOffsetValue(int value);
 
+// Returns the rating delta from a winner/loser matchup. This
+// will always be positive.
 native float ELORatingDelta(float winner_rating, float loser_rating, float K);
 
+// Returns the number of spawns (per team) in an arena.
+// If one team has less spawns than the other team,
+// the smaller of the two will be returned.
 native int GetNumSpawnsInArena(int arena);
 
+// Gets a spawn point/angle pair from an arena for a given team.
 native void GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);

@@ -14,7 +14,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetWins", Native_GetWins);
     CreateNative("GetLosses", Native_GetLosses);
     CreateNative("HasDatabase", Native_HasDatabase);
-    CreateNative("GetDatabase", Native_GetDatabase);
     CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
     CreateNative("Multi1v1Message", Native_Multi1v1Message);
     CreateNative("Multi1v1MessageToAll", Native_Multi1v1MessageToAll);
@@ -117,10 +116,6 @@ public Native_GetOpponent(Handle plugin, numParams) {
 
 public Native_HasDatabase(Handle plugin, numParams) {
     return GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected && db != INVALID_HANDLE;
-}
-
-public Native_GetDatabase(Handle plugin, numParams) {
-    return _:db;
 }
 
 public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
