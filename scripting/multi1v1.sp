@@ -54,6 +54,7 @@ Handle db = INVALID_HANDLE;
 
 /** Client arrays **/
 int g_Ranking[MAXPLAYERS+1]; // which arena each player is in
+bool g_LetTimeExpire[MAXPLAYERS+1];
 bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
 bool g_AllowAWP[MAXPLAYERS+1];
 bool g_AllowPistol[MAXPLAYERS+1];
@@ -66,13 +67,12 @@ bool g_BlockStatChanges[MAXPLAYERS+1];
 bool g_BlockChatMessages[MAXPLAYERS+1];
 
 /** Arena arrays **/
-bool g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
+bool g_ArenaStatsUpdated[MAXPLAYERS+1];
 int g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
 int g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
 int g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
 int g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
 RoundType g_roundTypes[MAXPLAYERS+1];
-bool g_LetTimeExpire[MAXPLAYERS+1] = false;
 int g_RoundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
@@ -82,7 +82,6 @@ int g_maxArenas = 0; // maximum number of arenas the map can support
 int g_arenas = 1; // number of active arenas
 int g_totalRounds = 0; // rounds played on this map so far
 bool g_roundFinished = false;
-Handle g_rankingQueue = INVALID_HANDLE;
 Handle g_waitingQueue = INVALID_HANDLE;
 
 /** Handles to arrays of vectors of spawns/angles **/
@@ -120,7 +119,6 @@ int g_iPlayers_HelmetOffset;
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
 #include "multi1v1/weaponmenu.sp"
-
 
 
 
@@ -274,31 +272,33 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
     g_roundStartTime = GetTime();
 
     // Here we add each player to the queue in their new ranking
-    g_rankingQueue = Queue_Init();
+    Handle rankingQueue = Queue_Init();
 
     Call_StartForward(g_hOnPreArenaRankingsSet);
-    Call_PushCell(g_rankingQueue);
+    Call_PushCell(rankingQueue);
     Call_Finish();
 
     //  top arena
-    AddPlayer(g_ArenaWinners[1]);
-    AddPlayer(g_ArenaWinners[2]);
+    AddPlayer(g_ArenaWinners[1], rankingQueue);
+    AddPlayer(g_ArenaWinners[2], rankingQueue);
 
     // middle arenas
     for (int i = 2; i <= g_arenas - 1; i++) {
-        AddPlayer(g_ArenaLosers[i - 1]);
-        AddPlayer(g_ArenaWinners[i + 1]);
+        AddPlayer(g_ArenaLosers[i - 1], rankingQueue);
+        AddPlayer(g_ArenaWinners[i + 1], rankingQueue);
     }
 
     // bottom arena
     if (g_arenas >= 1) {
-        AddPlayer(g_ArenaLosers[g_arenas - 1]);
-        AddPlayer(g_ArenaLosers[g_arenas]);
+        AddPlayer(g_ArenaLosers[g_arenas - 1], rankingQueue);
+        AddPlayer(g_ArenaLosers[g_arenas], rankingQueue);
     }
 
-    while (Queue_Length(g_rankingQueue) < 2*g_maxArenas && Queue_Length(g_waitingQueue) > 0) {
+    // TODO: I think it would be valuable to sort the players by rating when inserting from
+    // the waiting queue.
+    while (Queue_Length(rankingQueue) < 2*g_maxArenas && Queue_Length(g_waitingQueue) > 0) {
         int client = Queue_Dequeue(g_waitingQueue);
-        AddPlayer(client);
+        AddPlayer(client, rankingQueue);
     }
 
     int queueLength = Queue_Length(g_waitingQueue);
@@ -309,18 +309,18 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
     }
 
     Call_StartForward(g_hOnPostArenaRankingsSet);
-    Call_PushCell(g_rankingQueue);
+    Call_PushCell(rankingQueue);
     Call_Finish();
 
-    int leader = Queue_Peek(g_rankingQueue);
-    if (IsValidClient(leader) && Queue_Length(g_rankingQueue) >= 2)
+    int leader = Queue_Peek(rankingQueue);
+    if (IsValidClient(leader) && Queue_Length(rankingQueue) >= 2)
         g_RoundsLeader[leader]++;
 
     // Player placement logic for this round
     g_arenas = 0;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
-        int p1 = Queue_Dequeue(g_rankingQueue);
-        int p2 = Queue_Dequeue(g_rankingQueue);
+        int p1 = Queue_Dequeue(rankingQueue);
+        int p2 = Queue_Dequeue(rankingQueue);
         g_ArenaPlayer1[arena] = p1;
         g_ArenaPlayer2[arena] = p2;
         g_roundTypes[arena] = GetRoundType  (p1, p2);
@@ -341,7 +341,7 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
         }
     }
 
-    Queue_Destroy(g_rankingQueue);
+    Queue_Destroy(rankingQueue);
 
     Call_StartForward(g_hOnArenasReady);
     Call_Finish();
@@ -350,12 +350,12 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
 /**
  * Function to add a player to the ranking queue with some validity checks.
  */
-public AddPlayer(int client) {
+public AddPlayer(int client, Handle rankingQueue) {
     bool player = IsPlayer(client);
-    bool space = Queue_Length(g_rankingQueue) < 2 *g_maxArenas;
-    bool alreadyin = Queue_Inside(g_rankingQueue, client);
+    bool space = Queue_Length(rankingQueue) < 2 *g_maxArenas;
+    bool alreadyin = Queue_Inside(rankingQueue, client);
     if (player && space && !alreadyin) {
-        Queue_Enqueue(g_rankingQueue, client);
+        Queue_Enqueue(rankingQueue, client);
     }
 
     if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && player && !g_GunsSelected[client]) {
@@ -634,16 +634,10 @@ public Action:Command_TeamJoin(int client, const char command[], argc) {
         UpdateArena(arena);
     } else {
         // Player first joining the game, mark them as waiting to join
-        JoinGame(client);
-    }
-    return Plugin_Handled;
-}
-
-public JoinGame(client) {
-    if (IsValidClient(client)) {
         Queue_Enqueue(g_waitingQueue, client);
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
     }
+    return Plugin_Handled;
 }
 
 /**

@@ -133,6 +133,10 @@ public DB_WriteRatings(client) {
     }
 }
 
+/**
+ * Performs all stats-related round-update logic for
+ * a winner/loser pair.
+ */
 public DB_RoundUpdate(winner, loser, bool:forceLoss) {
     if (IsPlayer(winner) && IsPlayer(loser)) {
 

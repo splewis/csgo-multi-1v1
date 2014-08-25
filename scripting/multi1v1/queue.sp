@@ -1,4 +1,10 @@
 /**
+ * This is a generic client FIFO-queue implentation.
+ * It is just a wrapper on adt-arrays, so things like
+ * GetArrayCell(queue, index) can still be used.
+ */
+
+/**
  * Initializes the queue. The handle returned by this must be closed or destroyed later.
  */
 public Handle Queue_Init() {
