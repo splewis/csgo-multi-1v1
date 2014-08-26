@@ -260,7 +260,7 @@ public Event_OnFullConnect(Handle event, const char name[], bool dontBroadcast) 
 /**
  * Silences team join/switch events.
  */
-public Action:Event_OnPlayerTeam(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnPlayerTeam(Handle event, const char name[], bool dontBroadcast) {
     dontBroadcast = true;
     return Plugin_Changed;
 }
@@ -431,7 +431,7 @@ public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcas
  *  - sets the score/mvp count
  *  - prints out who the opponent is
  */
-public SetupPlayer(int client, int arena, int other, bool onCT) {
+public void SetupPlayer(int client, int arena, int other, bool onCT) {
     float angles[3];
     float spawn[3];
 
@@ -608,7 +608,7 @@ public OnClientCookiesCached(int client) {
 /**
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
-public Action:Command_TeamJoin(int client, const char command[], argc) {
+public Action Command_TeamJoin(int client, const char command[], argc) {
     if (!IsValidClient(client))
         return Plugin_Handled;
 
@@ -643,7 +643,7 @@ public Action:Command_TeamJoin(int client, const char command[], argc) {
 /**
  * Hook for player chat actions, gives player the guns menu.
  */
-public Action:Command_Say(client, const String:command[], argc) {
+public Action Command_Say(client, const char command[], argc) {
     char text[192];
     if (GetCmdArgString(text, sizeof(text)) < 1)
         return Plugin_Continue;
@@ -662,7 +662,7 @@ public Action:Command_Say(client, const String:command[], argc) {
 }
 
 /** sm_guns command **/
-public Action:Command_Guns(client, args) {
+public Action Command_Guns(client, args) {
     GiveWeaponMenu(client);
 }
 
@@ -677,7 +677,7 @@ public Action:Command_Guns(client, args) {
 /**
  * Switches a client to a new team.
  */
-public SwitchPlayerTeam(int client, int team) {
+public void SwitchPlayerTeam(int client, int team) {
     int previousTeam = GetClientTeam(client);
     if (previousTeam == team)
         return;
@@ -695,7 +695,7 @@ public SwitchPlayerTeam(int client, int team) {
 /**
  * Gives helmet and kevlar, if appropriate.
  */
-public GiveVestHelm(int client, RoundType roundType) {
+public void GiveVestHelm(int client, RoundType roundType) {
     if (!IsValidClient(client))
         return;
 
@@ -732,7 +732,7 @@ public GiveVestHelm(int client, RoundType roundType) {
 /**
  * Timer for checking round end conditions, since rounds typically won't end naturally.
  */
-public Action:Timer_CheckRoundComplete(Handle timer) {
+public Action Timer_CheckRoundComplete(Handle timer) {
     // This is a check in case the round ended naturally, we won't force another end
     if (g_roundFinished)
         return Plugin_Stop;
@@ -799,7 +799,7 @@ public Action:Timer_CheckRoundComplete(Handle timer) {
 /**
  * Resets all client variables to their default.
  */
-public ResetClientVariables(int client) {
+public void ResetClientVariables(int client) {
     g_BlockChatMessages[client] = false;
     g_BlockStatChanges[client] = false;
     g_FetchedPlayerInfo[client] = false;
@@ -825,7 +825,7 @@ public ResetClientVariables(int client) {
  * Updates an arena in case a player disconnects or leaves.
  * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
-public UpdateArena(int arena) {
+public void UpdateArena(int arena) {
     if (arena != -1) {
         int p1 = g_ArenaPlayer1[arena];
         int p2 = g_ArenaPlayer2[arena];
