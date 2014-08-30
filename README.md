@@ -3,9 +3,7 @@ csgo-multi-1v1
 
 This is home of my CS:GO multi-1v1 arena plugin. It sets up any number of players in 1v1-situations on specially made maps and they fight in a ladder-type system. The winners move up, the losers go down.
 
-Work toward a stable 1.0.0 is underway. Note that is readme reflects the 1.0.0 development version, rather than the latest release's readme.
-
-The 1.0.0 version will rely on sourcemod 1.7, and won't be released until sourcemod 1.7 is released.
+Work toward a stable 1.0.0 is underway. Note that is readme reflects the 1.0.0 development version, rather than the [latest release's readme](https://github.com/splewis/csgo-multi-1v1/blob/0.5.2/README.md).
 
 Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php?t=241056).
 
@@ -24,7 +22,7 @@ Work to make the plugin extensible is currently underway (and **not released**).
 The general idea of everything I do with sourcemod plugins is to **keep it simple, stupid**. This plugin and its implementation details are no exception.
 
 ### Plugin modules
-A few plugin modules, created using the include above, are also included. They are all optional and included in the download under ``plugins/disabled``.
+Sometimes it's easier to add something in a seperate plugin than add more convars, thus some features may be in support plugins. These are all optional and included in the download under ``plugins/disabled``.
 
 - **multi1v1_sprweight**: provides a weight function used by my [smart-player-reports](https://github.com/splewis/smart-player-reports) plugin
 - **multi1v1_elomatcher**: provides a different way of ordering players rather than a ladder by matching up similar elo ratings (this is currently not implemented yet!)
@@ -41,7 +39,9 @@ Any changes made through an automatic update will be backwards compatible.
 
 ### Installation
 
-**Only Sourcemod 1.6 is supported.** Releases are compiled using the 1.6 compiler and will not work on a server using 1.5. The reason for this is a change to how floating point values are handled, see the  [1.6 release notes](https://wiki.alliedmods.net/SourceMod_1.6.0_Release_Notes#Compatibility_Issues) for details.
+**Only Sourcemod 1.7 is supported.** Releases are compiled using the 1.7 compiler and will not work on a server using an older version.
+
+If you must use sourcemod 1.6, you will have to use [0.5.2](https://github.com/splewis/csgo-multi-1v1/releases/tag/0.5.2).
 
 If you only want the plugin, either download **multi1v1.zip** or build it yourself.
 It should contain the plugin binary (**plugins/multi1v1.smx**) and the default game config (**cfg/sourcemod/multi1v1/game_cvars.cfg**).
@@ -58,8 +58,10 @@ There is a work-in-progress open-source web interface being developed under the 
 The build process is managed by my [smbuilder](https://github.com/splewis/sm-builder) project. You can still compile multi1v1.sp without it, however.
 
 To compile, you will need:
-- [SMLib](http://www.sourcemodplugins.org/smlib/)
+- [SMLib](https://github.com/bcserv/smlib)
 - [Updater](https://forums.alliedmods.net/showthread.php?t=169095)
+
+You should make sure you have a relatively recent version of smlib - some changes were made to accommodate sourcemod 1.7 changes.
 
 
 ### Maps
@@ -136,7 +138,7 @@ First, check the [issue tracker](https://github.com/splewis/csgo-multi-1v1/issue
 If you have a suggestion you can mark it as an enhancement.
 
 Guidelines
-- Create a fork on github, clone that, then create a branch to work on (git checkout -b myfeature)
+- Create a fork on github, clone that, then create a branch to work on ``git checkout -b myfeature``
 - Follow the code-style already used as much as you can
 - Submit a pull request when you're happy with the new feature/enhancement/bugfix
 - Favor readability and correctness over all else
