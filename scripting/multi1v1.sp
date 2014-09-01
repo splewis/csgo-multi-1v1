@@ -176,9 +176,6 @@ public OnPluginStart() {
     HookEvent("round_end", Event_OnRoundEnd);
 
     /** Commands **/
-    AddCommandListener(Command_Say, "say");
-    AddCommandListener(Command_Say, "say2");
-    AddCommandListener(Command_Say, "say_team");
     AddCommandListener(Command_TeamJoin, "jointeam");
     AddRadioCommandListeners();
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
@@ -643,18 +640,13 @@ public Action Command_TeamJoin(int client, const char command[], argc) {
 /**
  * Hook for player chat actions, gives player the guns menu.
  */
-public Action Command_Say(client, const char command[], argc) {
-    char text[192];
-    if (GetCmdArgString(text, sizeof(text)) < 1)
-        return Plugin_Continue;
-
-    StripQuotes(text);
-
-    char gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS", "!guns" };
+public Action OnClientSayCommand(client, const char command[], const char sArgs[]) {
+    // To avoid cluttering up chat, these commands are hidden
+    char gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "!guns" };
 
     for (int i = 0; i < sizeof(gunsChatCommands); i++) {
-        if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
-            Command_Guns(client, 0);
+        if (strcmp(sArgs[0], gunsChatCommands[i], false) == 0) {
+            GiveWeaponMenu(client);
             return Plugin_Handled;
         }
     }
