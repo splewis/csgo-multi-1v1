@@ -4,69 +4,34 @@
 	{
 		"#format"	"{1:i}"
 		"en"			"You are in arena {GREEN}{1} {NORMAL}with {DARK_RED}no opponent."
-		"pl"			"Jestes na arenie {GREEN}{1} {DARK_RED}bez przeciwnika."
-		"sv"			"Du är i arena {GREEN}{1} {DARK_RED}utan en motståndare."
-		"pt_p"			"Está na arena {GREEN}{1} {NORMAL}sem {DARK_RED}oponentes."
-		"de"			"Du bist in Arena {GREEN}{1} {NORMAL}ohne {DARK_RED}einen Gegner."
-		"chi"			"你目前在战场{GREEN}{1}{NORMAL}但{DARK_RED}没有对手。"
 	}
 	"FacingOff"
 	{
 		"#format"	"{1:i},{2:N}"
 		"en"			"You are in arena {GREEN}{1}{NORMAL}, facing off against {PURPLE}{2}."
-		"pl"			"Walczysz na arenie {GREEN}{1}{NORMAL}, przeciwko {PURPLE}{2}."
-		"sv"			"Du är i arena {GREEN}{1}{NORMAL}, du möter {PURPLE}{2}."
-		"pt_p"			"Está na arena {GREEN}{1}{NORMAL}, a enfrentar {PURPLE}{2}."
-		"de"			"Du bist in der Arena {GREEN}{1}{NORMAL}, du trittst an gegen {PURPLE}{2}."
-		"chi"			"你目前在战场{GREEN}{1}{NORMAL}，与{PURPLE}{2}{NORMAL}决战！"
 	}
 	"ArenasFull"
 	{
 		"en"			"Sorry, all the arenas are currently {PURPLE}full."
-		"pl"			"Przepraszamy, wszystkie areny sa{PURPLE}pelne."
-		"sv"			"Tyvärr, alla arenor är just nu {PURPLE}fulla."
-		"pt_p"			"Lamentamos, todas as arenas estão atualmente {PURPLE}cheias"
-		"de"			"Entschuldige, zurzeit sind alle Arenen {PURPLE}besetzt."
-		"chi"			"对不起，所有战场目前{PURPLE}已满。"
 	}
 	"QueuePosition"
 	{
 		"#format"	"{1:i}"
 		"en"			"You are in position {GREEN}{1} {NORMAL}in the waiting queue."
-		"pl"			"Jestes {GREEN}{1} {NORMAL}w kolejce."
-		"sv"			"Din position i kön är {GREEN}{1}"
-		"pt_p"			"Está na posição {GREEN}{1} {NORMAL}na fila de espera."
-		"de"			"Du bist Nummer {GREEN}{1} {NORMAL}in der Warteschlange."
-		"chi"			"等待进入战场，你目前排在队伍的第{GREEN}{1}{NORMAL}位。"
 	}
 	"WonMessage"
 	{
 		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
 		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) beat {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
-		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) vann över {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
-		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) derrotou {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
-		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) hast gewonnen gegen {PURPLE}{3} {NORMAL}(Wertung {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
-		"chi"			"{GREEN}你{NORMAL}({GREEN}{1}{NORMAL}分，{LIGHT_GREEN}加{2}{NORMAL}分）击败对手{PURPLE}{3}{NORMAL}（{PURPLE}{4}{NORMAL}分，{DARK_RED}减{5}{NORMAL}分）。"
 	}
 	"LossMessage"
 	{
 		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
 		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}lost to {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
-		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}förlorade emot {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
-		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}perdeu para {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
-		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}hast verloren gegen {PURPLE}{3} {NORMAL}(Wertung {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
-		"chi"			"{GREEN}你{NORMAL}({GREEN}{1}{NORMAL}分，{LIGHT_RED}减{2}{NORMAL})）{NORMAL}被对手{PURPLE}{3}{NORMAL}（{PURPLE}{4}{NORMAL}分，{LIGHT_GREEN}加{5}{NORMAL}分)击败。"
 	}
 	"TimeRanOut"
 	{
 		"#format"	"{1:i},{2:.1f}"
 		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) let time run out."
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
-		"sv"			"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) lät tiden gå ut."
-		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) deixou o tempo acabar."
-		"de"			"{GREEN}Du {NORMAL}(Wertung {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) hast die Zeit auslaufen lassen."
-		"chi"			"{GREEN}你{NORMAL}({GREEN}{1}{NORMAL}分，{LIGHT_RED}减{2}{NORMAL}分)未在规定时间内击败对手。"
 	}
 }
