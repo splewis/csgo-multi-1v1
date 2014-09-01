@@ -320,7 +320,7 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
         int p2 = Queue_Dequeue(rankingQueue);
         g_ArenaPlayer1[arena] = p1;
         g_ArenaPlayer2[arena] = p2;
-        g_roundTypes[arena] = GetRoundType  (p1, p2);
+        g_roundTypes[arena] = GetRoundType(p1, p2);
 
         bool realp1 = IsValidClient(p1);
         bool realp2 = IsValidClient(p2);

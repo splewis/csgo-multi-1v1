@@ -50,9 +50,9 @@ public DB_AddPlayer(client) {
         int id = GetSteamAccountID(client);
 
         // player name
-        char name[64];
+        char name[MAX_NAME_LENGTH];
         GetClientName(client, name, sizeof(name));
-        char sanitized_name[64];
+        char sanitized_name[MAX_NAME_LENGTH * 2 + 1];
         SQL_EscapeString(db, name, sanitized_name, sizeof(name));
 
         // steam id
@@ -91,12 +91,12 @@ public DB_FetchRatings(client) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d",
                TABLE_NAME, GetSteamAccountID(client));
-        SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, client);
+        SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, GetClientSerial(client));
     }
 }
 
-public Callback_FetchRating(Handle owner, Handle hndl, const char error[], any:data) {
-    int client = data;
+public Callback_FetchRating(Handle owner, Handle hndl, const char error[], any:serial) {
+    int client = GetClientFromSerial(serial);
     g_FetchedPlayerInfo[client] = false;
     if (!IsPlayer(client))
         return;
