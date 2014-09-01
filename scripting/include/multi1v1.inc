@@ -3,14 +3,6 @@
 #endif
 #define __MULTI1V1_INCLUDE__
 
-//************* WARNING*****************
-//
-// This file and its implementations
-// are not finished, any code that relies
-// on it WILL break in the future!
-//
-//************* WARNING******************
-
 // The different round types
 enum RoundType {
     RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
@@ -118,3 +110,14 @@ native int GetNumSpawnsInArena(int arena);
 
 // Gets a spawn point/angle pair from an arena for a given team.
 native void GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);
+
+public SharedPlugin:__pl_ircrelay =
+{
+    name = "multi1v1",
+    file = "multi1v1.smx",
+#if defined REQUIRE_PLUGIN
+    required = 1,
+#else
+    required = 0,
+#endif
+};
