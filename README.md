@@ -116,6 +116,9 @@ Schema:
 	| wins         | int(11)     | NO   |     | 0       |       |
 	| losses       | int(11)     | NO   |     | 0       |       |
 	| rating       | float       | NO   |     | 1500    |       |
+	| rifleRating  | float       | NO   |     | 1500    |       |
+	| pistolRating | float       | NO   |     | 1500    |       |
+	| awpRating    | float       | NO   |     | 1500    |       |
 	| lastTime     | int         | NO   |     | 0       |       |
 	| recentRounds | int         | NO   |     | 0       |       |
 	+--------------+-------------+------+-----+---------+-------+
