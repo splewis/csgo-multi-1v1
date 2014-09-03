@@ -111,7 +111,7 @@ native int GetNumSpawnsInArena(int arena);
 // Gets a spawn point/angle pair from an arena for a given team.
 native void GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);
 
-public SharedPlugin:__pl_ircrelay = {
+public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",
     file = "multi1v1.smx",
 #if defined REQUIRE_PLUGIN
