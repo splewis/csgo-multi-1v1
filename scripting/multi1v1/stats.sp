@@ -50,9 +50,9 @@ public DB_AddPlayer(client) {
         int id = GetSteamAccountID(client);
 
         // player name
-        char name[MAX_NAME_LENGTH];
+        char name[64];
         GetClientName(client, name, sizeof(name));
-        char sanitized_name[MAX_NAME_LENGTH * 2 + 1];
+        char sanitized_name[64];
         SQL_EscapeString(db, name, sanitized_name, sizeof(name));
 
         // steam id
@@ -114,7 +114,6 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], any:s
         Call_StartForward(g_hOnStatsCached);
         Call_PushCell(client);
         Call_Finish();
-
     } else {
         LogError("Failed to fetch statistics for for %N", client);
     }
