@@ -36,7 +36,7 @@ public DB_Connect() {
 /**
  * Generic SQL threaded query error callback.
  */
-public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], any:data) {
+public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], data) {
     if (!StrEqual("", error)) {
         LogError("Last Connect SQL Error: %s", error);
     }
@@ -63,7 +63,7 @@ public DB_AddPlayer(client) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "INSERT IGNORE INTO %s (accountID,auth,name) VALUES (%d, '%s', '%s');",
                TABLE_NAME, id, auth, sanitized_name);
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+        SQL_TQuery(db, Callback_Insert, g_sqlBuffer, GetClientSerial(client));
 
         // update the player name
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
@@ -76,7 +76,17 @@ public DB_AddPlayer(client) {
               "UPDATE %s SET lastTime = %d WHERE accountID = %d",
               TABLE_NAME, GetTime(), id);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+    }
+}
 
+/**
+ * Generic SQL threaded query error callback.
+ */
+public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial) {
+    if (!StrEqual("", error)) {
+        LogError("Last Connect SQL Error: %s", error);
+    } else {
+        int client = GetClientFromSerial(serial);
         DB_FetchRatings(client);
     }
 }
@@ -95,7 +105,7 @@ public DB_FetchRatings(client) {
     }
 }
 
-public Callback_FetchRating(Handle owner, Handle hndl, const char error[], any:serial) {
+public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int serial) {
     int client = GetClientFromSerial(serial);
     g_FetchedPlayerInfo[client] = false;
     if (!IsPlayer(client))
