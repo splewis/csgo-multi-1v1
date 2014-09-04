@@ -49,19 +49,19 @@ public RoundType GetRoundType(int client1, int client2) {
         AddRounds(types, client1, client2, RoundType_Rifle);
 
         // pick a random value from the allowed round types
-        roundType = RoundType:GetArrayCellRandom(types);
+        roundType = RoundType:GetArrayCell(types, GetArrayRandomIndex(types));
         CloseHandle(types);
     }
 
     return roundType;
 }
 
-public RoundType:GetRandomRoundType() {
+public RoundType GetRandomRoundType() {
     Handle types = CreateArray();
     PushArrayCell(types, RoundType_Rifle);
     PushArrayCell(types, RoundType_Awp);
     PushArrayCell(types, RoundType_Pistol);
-    RoundType choice = GetArrayCellRandom(types);
+    RoundType choice = GetArrayCell(types, GetArrayRandomIndex(types));
     CloseHandle(types);
     return choice;
 }

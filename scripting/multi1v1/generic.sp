@@ -125,22 +125,11 @@ public int GetArrayRandomIndex(Handle array) {
 }
 
 /**
- * Returns a random element from an array.
- */
-public any:GetArrayCellRandom(Handle array) {
-    return GetArrayCell(array, GetArrayRandomIndex(array));
-}
-
-/**
  * Pushes an element to an array multiple times.
  */
 public void PushArrayCellReplicated(Handle array, any:value, any:times) {
     for (int i = 0; i < times; i++)
         PushArrayCell(array, value);
-}
-
-public any:Min(any:x, any:y) {
-    return (x < y) ? x : y;
 }
 
 /**

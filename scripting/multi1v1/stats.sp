@@ -79,9 +79,6 @@ public DB_AddPlayer(client) {
     }
 }
 
-/**
- * Generic SQL threaded query error callback.
- */
 public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial) {
     if (!StrEqual("", error)) {
         LogError("Last Connect SQL Error: %s", error);

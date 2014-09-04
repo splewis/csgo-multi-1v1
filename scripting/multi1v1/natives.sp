@@ -210,14 +210,14 @@ public Native_GetNumSpawnsInArena(Handle plugin, numParams) {
     int arena = GetNativeCell(1);
     Handle ct = Handle:GetArrayCell(g_hCTSpawns, arena);
     Handle t = Handle:GetArrayCell(g_hTSpawns, arena);
-    return Min(GetArraySize(ct), GetArraySize(t));
+    return Math_Min(GetArraySize(ct), GetArraySize(t));
 }
 
 public Native_GetArenaSpawn(Handle plugin, numParams) {
-    int arena = GetNativeCell(1);
-    int team = GetNativeCell(2);
     float origin[3];
     float angle[3];
+    int arena = GetNativeCell(1);
+    int team = GetNativeCell(2);
     GetNativeArray(3, origin, sizeof(origin));
     GetNativeArray(4, angle, sizeof(angle));
     GetSpawn(arena, team, origin, angle);
