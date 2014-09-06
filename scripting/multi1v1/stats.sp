@@ -46,7 +46,7 @@ public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], data
  * Adds a player, updating their name if they already exist, to the database.
  */
 public DB_AddPlayer(client) {
-    if (db != INVALID_HANDLE) {
+    if (db != INVALID_HANDLE && IsPlayer(client)) {
         int id = GetSteamAccountID(client);
 
         // player name
