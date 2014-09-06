@@ -291,10 +291,19 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
         AddPlayer(g_ArenaLosers[g_arenas], rankingQueue);
     }
 
-    // TODO: I think it would be valuable to sort the players by rating when inserting from
-    // the waiting queue.
-    while (Queue_Length(rankingQueue) < 2*g_maxArenas && Queue_Length(g_waitingQueue) > 0) {
+    // pulls all the spectators out of the waiting queue that can we can add
+    Handle playersToAdd = Queue_Init();
+    while (Queue_Length(rankingQueue) + Queue_Length(playersToAdd) < 2*g_maxArenas && Queue_Length(g_waitingQueue) > 0) {
         int client = Queue_Dequeue(g_waitingQueue);
+        AddPlayer(client, playersToAdd);
+    }
+
+    // sorts the spectators to add by rating
+    SortADTArrayCustom(playersToAdd, spectatorSortFunction);
+
+    // finally adds the spectators to the ranking queue
+    while (Queue_Length(playersToAdd) > 0) {
+        int client = Queue_Dequeue(playersToAdd);
         AddPlayer(client, rankingQueue);
     }
 
@@ -344,10 +353,20 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
     Call_Finish();
 }
 
+public int spectatorSortFunction(index1, index2, Handle array, Handle hndl) {
+    int client1 = GetArrayCell(array, index1);
+    int client2 = GetArrayCell(array, index2);
+    if (HasStats(client1) && HasStats(client2)) {
+        return RoundToNearest(GetRating(client2) - RoundToNearest(GetRating(client1)));
+    } else {
+        return client1 - client2;
+    }
+}
+
 /**
  * Function to add a player to the ranking queue with some validity checks.
  */
-public AddPlayer(int client, Handle rankingQueue) {
+public void AddPlayer(int client, Handle rankingQueue) {
     bool player = IsPlayer(client);
     bool space = Queue_Length(rankingQueue) < 2 *g_maxArenas;
     bool alreadyin = Queue_Inside(rankingQueue, client);
@@ -356,6 +375,7 @@ public AddPlayer(int client, Handle rankingQueue) {
     }
 
     if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && player && !g_GunsSelected[client]) {
+        g_GunsSelected[client] = true;
         GiveWeaponMenu(client);
     }
 }
