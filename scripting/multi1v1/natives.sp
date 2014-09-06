@@ -31,7 +31,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
 
 public Native_IsInArena(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return g_Ranking[client] > 0;
 }
@@ -46,55 +46,55 @@ public Native_GetNumActiveArenas(Handle plugin, numParams) {
 
 public Native_IsInWaitingQueue(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return Queue_Inside(g_waitingQueue, client);
 }
 
 public Native_HasStats(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return IsPlayer(client) && g_FetchedPlayerInfo[client];
 }
 
 public Native_GetRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return _:g_Rating[client];
 }
 
 public Native_GetRoundsPlayed(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return g_Wins[client] + g_Losses[client];
 }
 
 public Native_GetWins(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return g_Wins[client];
 }
 
 public Native_GetLosses(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return g_Losses[client];
 }
 public Native_GetArenaNumber(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return g_Ranking[client];
 }
 
 public Native_GetRoundsAtArena1(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return g_RoundsLeader[client];
 }
@@ -122,7 +122,7 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     RoundType roundType = RoundType:GetNativeCell(2);
 
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     Client_RemoveAllWeapons(client, "", true);
@@ -152,7 +152,7 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
 
 public Native_Multi1v1Message(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     char buffer[1024];
@@ -180,7 +180,7 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
 
 public Native_BlockRatingChanges(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     g_BlockStatChanges[client] = true;
@@ -188,7 +188,7 @@ public Native_BlockRatingChanges(Handle plugin, numParams) {
 
 public Native_UnblockRatingChanges(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     g_BlockStatChanges[client] = false;
@@ -196,7 +196,7 @@ public Native_UnblockRatingChanges(Handle plugin, numParams) {
 
 public Native_BlockChatMessages(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     g_BlockChatMessages[client] = true;
@@ -204,7 +204,7 @@ public Native_BlockChatMessages(Handle plugin, numParams) {
 
 public Native_UnblockChatMessages(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (IsPlayer(client))
+    if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     g_BlockChatMessages[client] = false;
