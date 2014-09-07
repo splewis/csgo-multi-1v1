@@ -94,7 +94,7 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
  */
 public DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
-    if (db != INVALID_HANDLE) {
+    if (db != INVALID_HANDLE && IsPlayer(client)) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d",
                TABLE_NAME, GetSteamAccountID(client));
@@ -130,7 +130,7 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
 public DB_WriteRatings(client) {
-    if (g_FetchedPlayerInfo[client]) {
+    if (g_FetchedPlayerInfo[client] && IsPlayer(client)) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d",
                TABLE_NAME, g_Rating[client], g_RifleRating[client], g_AwpRating[client], g_PistolRating[client],
@@ -177,7 +177,7 @@ public DB_RoundUpdate(winner, loser, bool:forceLoss) {
  * Increments a named field in the database.
  */
 public Increment(int client, const char field[]) {
-    if (db != INVALID_HANDLE) {
+    if (db != INVALID_HANDLE && IsPlayer(client)) {
         int id = GetSteamAccountID(client);
         if (id >= 1) {
             Format(g_sqlBuffer, sizeof(g_sqlBuffer),
