@@ -20,6 +20,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("BlockRatingChanges", Native_BlockRatingChanges);
     CreateNative("UnblockRatingChanges", Native_UnblockRatingChanges);
     CreateNative("BlockChatMessages", Native_BlockChatMessages);
+    CreateNative("BlockMVPStars", Native_BlockMVPStars);
+    CreateNative("UnblockMVPStars", Native_UnblockMVPStars);
     CreateNative("UnblockChatMessages", Native_UnblockChatMessages);
     CreateNative("SetArenaOffsetValue", Native_SetArenaOffsetValue);
     CreateNative("ELORatingDelta", Native_ELORatingDelta);
@@ -208,6 +210,22 @@ public Native_UnblockChatMessages(Handle plugin, numParams) {
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     g_BlockChatMessages[client] = false;
+}
+
+public Native_BlockMVPStars(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    if (!IsPlayer(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+
+    g_BlockMVPStars[client] = true;
+}
+
+public Native_UnblockMVPStars(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    if (!IsPlayer(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+
+    g_BlockMVPStars[client] = false;
 }
 
 public Native_SetArenaOffsetValue(Handle plugin, numParams) {

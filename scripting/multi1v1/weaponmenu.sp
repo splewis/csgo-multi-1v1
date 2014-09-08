@@ -255,6 +255,9 @@ public MenuHandler_FlashChoice(Handle menu, MenuAction action, param1, param2) {
 public FinishGunsMenu(int client) {
     SetCookieBool(client, g_hSetCookies, true);
     g_GunsSelected[client] = true;
+    Call_StartForward(g_hOnGunsMenuDone);
+    Call_PushCell(client);
+    Call_Finish();
 }
 
 /**

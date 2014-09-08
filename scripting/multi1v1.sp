@@ -65,6 +65,7 @@ char g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 char g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 bool g_BlockStatChanges[MAXPLAYERS+1];
 bool g_BlockChatMessages[MAXPLAYERS+1];
+bool g_BlockMVPStars[MAXPLAYERS+1];
 
 /** Arena arrays **/
 bool g_ArenaStatsUpdated[MAXPLAYERS+1];
@@ -107,6 +108,7 @@ Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
 Handle g_hAfterPlayerSetup = INVALID_HANDLE;
 Handle g_hOnRoundWon = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
+Handle g_hOnGunsMenuDone = INVALID_HANDLE;
 
 /** Constant offsets values **/
 int g_iPlayers_HelmetOffset;
@@ -188,6 +190,7 @@ public OnPluginStart() {
     g_hAfterPlayerSetup = CreateGlobalForward("AfterPlayerSetup", ET_Ignore, Param_Cell);
     g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
     g_hOnStatsCached = CreateGlobalForward("OnStatsCached", ET_Ignore, Param_Cell);
+    g_hOnGunsMenuDone = CreateGlobalForward("OnGunsMenuDone", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -318,9 +321,18 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
     Call_PushCell(rankingQueue);
     Call_Finish();
 
-    int leader = Queue_Peek(rankingQueue);
-    if (IsValidClient(leader) && Queue_Length(rankingQueue) >= 2)
+    int leader = -1;
+    for (new i = 0; i < GetArraySize(rankingQueue); i++) {
+        int client = GetArrayCell(rankingQueue, i);
+        if (!g_BlockMVPStars[client]) {
+            leader = client;
+            break;
+        }
+    }
+
+    if (IsValidClient(leader) && Queue_Length(rankingQueue) >= 2) {
         g_RoundsLeader[leader]++;
+    }
 
     // Player placement logic for this round
     g_arenas = 0;
@@ -814,6 +826,7 @@ public Action Timer_CheckRoundComplete(Handle timer) {
 public void ResetClientVariables(int client) {
     g_BlockChatMessages[client] = false;
     g_BlockStatChanges[client] = false;
+    g_BlockMVPStars[client] = false;
     g_FetchedPlayerInfo[client] = false;
     g_GunsSelected[client] = false;
     g_RoundsLeader[client] = 0;

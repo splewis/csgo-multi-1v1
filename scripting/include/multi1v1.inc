@@ -42,6 +42,9 @@ forward OnRoundWon(int winner, int loser, bool forceLoss);
 // Called when a client's stats are received from the database.
 forward OnStatsCached(int client);
 
+// Called when a player finishes going through the weapons menu.
+forward OnGunsMenuDone(int client);
+
 // Returns if a player is actively in an arena.
 native bool IsInArena(int client);
 
@@ -92,6 +95,8 @@ native void BlockRatingChanges(int client);
 native void UnblockRatingChanges(int client);
 native void BlockChatMessages(int client);
 native void UnblockChatMessages(int client);
+native void BlockMVPStars(int client);
+native void UnblockMVPStars(int client);
 
 // Sets an offset value for arena numbering when giving
 // players "Arena %d" team tags and the print outs
