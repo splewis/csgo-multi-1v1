@@ -674,7 +674,7 @@ public Action Command_TeamJoin(int client, const char command[], argc) {
  */
 public Action OnClientSayCommand(client, const char command[], const char sArgs[]) {
     // To avoid cluttering up chat, these commands are hidden
-    char gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "!guns" };
+    char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns"};
 
     for (int i = 0; i < sizeof(gunsChatCommands); i++) {
         if (strcmp(sArgs[0], gunsChatCommands[i], false) == 0) {
