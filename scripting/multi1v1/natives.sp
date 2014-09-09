@@ -128,7 +128,12 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
     Client_RemoveAllWeapons(client, "", true);
+
+    int playerteam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     if (roundType == RoundType_Rifle) {
+        int weaponteam = GetWeaponTeam(g_PrimaryWeapon[client]);
+        if (weaponteam > 0)
+            SetEntProp(client, Prop_Data, "m_iTeamNum", weaponteam);
         GivePlayerItem(client, g_PrimaryWeapon[client]);
     } else if (roundType == RoundType_Awp) {
         GivePlayerItem(client, "weapon_awp");
@@ -141,6 +146,9 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
     GiveVestHelm(client, roundType);
 
     if (GetConVarInt(g_hAlwaysGivePistol) != 0 || roundType == RoundType_Pistol) {
+        int weaponteam = GetWeaponTeam(g_SecondaryWeapon[client]);
+        if (weaponteam > 0)
+            SetEntProp(client, Prop_Data, "m_iTeamNum", weaponteam);
         GivePlayerItem(client, g_SecondaryWeapon[client]);
     }
 
@@ -149,6 +157,7 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
         GivePlayerItem(client, "weapon_flashbang");
     }
 
+    SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
     GivePlayerItem(client, "weapon_knife");
 }
 

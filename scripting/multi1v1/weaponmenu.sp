@@ -1,24 +1,47 @@
 #define MENU_TIME_LENGTH 15
 
 char g_Rifles[][][] = {
-    {"weapon_ak47", "AK47"},
-    {"weapon_m4a1", "M4A4"},
-    {"weapon_m4a1_silencer", "M4A1-S"},
-    {"weapon_famas", "Famas"},
-    {"weapon_galilar", "Galil"},
-    {"weapon_aug", "AUG"},
-    {"weapon_sg556", "SG553"}
+    {"weapon_ak47", "AK47", "T"},
+    {"weapon_m4a1", "M4A4", "CT"},
+    {"weapon_m4a1_silencer", "M4A1-S", "CT"},
+    {"weapon_famas", "Famas", "CT"},
+    {"weapon_galilar", "Galil", "T"},
+    {"weapon_aug", "AUG", "CT"},
+    {"weapon_sg556", "SG553", "T"}
 };
 
 char g_Pistols[][][] = {
-    {"weapon_hkp2000", "P2000"},
-    {"weapon_usp_silencer", "USP"},
-    {"weapon_glock", "Glock"},
-    {"weapon_p250", "P250"},
-    {"weapon_cz75a", "CZ75"},
-    {"weapon_deagle", "Deagle"},
-    {"weapon_fiveseven", "Five-Seven"}
+    {"weapon_hkp2000", "P2000", "CT"},
+    {"weapon_usp_silencer", "USP", "CT"},
+    {"weapon_glock", "Glock", "T"},
+    {"weapon_p250", "P250", "ANY"},
+    {"weapon_cz75a", "CZ75", "ANY"},
+    {"weapon_deagle", "Deagle", "ANY"},
+    {"weapon_fiveseven", "Five-Seven", "CT"}
 };
+
+static TeamStringToTeam(char teamString[]) {
+    if (StrEqual(teamString, "CT", false))
+        return CS_TEAM_CT;
+    else if (StrEqual(teamString, "T", false))
+        return CS_TEAM_T;
+    else
+        return -1;
+}
+
+public int GetWeaponTeam(char weapon[]) {
+    for (new i = 0; i < sizeof(g_Rifles); i++) {
+        if (StrEqual(weapon[0], g_Rifles[i][0])) {
+            return TeamStringToTeam(g_Rifles[i][2][0]);
+        }
+    }
+    for (new i = 0; i < sizeof(g_Pistols); i++) {
+        if (StrEqual(weapon[0], g_Pistols[i][0])) {
+            return TeamStringToTeam(g_Pistols[i][2][0]);
+        }
+    }
+    return -1;
+}
 
 /**
  * Opens up the weapon menu for a client.
