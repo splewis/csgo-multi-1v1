@@ -36,6 +36,16 @@ public Action:Command_Stats(int client, args) {
     return Plugin_Handled;
 }
 
+public Action OnClientSayCommand(client, const char command[], const char sArgs[]) {
+    char chatTriggers[][] = { "rank", ".rank"};
+    for (int i = 0; i < sizeof(chatTriggers); i++) {
+        if (strcmp(sArgs[0], chatTriggers[i], false) == 0) {
+            ShowStatsForPlayer(client, client);
+        }
+    }
+    return Plugin_Continue;
+}
+
 public ShowStatsForPlayer(int client, target) {
     char url[255];
     GetConVarString(g_hStatsWebsite, url, sizeof(url));
