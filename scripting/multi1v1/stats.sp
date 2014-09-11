@@ -56,8 +56,12 @@ public DB_AddPlayer(client) {
         SQL_EscapeString(db, name, sanitized_name, sizeof(name));
 
         // steam id
+        // TODO: maybe there should be a convar for choosing which auth string to use
         char auth[64];
-        GetClientAuthString(client, auth, sizeof(auth));
+        if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth))) {
+            LogError("Failed to get steam2 id for %L", client);
+            return;
+        }
 
         // insert if not already in the table
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
@@ -122,7 +126,7 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
         Call_PushCell(client);
         Call_Finish();
     } else {
-        LogError("Failed to fetch statistics for for %N", client);
+        LogError("Failed to fetch statistics for for %L", client);
     }
 }
 
@@ -143,7 +147,7 @@ public DB_WriteRatings(client) {
  * Performs all stats-related round-update logic for
  * a winner/loser pair.
  */
-public DB_RoundUpdate(winner, loser, bool:forceLoss) {
+public DB_RoundUpdate(winner, loser, bool forceLoss) {
     if (IsPlayer(winner) && IsPlayer(loser)) {
 
         // TODO: this is a temporary band-aid for the first round ending

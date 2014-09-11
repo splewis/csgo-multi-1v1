@@ -11,13 +11,12 @@ char g_Rifles[][][] = {
 };
 
 char g_Pistols[][][] = {
-    {"weapon_hkp2000", "P2000", "CT"},
-    {"weapon_usp_silencer", "USP", "CT"},
+    {"weapon_hkp2000", "P2000/USP", "CT"},
     {"weapon_glock", "Glock", "T"},
     {"weapon_p250", "P250", "ANY"},
+    {"weapon_fiveseven", "Five-Seven", "CT"},
     {"weapon_cz75a", "CZ75", "ANY"},
-    {"weapon_deagle", "Deagle", "ANY"},
-    {"weapon_fiveseven", "Five-Seven", "CT"}
+    {"weapon_deagle", "Deagle", "ANY"}
 };
 
 static TeamStringToTeam(char teamString[]) {
