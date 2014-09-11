@@ -125,3 +125,34 @@ public SharedPlugin:__pl_multi1v1 = {
     required = 0,
 #endif
 };
+
+#if !defined REQUIRE_PLUGIN
+public __pl_multi1v1_SetNTVOptional() {
+    MarkNativeAsOptional("IsInArena");
+    MarkNativeAsOptional("GetMaximumArenas");
+    MarkNativeAsOptional("GetNumActiveArenas");
+    MarkNativeAsOptional("IsInWaitingQueue");
+    MarkNativeAsOptional("HasStats");
+    MarkNativeAsOptional("GetRating");
+    MarkNativeAsOptional("GetArenaNumber");
+    MarkNativeAsOptional("GetRoundsAtArena1");
+    MarkNativeAsOptional("GetOpponent");
+    MarkNativeAsOptional("GetRoundsPlayed");
+    MarkNativeAsOptional("GetWins");
+    MarkNativeAsOptional("GetLosses");
+    MarkNativeAsOptional("HasDatabase");
+    MarkNativeAsOptional("GivePlayerArenaWeapons");
+    MarkNativeAsOptional("Multi1v1Message");
+    MarkNativeAsOptional("Multi1v1MessageToAll");
+    MarkNativeAsOptional("BlockRatingChanges");
+    MarkNativeAsOptional("UnblockRatingChanges");
+    MarkNativeAsOptional("BlockChatMessages");
+    MarkNativeAsOptional("BlockMVPStars");
+    MarkNativeAsOptional("UnblockMVPStars");
+    MarkNativeAsOptional("UnblockChatMessages");
+    MarkNativeAsOptional("SetArenaOffsetValue");
+    MarkNativeAsOptional("ELORatingDelta");
+    MarkNativeAsOptional("GetNumSpawnsInArena");
+    MarkNativeAsOptional("GetArenaSpawn");
+}
+#endif
