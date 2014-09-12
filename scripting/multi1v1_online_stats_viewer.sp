@@ -57,4 +57,11 @@ public ShowStatsForPlayer(int client, target) {
     char player_url[255];
     Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
     ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
+    QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
+}
+
+public CheckMOTDAllowed(QueryCookie cookie, int client, ConVarQueryResult result, const char cvarName[], const char cvarValue[]) {
+    if (!StrEqual(cvarValue, "0")) {
+        Multi1v1Message(client, "You must have {LIGHT_GREEN}cl_disablehtmlmotd 0 to{NORMAL} use that command.");
+    }
 }
