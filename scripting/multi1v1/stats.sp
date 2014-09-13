@@ -156,12 +156,6 @@ public DB_RoundUpdate(winner, loser, bool forceLoss) {
             return;
         }
 
-        Call_StartForward(g_hOnRoundWon);
-        Call_PushCell(winner);
-        Call_PushCell(loser);
-        Call_PushCell(forceLoss);
-        Call_Finish();
-
         if (GetConVarInt(g_hUseDatabase) == 0)
             return;
 

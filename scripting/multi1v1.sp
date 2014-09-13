@@ -520,12 +520,21 @@ public Event_OnRoundEnd(Handle event, const char name[], bool dontBroadcast) {
         if (IsPlayer(winner) && IsPlayer(loser)) {
 
             // also skip the update if we already did it (a player got a kill earlier in the round)
-            if (winner != loser && !g_ArenaStatsUpdated[arena]) {
-                DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
-                g_ArenaStatsUpdated[arena] = true;
+            if (winner != loser) {
+                if (winner != loser && IsPlayer(winner) && IsPlayer(loser)) {
+                    Call_StartForward(g_hOnRoundWon);
+                    Call_PushCell(winner);
+                    Call_PushCell(loser);
+                    Call_PushCell(g_LetTimeExpire[winner]);
+                    Call_Finish();
+                }
+                if (!g_ArenaStatsUpdated[arena]) {
+                    DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
+                    g_ArenaStatsUpdated[arena] = true;
+                }
+
             }
         }
-
     }
 }
 
