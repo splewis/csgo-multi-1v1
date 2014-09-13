@@ -87,6 +87,7 @@ native bool HasDatabase();
 
 // Gives a player their weapons according to a round type.
 native void GivePlayerArenaWeapons(int client, RoundType roundType);
+native void GivePlayerArenaWeaponsNoNades(int client, RoundType roundType);
 
 // These are helpers you can use to supress normal plugin behavior.
 // You can block rating changes and the chat messages about
@@ -144,6 +145,7 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("GetLosses");
     MarkNativeAsOptional("HasDatabase");
     MarkNativeAsOptional("GivePlayerArenaWeapons");
+    MarkNativeAsOptional("GivePlayerArenaWeaponsNoNades");
     MarkNativeAsOptional("Multi1v1Message");
     MarkNativeAsOptional("Multi1v1MessageToAll");
     MarkNativeAsOptional("BlockRatingChanges");

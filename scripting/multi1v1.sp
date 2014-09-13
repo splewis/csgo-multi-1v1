@@ -580,6 +580,11 @@ public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) 
         g_ArenaWinners[arena] = attacker;
         g_ArenaLosers[arena] = victim;
         g_ArenaStatsUpdated[arena] = true;
+        Call_StartForward(g_hOnRoundWon);
+        Call_PushCell(attacker);
+        Call_PushCell(victim);
+        Call_PushCell(false);
+        Call_Finish();
         DB_RoundUpdate(attacker, victim, false);
     }
 

@@ -149,7 +149,6 @@ public DB_WriteRatings(client) {
  */
 public DB_RoundUpdate(winner, loser, bool forceLoss) {
     if (IsPlayer(winner) && IsPlayer(loser)) {
-
         // TODO: this is a temporary band-aid for the first round ending
         //  too early sometimes and unfairly punishes early connectors
         if (forceLoss && g_totalRounds <= 3) {

@@ -15,6 +15,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetLosses", Native_GetLosses);
     CreateNative("HasDatabase", Native_HasDatabase);
     CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
+    CreateNative("GivePlayerArenaWeaponsNoNades", Native_GivePlayerArenaWeaponsNoNades);
     CreateNative("Multi1v1Message", Native_Multi1v1Message);
     CreateNative("Multi1v1MessageToAll", Native_Multi1v1MessageToAll);
     CreateNative("BlockRatingChanges", Native_BlockRatingChanges);
@@ -122,7 +123,7 @@ public Native_HasDatabase(Handle plugin, numParams) {
     return GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected && db != INVALID_HANDLE;
 }
 
-public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
+public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     RoundType roundType = RoundType:GetNativeCell(2);
 
@@ -154,13 +155,19 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
         GivePlayerItem(client, g_SecondaryWeapon[client]);
     }
 
+
+    SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
+    GivePlayerItem(client, "weapon_knife");
+}
+
+public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    RoundType roundType = RoundType:GetNativeCell(2);
+    GivePlayerArenaWeaponsNoNades(client, roundType);
     int other = GetOpponent(client);
     if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
         GivePlayerItem(client, "weapon_flashbang");
     }
-
-    SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
-    GivePlayerItem(client, "weapon_knife");
 }
 
 public Native_Multi1v1Message(Handle plugin, numParams) {
@@ -289,7 +296,7 @@ public Native_GetArenaSpawn(Handle plugin, numParams) {
     } else {
         spawns = Handle:GetArrayCell(g_hTSpawns, arena - 1);
         angles = Handle:GetArrayCell(g_hTAngles, arena - 1);
-    } 
+    }
 
     int count = GetArraySize(spawns);
     int index = GetRandomInt(0, count - 1);
