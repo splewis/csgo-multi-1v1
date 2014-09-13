@@ -97,6 +97,8 @@ native void BlockChatMessages(int client);
 native void UnblockChatMessages(int client);
 native void BlockMVPStars(int client);
 native void UnblockMVPStars(int client);
+native void BlockArenaDones(int arena);
+native void UnblockArenaDones(int arena);
 
 // Sets an offset value for arena numbering when giving
 // players "Arena %d" team tags and the print outs
@@ -147,9 +149,11 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("BlockRatingChanges");
     MarkNativeAsOptional("UnblockRatingChanges");
     MarkNativeAsOptional("BlockChatMessages");
+    MarkNativeAsOptional("UnblockChatMessages");
     MarkNativeAsOptional("BlockMVPStars");
     MarkNativeAsOptional("UnblockMVPStars");
-    MarkNativeAsOptional("UnblockChatMessages");
+    MarkNativeAsOptional("BlockArenaDones");
+    MarkNativeAsOptional("UnblockArenaDones");
     MarkNativeAsOptional("SetArenaOffsetValue");
     MarkNativeAsOptional("ELORatingDelta");
     MarkNativeAsOptional("GetNumSpawnsInArena");

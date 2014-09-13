@@ -137,27 +137,6 @@ static AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleLi
     PushArrayCell(angleList, angles);
 }
 
-public GetSpawn(int arena, int team, float origin[3], float angle[3]) {
-    if (team == CS_TEAM_CT) {
-        Handle spawns = Handle:GetArrayCell(g_hCTSpawns, arena - 1);
-        Handle angles = Handle:GetArrayCell(g_hCTAngles, arena - 1);
-        int count = GetArraySize(spawns);
-        int index = GetRandomInt(0, count - 1);
-        GetArrayArray(spawns, index, origin);
-        GetArrayArray(angles, index, angle);
-    } else if (team == CS_TEAM_T) {
-        Handle spawns = Handle:GetArrayCell(g_hTSpawns, arena - 1);
-        Handle angles = Handle:GetArrayCell(g_hTAngles, arena - 1);
-        int count = GetArraySize(spawns);
-        int index = GetRandomInt(0, count - 1);
-        GetArrayArray(spawns, index, origin);
-        GetArrayArray(angles, index, angle);
-    } else {
-        LogError("Trying to find a spawn for a player not on a team! arena=%d, team=%d",
-                 arena, team);
-    }
-}
-
 Spawns_MapEnd() {
     CloseHandleArray(g_hTSpawns);
     CloseHandleArray(g_hTAngles);

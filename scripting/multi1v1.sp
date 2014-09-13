@@ -66,6 +66,7 @@ char g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 bool g_BlockStatChanges[MAXPLAYERS+1];
 bool g_BlockChatMessages[MAXPLAYERS+1];
 bool g_BlockMVPStars[MAXPLAYERS+1];
+bool g_BlockArenaDones[MAXPLAYERS+1];
 
 /** Arena arrays **/
 bool g_ArenaStatsUpdated[MAXPLAYERS+1];
@@ -466,7 +467,7 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
 
     int team = onCT ? CS_TEAM_CT : CS_TEAM_T;
     SwitchPlayerTeam(client, team);
-    GetSpawn(arena, team, spawn, angles);
+    GetArenaSpawn(arena, team, spawn, angles);
 
     CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);
@@ -765,6 +766,10 @@ public Action Timer_CheckRoundComplete(Handle timer) {
     int nPlayers = 0;
     bool allDone = true;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
+        if (g_BlockArenaDones[arena]) {
+            allDone = false;
+            break;
+        }
 
         int p1 = g_ArenaPlayer1[arena];
         int p2 = g_ArenaPlayer2[arena];
@@ -827,6 +832,7 @@ public void ResetClientVariables(int client) {
     g_BlockChatMessages[client] = false;
     g_BlockStatChanges[client] = false;
     g_BlockMVPStars[client] = false;
+    g_BlockArenaDones[client] = false;
     g_FetchedPlayerInfo[client] = false;
     g_GunsSelected[client] = false;
     g_RoundsLeader[client] = 0;

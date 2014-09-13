@@ -20,9 +20,11 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("BlockRatingChanges", Native_BlockRatingChanges);
     CreateNative("UnblockRatingChanges", Native_UnblockRatingChanges);
     CreateNative("BlockChatMessages", Native_BlockChatMessages);
+    CreateNative("UnblockChatMessages", Native_UnblockChatMessages);
     CreateNative("BlockMVPStars", Native_BlockMVPStars);
     CreateNative("UnblockMVPStars", Native_UnblockMVPStars);
-    CreateNative("UnblockChatMessages", Native_UnblockChatMessages);
+    CreateNative("BlockArenaDones", Native_BlockArenaDones);
+    CreateNative("UnblockArenaDones", Native_UnblockArenaDones);
     CreateNative("SetArenaOffsetValue", Native_SetArenaOffsetValue);
     CreateNative("ELORatingDelta", Native_ELORatingDelta);
     CreateNative("GetNumSpawnsInArena", Native_GetNumSpawnsInArena);
@@ -237,6 +239,16 @@ public Native_UnblockMVPStars(Handle plugin, numParams) {
     g_BlockMVPStars[client] = false;
 }
 
+public Native_BlockArenaDones(Handle plugin, numParams) {
+    int arena = GetNativeCell(1);
+    g_BlockArenaDones[arena] = true;
+}
+
+public Native_UnblockArenaDones(Handle plugin, numParams) {
+    int arena = GetNativeCell(1);
+    g_BlockArenaDones[arena] = false;
+}
+
 public Native_SetArenaOffsetValue(Handle plugin, numParams) {
     g_arenaOffsetValue = GetNativeCell(1);
 }
@@ -263,7 +275,27 @@ public Native_GetArenaSpawn(Handle plugin, numParams) {
     float angle[3];
     int arena = GetNativeCell(1);
     int team = GetNativeCell(2);
-    GetNativeArray(3, origin, sizeof(origin));
-    GetNativeArray(4, angle, sizeof(angle));
-    GetSpawn(arena, team, origin, angle);
+
+    if (arena <= 0 || arena > GetMaximumArenas())
+        ThrowNativeError(SP_ERROR_PARAM, "Arena %d is invalid", arena);
+    if (team != CS_TEAM_T && team != CS_TEAM_CT)
+        ThrowNativeError(SP_ERROR_PARAM, "Invalid team: %d", team);
+
+    Handle spawns;
+    Handle angles;
+    if (team == CS_TEAM_CT) {
+        spawns = Handle:GetArrayCell(g_hCTSpawns, arena - 1);
+        angles = Handle:GetArrayCell(g_hCTAngles, arena - 1);
+    } else {
+        spawns = Handle:GetArrayCell(g_hTSpawns, arena - 1);
+        angles = Handle:GetArrayCell(g_hTAngles, arena - 1);
+    } 
+
+    int count = GetArraySize(spawns);
+    int index = GetRandomInt(0, count - 1);
+    GetArrayArray(spawns, index, origin);
+    GetArrayArray(angles, index, angle);
+
+    SetNativeArray(3, origin, sizeof(origin));
+    SetNativeArray(4, angle, sizeof(angle));
 }
