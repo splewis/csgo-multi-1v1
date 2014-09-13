@@ -22,7 +22,7 @@ public OnPluginStart() {
     RegConsoleCmd("sm_rating", Command_Stats, "Displays a players multi-1v1 stats");
 }
 
-public Action:Command_Stats(int client, args) {
+public Action Command_Stats(int client, args) {
     char arg1[32];
     if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
         int target = FindTarget(client, arg1, true, false);
@@ -46,7 +46,7 @@ public Action OnClientSayCommand(client, const char command[], const char sArgs[
     return Plugin_Continue;
 }
 
-public ShowStatsForPlayer(int client, target) {
+public void ShowStatsForPlayer(int client, target) {
     char url[255];
     GetConVarString(g_hStatsWebsite, url, sizeof(url));
     if (StrEqual(url, "")) {
@@ -60,8 +60,8 @@ public ShowStatsForPlayer(int client, target) {
     QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
 }
 
-public CheckMOTDAllowed(QueryCookie cookie, int client, ConVarQueryResult result, const char cvarName[], const char cvarValue[]) {
+public void CheckMOTDAllowed(QueryCookie cookie, int client, ConVarQueryResult result, const char cvarName[], const char cvarValue[]) {
     if (!StrEqual(cvarValue, "0")) {
-        Multi1v1Message(client, "You must have {LIGHT_GREEN}cl_disablehtmlmotd 0 to{NORMAL} use that command.");
+        Multi1v1Message(client, "You must have {LIGHT_GREEN}cl_disablehtmlmotd 0 {NORMAL}to use that command.");
     }
 }
