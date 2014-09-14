@@ -48,6 +48,10 @@ public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], data
 public DB_AddPlayer(client) {
     if (db != INVALID_HANDLE && IsPlayer(client)) {
         int id = GetSteamAccountID(client);
+        if (id == 0) {
+            LogMessage("Failed GetSteamAccountID for client %L", client);
+            return;
+        }
 
         // player name
         char name[64];
@@ -59,7 +63,7 @@ public DB_AddPlayer(client) {
         // TODO: maybe there should be a convar for choosing which auth string to use
         char auth[64];
         if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth))) {
-            LogError("Failed to get steam2 id for %L", client);
+            LogMessage("Failed to get steam2 id for %L", client);
             return;
         }
 
@@ -99,10 +103,13 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
 public DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
     if (db != INVALID_HANDLE && IsPlayer(client)) {
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d",
-               TABLE_NAME, GetSteamAccountID(client));
-        SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, GetClientSerial(client));
+        int id =  GetSteamAccountID(client);
+        if (id != 0) {
+            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+                   "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d",
+                   TABLE_NAME, GetSteamAccountID(client));
+            SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, GetClientSerial(client));
+        }
     }
 }
 

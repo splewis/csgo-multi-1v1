@@ -233,12 +233,11 @@ public OnMapEnd() {
     Spawns_MapEnd();
 }
 
-public OnClientPostAdminCheck(client) {
+public OnClientAuthorized(client, const char auth[]) {
     if (IsPlayer(client) && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
 }
-
 
 
 /***********************
