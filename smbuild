@@ -1,5 +1,4 @@
 Plugin(source='scripting/multi1v1.sp')
-Plugin(source='scripting/multi1v1_sprweight.sp', deps=['multi1v1'])
 Plugin(source='scripting/multi1v1_online_stats_viewer.sp', deps=['multi1v1'])
 
 Package(name='multi1v1',
@@ -8,5 +7,5 @@ Package(name='multi1v1',
 
 Package(name='multi1v1_all',
         extends=['multi1v1'],
-        plugins=['multi1v1_sprweight', 'multi1v1_online_stats_viewer'],
+        plugins=['multi1v1_online_stats_viewer'],
 )
