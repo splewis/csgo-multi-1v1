@@ -30,6 +30,7 @@ Handle g_hAlwaysGivePistol = INVALID_HANDLE;
 Handle g_hAutoUpdate = INVALID_HANDLE;
 Handle g_hBlockRadio = INVALID_HANDLE;
 Handle g_hDatabaseName = INVALID_HANDLE;
+Handle g_hExecDefaultConfig = INVALID_HANDLE;
 Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 Handle g_hRoundTime = INVALID_HANDLE;
 Handle g_hUseDatabase = INVALID_HANDLE;
@@ -152,6 +153,7 @@ public OnPluginStart() {
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
     g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Should players see the guns menu automatically on their first connect?");
+    g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
 
     /** Config file **/
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
@@ -224,7 +226,10 @@ public OnMapStart() {
         g_ArenaWinners[i] = -1;
         g_ArenaLosers[i] = -1;
     }
-    ServerCommand("exec gamemode_competitive.cfg");
+
+    if (GetConVarInt(g_hExecDefaultConfig) != 0) {
+        ServerCommand("exec gamemode_competitive.cfg");
+    }
     ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
 }
 
