@@ -71,7 +71,6 @@ public void DB_AddPlayer(client) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "INSERT IGNORE INTO %s (accountID,auth,name) VALUES (%d, '%s', '%s');",
                TABLE_NAME, id, auth, sanitized_name);
-        LogMessage(g_sqlBuffer);
         SQL_TQuery(db, Callback_Insert, g_sqlBuffer, GetClientSerial(client));
 
         // update the player name
