@@ -823,7 +823,15 @@ public Action Timer_CheckRoundComplete(Handle timer) {
     bool waitingPlayers = nPlayers < 2 && Queue_Length(g_waitingQueue) > 0;
 
     // This check is a sanity check on when the round passes what the round time cvar allowed
-    int freezeTimeLength = GetConVarInt(FindConVar("mp_freezetime"));
+    Handle freezeTimeVar = FindConVar("mp_freezetime");
+    int freezeTimeLength = GetConVarInt(freezeTimeVar);
+    if (freezeTimeVar == INVALID_HANDLE) {
+        freezeTimeLength = 0;
+        LogError("Failed to get convar mp_freezetime");
+    } else {
+        freezeTimeLength = GetConVarInt(freezeTimeVar);
+    }
+
     int maxRoundLength = GetConVarInt(g_hRoundTime) + freezeTimeLength;
     int elapsedTime =  GetTime() - g_roundStartTime;
 
