@@ -45,8 +45,8 @@ public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], data
 /**
  * Adds a player, updating their name if they already exist, to the database.
  */
-public DB_AddPlayer(client) {
-    if (db != INVALID_HANDLE && IsPlayer(client)) {
+public void DB_AddPlayer(client) {
+    if (db != INVALID_HANDLE) {
         int id = GetSteamAccountID(client);
         if (id == 0) {
             LogMessage("Failed GetSteamAccountID for client %L", client);
@@ -71,6 +71,7 @@ public DB_AddPlayer(client) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "INSERT IGNORE INTO %s (accountID,auth,name) VALUES (%d, '%s', '%s');",
                TABLE_NAME, id, auth, sanitized_name);
+        LogMessage(g_sqlBuffer);
         SQL_TQuery(db, Callback_Insert, g_sqlBuffer, GetClientSerial(client));
 
         // update the player name
@@ -100,7 +101,7 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
  * Reads a player rating from the database.
  * Note that this is a *SLOW* operation and you should not do it during gameplay
  */
-public DB_FetchRatings(client) {
+public void DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
     if (db != INVALID_HANDLE && IsPlayer(client)) {
         int id =  GetSteamAccountID(client);
@@ -140,7 +141,7 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
 /**
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
-public DB_WriteRatings(client) {
+public void DB_WriteRatings(client) {
     if (g_FetchedPlayerInfo[client] && IsPlayer(client)) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d",
@@ -154,7 +155,7 @@ public DB_WriteRatings(client) {
  * Performs all stats-related round-update logic for
  * a winner/loser pair.
  */
-public DB_RoundUpdate(winner, loser, bool forceLoss) {
+public void DB_RoundUpdate(winner, loser, bool forceLoss) {
     if (IsPlayer(winner) && IsPlayer(loser)) {
         // TODO: this is a temporary band-aid for the first round ending
         //  too early sometimes and unfairly punishes early connectors
@@ -180,7 +181,7 @@ public DB_RoundUpdate(winner, loser, bool forceLoss) {
 /**
  * Increments a named field in the database.
  */
-public Increment(int client, const char field[]) {
+public void Increment(int client, const char field[]) {
     if (db != INVALID_HANDLE && IsPlayer(client)) {
         int id = GetSteamAccountID(client);
         if (id >= 1) {
@@ -195,7 +196,7 @@ public Increment(int client, const char field[]) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-public UpdateRatings(int winner, int loser, bool forceLoss) {
+public void UpdateRatings(int winner, int loser, bool forceLoss) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (!g_FetchedPlayerInfo[winner]) {
@@ -247,7 +248,7 @@ public UpdateRatings(int winner, int loser, bool forceLoss) {
     }
 }
 
-static ForceLoss(int winner, int loser) {
+static void ForceLoss(int winner, int loser) {
     float delta = K_FACTOR / 2.0;
     g_Rating[winner] -= delta;
     g_Rating[loser] -= delta;
@@ -257,13 +258,13 @@ static ForceLoss(int winner, int loser) {
     ForceLossMessage(loser, g_Rating[loser], delta);
 }
 
-static RatingMessage(int winner, int loser, float winner_rating, float loser_rating, float delta) {
+static void RatingMessage(int winner, int loser, float winner_rating, float loser_rating, float delta) {
     int winner_int = RoundToNearest(winner_rating);
     int loser_int = RoundToNearest(loser_rating);
     Multi1v1Message(winner, "%t", "WonMessage", winner_int, delta, loser, loser_int, delta);
     Multi1v1Message(loser, "%t", "LossMessage", loser_int, delta, winner, winner_int, delta);
 }
 
-static ForceLossMessage(int client, float rating, float delta) {
+static void ForceLossMessage(int client, float rating, float delta) {
     Multi1v1Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
 }

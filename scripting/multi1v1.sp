@@ -233,8 +233,8 @@ public OnMapEnd() {
     Spawns_MapEnd();
 }
 
-public OnClientAuthorized(client, const char auth[]) {
-    if (IsPlayer(client) && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
+public void OnClientAuthorized(int client, const char auth[]) {
+    if (!StrEqual(auth, "BOT") && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
 }
