@@ -25,10 +25,7 @@ The general idea of everything I do with sourcemod plugins is to **keep it simpl
 ### Plugin modules
 Sometimes it's easier to add something in a seperate plugin than add more convars, thus some features may be in support plugins. These are all optional.
 
-- **multi1v1_sprweight**: provides a weight function used by my [smart-player-reports](https://github.com/splewis/smart-player-reports) plugin
 - **multi1v1_online_stats_viewer**: adds the !stats and related commands that open up a stats webpage in a MOTD panel
-
-These plugins, and any other ideas you have, are relatively simple and are easy to contribute to. Feel free to implement one and send a pull request.
 
 
 ### Download

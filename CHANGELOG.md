@@ -1,4 +1,27 @@
-0.5.2
+dev:
+ - **move to sourcemod 1.7 transitional syntax and API**
+ - new cvars: ``sm_multi1v1_exec_default_config``, ``sm_multi1v1_db_name``, ``sm_multi1v1_always_give_pistol``
+ - separate ratings are calculated for each round type - the overall rating is unaffected and always changed
+ - translation support (current languages: Swedish, Portuguese, German, Polish, Chinese)
+ - external plugin API available now, see [multi1v1.inc](scripting/include/multi1v1.inc).
+ - the ``sm_stats`` command is not in the base plugin anymore, but in the ``multi1v1_online_stats_viewer`` plugin
+ - if using the ``sm_stats`` command, clients are notified if they have ``cl_disablehtmlmotd 1`` on
+ - significantly improved performance and reliability of how player statistics are fetched
+ - chat messages have been colorized and formatted a bit differently now
+ - players will receive their skins regardless of the team they are on (thanks to h3bus for the input on teamswitching when giving weapons)
+ - failsafe added to force end rounds that have gone on for longer than the round time (corrects some warmup related issues)
+ - when multiple players join the game, they will be first sorted by order (determining who gets to join), then by rating (the initial arena placement within the new players for this round)
+ - New table schema, **if you are updating from an older version, add these columns if they don't exist**:
+
+```
+		ALTER TABLE multi1v1_stats ADD rifleRating FLOAT NOT NULL default 1500.0;
+		ALTER TABLE multi1v1_stats ADD pistolRating FLOAT NOT NULL default 1500.0;
+		ALTER TABLE multi1v1_stats ADD awpRating FLOAT NOT NULL default 1500.0;
+		ALTER TABLE multi1v1_stats ADD lastTime INT NOT NULL default 0;
+		ALTER TABLE multi1v1_stats ADD recentRounds INT NOT NULL default 0;
+```
+
+0.5.2:
  - correct bug where spawn clustering were not being paired together correctly
  - add cvar `sm_multi1v1_guns_menu_first_connect` for displaying the guns menu if a players' clientprefs cookies aren't set
 
