@@ -99,7 +99,6 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
 
 /**
  * Reads a player rating from the database.
- * Note that this is a *SLOW* operation and you should not do it during gameplay
  */
 public void DB_FetchRatings(client) {
     g_FetchedPlayerInfo[client] = false;
