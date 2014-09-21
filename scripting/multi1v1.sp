@@ -26,12 +26,13 @@
 #define TABLE_NAME "multi1v1_stats"
 
 /** ConVar handles **/
-Handle g_hPistolBehavior = INVALID_HANDLE;
+Handle g_hDefaultPistol = INVALID_HANDLE;
 Handle g_hAutoUpdate = INVALID_HANDLE;
 Handle g_hBlockRadio = INVALID_HANDLE;
 Handle g_hDatabaseName = INVALID_HANDLE;
 Handle g_hExecDefaultConfig = INVALID_HANDLE;
 Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
+Handle g_hPistolBehavior = INVALID_HANDLE;
 Handle g_hRoundTime = INVALID_HANDLE;
 Handle g_hUseDatabase = INVALID_HANDLE;
 Handle g_hVerboseSpawnModes = INVALID_HANDLE;
@@ -145,15 +146,16 @@ public OnPluginStart() {
     LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
-    g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give glocks on non-pistol rounds");
-    g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
-    g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
-    g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
-    g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
-    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
+    g_hDefaultPistol = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to use the auto-update plugin? Requies the \"Updater\" plugin.");
-    g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically on their first connect");
+    g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
+    g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
     g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
+    g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically on their first connect");
+    g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds");
+    g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
+    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
+    g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
 
     /** Config file **/
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
@@ -734,43 +736,6 @@ public void SwitchPlayerTeam(int client, int team) {
         ChangeClientTeam(client, team);
     }
     g_PluginTeamSwitch[client] = false;
-}
-
-/**
- * Gives helmet and kevlar, if appropriate.
- */
-public void GiveVestHelm(int client, RoundType roundType) {
-    if (!IsValidClient(client))
-        return;
-
-    if (roundType == RoundType_Awp || roundType == RoundType_Rifle) {
-        SetEntData(client, g_iPlayers_HelmetOffset, 1);
-        Client_SetArmor(client, 100);
-    } else if (roundType == RoundType_Pistol) {
-        SetEntData(client, g_iPlayers_HelmetOffset, 0);
-        char kevlarAllowed[][] = {
-            "weapon_glock",
-            "weapon_hkp2000",
-            "weapon_usp_silencer"
-        };
-
-        bool giveKevlar = false;
-        for (int i = 0; i < 3; i++) {
-            if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
-                giveKevlar = true;
-                break;
-            }
-        }
-
-        if (giveKevlar) {
-            Client_SetArmor(client, 100);
-        } else {
-            Client_SetArmor(client, 0);
-        }
-
-    } else {
-        LogError("[GiveVestHelm] Unexpected round type = %d", roundType);
-    }
 }
 
 /**

@@ -132,36 +132,49 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
 
     Client_RemoveAllWeapons(client, "", true);
 
-    int playerteam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     if (roundType == RoundType_Rifle) {
-        int weaponteam = GetWeaponTeam(g_PrimaryWeapon[client]);
-        if (weaponteam > 0)
-            SetEntProp(client, Prop_Data, "m_iTeamNum", weaponteam);
-        GivePlayerItem(client, g_PrimaryWeapon[client]);
+        GiveWeapon(client, g_PrimaryWeapon[client]);
+        SetEntData(client, g_iPlayers_HelmetOffset, 1);
+        Client_SetArmor(client, 100);
     } else if (roundType == RoundType_Awp) {
-        GivePlayerItem(client, "weapon_awp");
+        GiveWeapon(client, "weapon_awp");
+        SetEntData(client, g_iPlayers_HelmetOffset, 1);
+        Client_SetArmor(client, 100);
     } else if (roundType == RoundType_Pistol) {
-        // Do nothing!
+        SetEntData(client, g_iPlayers_HelmetOffset, 0);
+        char kevlarAllowed[][] = {
+            "weapon_glock",
+            "weapon_hkp2000",
+            "weapon_usp_silencer"
+        };
+
+        bool giveKevlar = false;
+        for (int i = 0; i < 3; i++) {
+            if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
+                giveKevlar = true;
+                break;
+            }
+        }
+
+        if (giveKevlar) {
+            Client_SetArmor(client, 100);
+        } else {
+            Client_SetArmor(client, 0);
+        }
     } else {
         LogError("Unknown round type for %N: %d", client, roundType);
     }
 
-    GiveVestHelm(client, roundType);
-
     int pistolBehavior = GetConVarInt(g_hPistolBehavior);
     if (roundType == RoundType_Pistol || pistolBehavior == 0) {
-        int weaponteam = GetWeaponTeam(g_SecondaryWeapon[client]);
-        if (weaponteam > 0)
-            SetEntProp(client, Prop_Data, "m_iTeamNum", weaponteam);
-        GivePlayerItem(client, g_SecondaryWeapon[client]);
-
+        GiveWeapon(client, g_SecondaryWeapon[client]);
     } else if (pistolBehavior == 2) {
-        SetEntProp(client, Prop_Data, "m_iTeamNum", CS_TEAM_T);
-        GivePlayerItem(client, "weapon_glock");
+        char defaultPistol[32];
+        GetConVarString(g_hDefaultPistol, defaultPistol, sizeof(defaultPistol));
+        GiveWeapon(client,  defaultPistol);
     }
 
-    SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
-    GivePlayerItem(client, "weapon_knife");
+    GiveWeapon(client, "weapon_knife");
 }
 
 public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {

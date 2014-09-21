@@ -8,6 +8,7 @@ int g_numPistols;
 char g_Pistols[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
 
 public void Weapons_MapStart() {
+    // Opening the file
     decl String:configFile[PLATFORM_MAX_PATH];
     BuildPath(Path_SM, configFile, sizeof(configFile), "configs/multi1v1_weapons.cfg");
 
@@ -20,28 +21,38 @@ public void Weapons_MapStart() {
     new Handle:kv = CreateKeyValues("Weapons");
     FileToKeyValues(kv, configFile);
 
+    // Parse the rifles section
     if (!KvJumpToKey(kv, "Rifles")) {
         LogError("The weapon config file did contains a \"Rifles\" section: %s", configFile);
         CloseHandle(kv);
         LoadBackupConfig();
         return;
     }
+    if (!KvGotoFirstSubKey(kv)) {
+        LogError("No rifles were found.");
+    }
     do {
         KvGetSectionName(kv, g_Rifles[g_numRifles][0], WEAPON_NAME_LENGTH);
-        KvGetString(kv, "item", g_Rifles[g_numRifles][1], WEAPON_NAME_LENGTH);
+        KvGetString(kv, "name", g_Rifles[g_numRifles][1], WEAPON_NAME_LENGTH, g_Rifles[g_numRifles][0]);
         KvGetString(kv, "team", g_Rifles[g_numRifles][2], WEAPON_NAME_LENGTH, "ANY");
         g_numRifles++;
     } while (KvGotoNextKey(kv));
+    KvRewind(kv);
 
+    // Parse the pistols section
     if (!KvJumpToKey(kv, "Pistols")) {
         LogError("The weapon config file did contains a \"Pistols\" section: %s", configFile);
         CloseHandle(kv);
         LoadBackupConfig();
         return;
     }
+
+    if (!KvGotoFirstSubKey(kv)) {
+        LogError("No pistols were found.");
+    }
     do {
         KvGetSectionName(kv, g_Pistols[g_numPistols][0], WEAPON_NAME_LENGTH);
-        KvGetString(kv, "item", g_Pistols[g_numPistols][1], WEAPON_NAME_LENGTH);
+        KvGetString(kv, "name", g_Pistols[g_numPistols][1], WEAPON_NAME_LENGTH, g_Pistols[g_numPistols][0]);
         KvGetString(kv, "team", g_Pistols[g_numPistols][2], WEAPON_NAME_LENGTH, "ANY");
         g_numPistols++;
     } while (KvGotoNextKey(kv));
@@ -51,20 +62,20 @@ public void Weapons_MapStart() {
 
 static void LoadBackupConfig() {
     LogError("Plugin forced to fallback to backup weapons only");
-    g_Rifles[0][0] = "AK47";
-    g_Rifles[0][1] = "weapon_ak47";
+    g_Rifles[0][0] = "weapon_ak47";
+    g_Rifles[0][1] = "AK47";
     g_Rifles[0][2] = "T";
-    g_Rifles[1][0] = "M4A4";
-    g_Rifles[1][1] = "weapon_m4a1";
+    g_Rifles[1][0] = "weapon_m4a1";
+    g_Rifles[1][1] = "M4A1";
     g_Rifles[1][2] = "CT";
     g_numRifles = 2;
 
-    g_Pistols[0][0] = "Glock";
-    g_Rifles[0][1] = "weapon_glock";
-    g_Rifles[0][2] = "T";
-    g_Rifles[1][0] = "P250";
-    g_Rifles[1][1] = "weapon_p250";
-    g_Rifles[1][2] = "ANY";
+    g_Pistols[0][0] = "weapon_glock";
+    g_Pistols[0][1] = "Glock";
+    g_Pistols[0][2] = "T";
+    g_Pistols[1][0] = "weapon_p250";
+    g_Pistols[1][1] = "P250";
+    g_Pistols[1][2] = "ANY";
     g_numPistols = 2;
 }
 
@@ -350,4 +361,13 @@ public UpdatePreferencesOnCookies(int client) {
 
     GetClientCookie(client, g_hPistolCookie, cookieValue, sizeof(cookieValue));
     strcopy(g_SecondaryWeapon[client], sizeof(cookieValue), cookieValue);
+}
+
+public GiveWeapon(client, char weapon[]) {
+    int playerteam = GetEntProp(client, Prop_Data, "m_iTeamNum");
+    int weaponteam = GetWeaponTeam(weapon);
+    if (weaponteam > 0)
+        SetEntProp(client, Prop_Data, "m_iTeamNum", weaponteam);
+    GivePlayerItem(client, weapon);
+    SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
 }
