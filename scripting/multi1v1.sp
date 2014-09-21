@@ -26,7 +26,7 @@
 #define TABLE_NAME "multi1v1_stats"
 
 /** ConVar handles **/
-Handle g_hAlwaysGivePistol = INVALID_HANDLE;
+Handle g_hPistolBehavior = INVALID_HANDLE;
 Handle g_hAutoUpdate = INVALID_HANDLE;
 Handle g_hBlockRadio = INVALID_HANDLE;
 Handle g_hDatabaseName = INVALID_HANDLE;
@@ -145,14 +145,14 @@ public OnPluginStart() {
     LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
-    g_hAlwaysGivePistol = CreateConVar("sm_multi1v1_always_give_pistol", "1", "Whether pistols will be given in non-pistol rounds, e.g. awp and rifle rounds.");
+    g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give glocks on non-pistol rounds");
     g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
-    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
-    g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
-    g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Should players see the guns menu automatically on their first connect?");
+    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
+    g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to use the auto-update plugin? Requies the \"Updater\" plugin.");
+    g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically on their first connect");
     g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
 
     /** Config file **/
@@ -213,9 +213,6 @@ public OnMapStart() {
     Spawns_MapStart();
     Weapons_MapStart();
     g_waitingQueue = Queue_Init();
-    if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
-        DB_Connect();
-    }
 
     g_arenaOffsetValue = 0;
     g_arenas = 1;
@@ -232,6 +229,10 @@ public OnMapStart() {
         ServerCommand("exec gamemode_competitive.cfg");
     }
     ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
+
+    if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
+        DB_Connect();
+    }
 }
 
 public OnMapEnd() {

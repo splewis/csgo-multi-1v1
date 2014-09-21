@@ -148,13 +148,17 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
 
     GiveVestHelm(client, roundType);
 
-    if (GetConVarInt(g_hAlwaysGivePistol) != 0 || roundType == RoundType_Pistol) {
+    int pistolBehavior = GetConVarInt(g_hPistolBehavior);
+    if (roundType == RoundType_Pistol || pistolBehavior == 0) {
         int weaponteam = GetWeaponTeam(g_SecondaryWeapon[client]);
         if (weaponteam > 0)
             SetEntProp(client, Prop_Data, "m_iTeamNum", weaponteam);
         GivePlayerItem(client, g_SecondaryWeapon[client]);
-    }
 
+    } else if (pistolBehavior == 2) {
+        SetEntProp(client, Prop_Data, "m_iTeamNum", CS_TEAM_T);
+        GivePlayerItem(client, "weapon_glock");
+    }
 
     SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
     GivePlayerItem(client, "weapon_knife");
