@@ -161,14 +161,16 @@ public void DB_RoundUpdate(winner, loser, bool forceLoss) {
             return;
         }
 
-        if (GetConVarInt(g_hUseDatabase) == 0)
+        if (GetConVarInt(g_hUseDatabase) == 0) {
             return;
+        }
 
         Increment(loser, "losses");
-        if (forceLoss)
+        if (forceLoss) {
             Increment(winner, "losses");
-        else
+        } else {
             Increment(winner, "wins");
+        }
 
         Increment(winner, "recentRounds");
         Increment(loser, "recentRounds");
@@ -211,8 +213,9 @@ public void UpdateRatings(int winner, int loser, bool forceLoss) {
         }
 
         bool block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser];
-        if (block)
+        if (block) {
             return;
+        }
 
         if (forceLoss) {
             ForceLoss(winner, loser);

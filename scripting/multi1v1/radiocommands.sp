@@ -9,12 +9,12 @@ char g_radioCommands[][] = {
     "takingfire", "reportingin", "getout", "enemydown"
 };
 
-public AddRadioCommandListeners() {
+public void AddRadioCommandListeners() {
     for (int i = 0; i < sizeof(g_radioCommands); i++)
         AddCommandListener(Command_Radio, g_radioCommands[i]);
 }
 
-public Action:Command_Radio(int client, const char command[], int argc) {
+public Action Command_Radio(int client, const char command[], int argc) {
 	if (GetConVarInt(g_hBlockRadio) != 0) {
 		return Plugin_Handled;
 	} else {
