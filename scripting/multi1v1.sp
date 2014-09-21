@@ -211,6 +211,7 @@ public OnLibraryAdded(const char name[]) {
 
 public OnMapStart() {
     Spawns_MapStart();
+    Weapons_MapStart();
     g_waitingQueue = Queue_Init();
     if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
         DB_Connect();
@@ -335,7 +336,7 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
         }
     }
 
-    if (IsValidClient(leader) && Queue_Length(rankingQueue) >= 2) {
+    if (IsValidClient(leader) && Queue_Length(rankingQueue) >= 2 && !g_LetTimeExpire[leader]) {
         g_RoundsLeader[leader]++;
     }
 
@@ -659,7 +660,6 @@ public OnClientCookiesCached(int client) {
 public Action Command_TeamJoin(int client, const char command[], argc) {
     if (!IsValidClient(client))
         return Plugin_Handled;
-
 
     char arg[4];
     GetCmdArg(1, arg, sizeof(arg));

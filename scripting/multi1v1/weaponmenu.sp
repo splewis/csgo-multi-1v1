@@ -1,23 +1,72 @@
 #define MENU_TIME_LENGTH 15
+#define WEAPON_MAX 16
+#define WEAPON_NAME_LENGTH 32
 
-char g_Rifles[][][] = {
-    {"weapon_ak47", "AK47", "T"},
-    {"weapon_m4a1", "M4A4", "CT"},
-    {"weapon_m4a1_silencer", "M4A1-S", "CT"},
-    {"weapon_famas", "Famas", "CT"},
-    {"weapon_galilar", "Galil", "T"},
-    {"weapon_aug", "AUG", "CT"},
-    {"weapon_sg556", "SG553", "T"}
-};
+int g_numRifles;
+char g_Rifles[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
+int g_numPistols;
+char g_Pistols[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
 
-char g_Pistols[][][] = {
-    {"weapon_hkp2000", "P2000/USP", "CT"},
-    {"weapon_glock", "Glock", "T"},
-    {"weapon_p250", "P250", "ANY"},
-    {"weapon_fiveseven", "Five-Seven", "CT"},
-    {"weapon_cz75a", "CZ75", "ANY"},
-    {"weapon_deagle", "Deagle", "ANY"}
-};
+public void Weapons_MapStart() {
+    decl String:configFile[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, configFile, sizeof(configFile), "configs/multi1v1_weapons.cfg");
+
+    if (!FileExists(configFile)) {
+        LogError("The weapon config file does not exist: %s", configFile);
+        LoadBackupConfig();
+        return;
+    }
+
+    new Handle:kv = CreateKeyValues("Weapons");
+    FileToKeyValues(kv, configFile);
+
+    if (!KvJumpToKey(kv, "Rifles")) {
+        LogError("The weapon config file did contains a \"Rifles\" section: %s", configFile);
+        CloseHandle(kv);
+        LoadBackupConfig();
+        return;
+    }
+    do {
+        KvGetSectionName(kv, g_Rifles[g_numRifles][0], WEAPON_NAME_LENGTH);
+        KvGetString(kv, "item", g_Rifles[g_numRifles][1], WEAPON_NAME_LENGTH);
+        KvGetString(kv, "team", g_Rifles[g_numRifles][2], WEAPON_NAME_LENGTH, "ANY");
+        g_numRifles++;
+    } while (KvGotoNextKey(kv));
+
+    if (!KvJumpToKey(kv, "Pistols")) {
+        LogError("The weapon config file did contains a \"Pistols\" section: %s", configFile);
+        CloseHandle(kv);
+        LoadBackupConfig();
+        return;
+    }
+    do {
+        KvGetSectionName(kv, g_Pistols[g_numPistols][0], WEAPON_NAME_LENGTH);
+        KvGetString(kv, "item", g_Pistols[g_numPistols][1], WEAPON_NAME_LENGTH);
+        KvGetString(kv, "team", g_Pistols[g_numPistols][2], WEAPON_NAME_LENGTH, "ANY");
+        g_numPistols++;
+    } while (KvGotoNextKey(kv));
+
+    CloseHandle(kv);
+}
+
+static void LoadBackupConfig() {
+    LogError("Plugin forced to fallback to backup weapons only");
+    g_Rifles[0][0] = "AK47";
+    g_Rifles[0][1] = "weapon_ak47";
+    g_Rifles[0][2] = "T";
+    g_Rifles[1][0] = "M4A4";
+    g_Rifles[1][1] = "weapon_m4a1";
+    g_Rifles[1][2] = "CT";
+    g_numRifles = 2;
+
+    g_Pistols[0][0] = "Glock";
+    g_Rifles[0][1] = "weapon_glock";
+    g_Rifles[0][2] = "T";
+    g_Rifles[1][0] = "P250";
+    g_Rifles[1][1] = "weapon_p250";
+    g_Rifles[1][2] = "ANY";
+    g_numPistols = 2;
+}
 
 static TeamStringToTeam(char teamString[]) {
     if (StrEqual(teamString, "CT", false))
@@ -29,12 +78,12 @@ static TeamStringToTeam(char teamString[]) {
 }
 
 public int GetWeaponTeam(char weapon[]) {
-    for (new i = 0; i < sizeof(g_Rifles); i++) {
+    for (new i = 0; i < g_numRifles; i++) {
         if (StrEqual(weapon[0], g_Rifles[i][0])) {
             return TeamStringToTeam(g_Rifles[i][2][0]);
         }
     }
-    for (new i = 0; i < sizeof(g_Pistols); i++) {
+    for (new i = 0; i < g_numPistols; i++) {
         if (StrEqual(weapon[0], g_Pistols[i][0])) {
             return TeamStringToTeam(g_Pistols[i][2][0]);
         }
@@ -196,7 +245,7 @@ public RifleChoiceMenu(int client) {
     Handle menu = CreateMenu(MenuHandler_RifleChoice);
     SetMenuTitle(menu, "Choose your favorite rifle:");
     SetMenuExitButton(menu, true);
-    for (int i = 0; i < sizeof(g_Rifles); i++)
+    for (int i = 0; i < g_numRifles; i++)
         AddMenuItem(menu, g_Rifles[i][0], g_Rifles[i][1]);
 
     DisplayMenu(menu, client, MENU_TIME_LENGTH);
@@ -225,7 +274,7 @@ public PistolChoiceMenu(int client) {
     Handle menu = CreateMenu(MenuHandler_PistolChoice);
     SetMenuExitButton(menu, true);
     SetMenuTitle(menu, "Choose your favorite pistol:");
-    for (int i = 0; i < sizeof(g_Pistols); i++)
+    for (int i = 0; i < g_numPistols; i++)
         AddMenuItem(menu, g_Pistols[i][0], g_Pistols[i][1]);
 
     DisplayMenu(menu, client, MENU_TIME_LENGTH);

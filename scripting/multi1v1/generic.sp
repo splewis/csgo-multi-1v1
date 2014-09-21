@@ -4,6 +4,14 @@
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
                                  // this is for converting ints to strings when setting menu values/cookies
 
+#if !defined NO_ASSERTS
+    #define assert(%1) if (!(%1)) ThrowError("Debug Assertion Failed");
+    #define assert_msg(%1,%2) if (!(%1)) ThrowError(%2);
+#else
+    #define assert(%1)
+    #define assert_msg(%1,%2)
+#endif
+
 new String:g_ColorNames[][] = {"{NORMAL}", "{DARK_RED}", "{PURPLE}", "{GREEN}", "{MOSS_GREEN}", "{LIGHT_GREEN}", "{LIGHT_RED}", "{GRAY}", "{ORANGE}", "{LIGHT_BLUE}", "{DARK_BLUE}", "{PURPLE}", "{CARRIAGE_RETURN}"};
 new String:g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",         "\x05",     "\x06",          "\x07",        "\x08",   "\x09",     "\x0B",         "\x0C",        "\x0E",     "\n"};
 
