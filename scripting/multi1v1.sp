@@ -865,7 +865,7 @@ public void UpdateArena(int arena) {
         } else if (hasp2 && !hasp1) {
             g_ArenaWinners[arena] = p2;
             if (!g_ArenaStatsUpdated[arena])
-                DB_RoundUpdate(p1, p2, false);
+                DB_RoundUpdate(p2, p1, false);
             g_ArenaLosers[arena] = -1;
             g_ArenaPlayer1[arena] = -1;
             g_ArenaStatsUpdated[arena] = true;
