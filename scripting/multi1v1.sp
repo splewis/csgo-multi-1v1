@@ -604,7 +604,7 @@ public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) 
  */
 public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) {
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
-    if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
+    if (!IsActivePlayer(client))
         return;
 
     int arena = g_Ranking[client];

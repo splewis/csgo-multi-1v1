@@ -9,6 +9,9 @@ char g_Pistols[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
 
 public void Weapons_MapStart() {
     // Opening the file
+    g_numPistols = 0;
+    g_numRifles = 0;
+
     decl String:configFile[PLATFORM_MAX_PATH];
     BuildPath(Path_SM, configFile, sizeof(configFile), "configs/multi1v1_weapons.cfg");
 
