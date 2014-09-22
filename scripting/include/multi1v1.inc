@@ -85,6 +85,10 @@ native int GetOpponent(int client);
 // Checks if the database is connected and valid.
 native bool HasDatabase();
 
+// Returns a clone of the database handle.
+// You should check HasDatabase before calling this.
+native Handle GetDatabase();
+
 // Gives a player their weapons according to a round type.
 native void GivePlayerArenaWeapons(int client, RoundType roundType);
 native void GivePlayerArenaWeaponsNoNades(int client, RoundType roundType);
