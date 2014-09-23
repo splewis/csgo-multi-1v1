@@ -8,7 +8,7 @@
 	"FacingOff"
 	{
 		"#format"	"{1:i},{2:N}"
-		"en"			"You are in arena {GREEN}{1}{NORMAL}, facing off against {PURPLE}{2}."
+		"en"			"You are in arena {GREEN}{1}{NORMAL}, facing off against {PURPLE}{2}{NORMAL}."
 	}
 	"ArenasFull"
 	{
