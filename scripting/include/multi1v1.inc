@@ -69,6 +69,9 @@ native bool HasStats(int client);
 // Functions for getting a players' 1v1-stats.
 // You should confirm HasStats(client) is true before using any of these.
 native float GetRating(int client);
+native float GetRifleRating(int client);
+native float GetAwpRating(int client);
+native float GetPistolRating(int client);
 native int GetRoundsPlayed(int client);
 native int GetWins(int client);
 native int GetLosses(int client);
@@ -141,6 +144,9 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("IsInWaitingQueue");
     MarkNativeAsOptional("HasStats");
     MarkNativeAsOptional("GetRating");
+    MarkNativeAsOptional("GetAwpRating");
+    MarkNativeAsOptional("GetRifleRating");
+    MarkNativeAsOptional("GetPistolRating");
     MarkNativeAsOptional("GetArenaNumber");
     MarkNativeAsOptional("GetRoundsAtArena1");
     MarkNativeAsOptional("GetOpponent");

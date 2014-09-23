@@ -7,6 +7,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("IsInWaitingQueue", Native_IsInWaitingQueue);
     CreateNative("HasStats", Native_HasStats);
     CreateNative("GetRating", Native_GetRating);
+    CreateNative("GetAwpRating", Native_GetAwpRating);
+    CreateNative("GetRifleRating", Native_GetRifleRating);
+    CreateNative("GetPistolRating", Native_GetPistolRating);
     CreateNative("GetArenaNumber", Native_GetArenaNumber);
     CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
     CreateNative("GetOpponent", Native_GetOpponent);
@@ -69,6 +72,27 @@ public Native_GetRating(Handle plugin, numParams) {
     if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return _:g_Rating[client];
+}
+
+public Native_GetAwpRating(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    if (!IsPlayer(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    return _:g_AwpRating[client];
+}
+
+public Native_GetRifleRating(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    if (!IsPlayer(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    return _:g_RifleRating[client];
+}
+
+public Native_GetPistolRating(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    if (!IsPlayer(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    return _:g_PistolRating[client];
 }
 
 public Native_GetRoundsPlayed(Handle plugin, numParams) {
