@@ -84,16 +84,10 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
             char sanitized_name[64];
             SQL_EscapeString(db, name, sanitized_name, sizeof(name));
 
-            // update the player name
+            // update the player name and last connect time
             Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-                   "UPDATE %s SET name = '%s' WHERE accountID = %d",
-                   TABLE_NAME, sanitized_name, id);
-            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-
-            // update last connect time
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-                  "UPDATE %s SET lastTime = %d WHERE accountID = %d",
-                  TABLE_NAME, GetTime(), id);
+                   "UPDATE %s SET name = '%s', lastTime = %d WHERE accountID = %d",
+                   TABLE_NAME, sanitized_name, GetTime(), id);
             SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
         }
     }
