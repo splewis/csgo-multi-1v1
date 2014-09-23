@@ -176,9 +176,9 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
     }
 
     int pistolBehavior = GetConVarInt(g_hPistolBehavior);
-    if (roundType == RoundType_Pistol || pistolBehavior == 0) {
+    if (roundType == RoundType_Pistol || pistolBehavior == 0 || (pistolBehavior == 3 && roundType != RoundType_Awp)) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
-    } else if (pistolBehavior == 2) {
+    } else if (pistolBehavior == 2 || (pistolBehavior == 3 && roundType == RoundType_Awp) ) {
         char defaultPistol[32];
         GetConVarString(g_hDefaultPistol, defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
