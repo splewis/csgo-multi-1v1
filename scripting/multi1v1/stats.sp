@@ -53,12 +53,6 @@ public void DB_AddPlayer(client) {
             return;
         }
 
-        // player name
-        char name[64];
-        GetClientName(client, name, sizeof(name));
-        char sanitized_name[64];
-        SQL_EscapeString(db, name, sanitized_name, sizeof(name));
-
         // steam id
         // TODO: maybe there should be a convar for choosing which auth string to use
         char auth[64];
@@ -69,21 +63,9 @@ public void DB_AddPlayer(client) {
 
         // insert if not already in the table
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "INSERT IGNORE INTO %s (accountID,auth,name) VALUES (%d, '%s', '%s');",
-               TABLE_NAME, id, auth, sanitized_name);
+               "INSERT IGNORE INTO %s (accountID,auth) VALUES (%d, '%s');",
+               TABLE_NAME, id, auth);
         SQL_TQuery(db, Callback_Insert, g_sqlBuffer, GetClientSerial(client));
-
-        // update the player name
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "UPDATE %s SET name = '%s' WHERE accountID = %d",
-               TABLE_NAME, sanitized_name, id);
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
-
-        // update last connect time
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-              "UPDATE %s SET lastTime = %d WHERE accountID = %d",
-              TABLE_NAME, GetTime(), id);
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
     }
 }
 
@@ -92,7 +74,28 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
         LogError("Last Connect SQL Error: %s", error);
     } else {
         int client = GetClientFromSerial(serial);
-        DB_FetchRatings(client);
+        int id = GetSteamAccountID(client);
+
+        if (id > 0) {
+            DB_FetchRatings(client);
+
+            char name[64];
+            GetClientName(client, name, sizeof(name));
+            char sanitized_name[64];
+            SQL_EscapeString(db, name, sanitized_name, sizeof(name));
+
+            // update the player name
+            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+                   "UPDATE %s SET name = '%s' WHERE accountID = %d",
+                   TABLE_NAME, sanitized_name, id);
+            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+
+            // update last connect time
+            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+                  "UPDATE %s SET lastTime = %d WHERE accountID = %d",
+                  TABLE_NAME, GetTime(), id);
+            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+        }
     }
 }
 
