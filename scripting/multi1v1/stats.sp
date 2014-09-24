@@ -74,6 +74,9 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
         LogError("Last Connect SQL Error: %s", error);
     } else {
         int client = GetClientFromSerial(serial);
+        if (client == 0)
+            return;
+
         int id = GetSteamAccountID(client);
 
         if (id > 0) {
