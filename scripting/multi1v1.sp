@@ -200,6 +200,8 @@ public OnPluginStart() {
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
 
+    g_waitingQueue = Queue_Init();
+
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
@@ -214,7 +216,7 @@ public OnLibraryAdded(const char name[]) {
 public OnMapStart() {
     Spawns_MapStart();
     Weapons_MapStart();
-    g_waitingQueue = Queue_Init();
+    Queue_Clear(g_waitingQueue);
 
     g_arenaOffsetValue = 0;
     g_arenas = 1;
@@ -238,7 +240,7 @@ public OnMapStart() {
 }
 
 public OnMapEnd() {
-    Queue_Destroy(g_waitingQueue);
+    // Queue_Destroy(g_waitingQueue);
     Spawns_MapEnd();
 }
 
