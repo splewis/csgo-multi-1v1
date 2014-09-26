@@ -374,3 +374,17 @@ public GiveWeapon(client, char weapon[]) {
     GivePlayerItem(client, weapon);
     SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
 }
+
+public bool IsDefaultPistol(char weapon[]) {
+    char defaultPistols[][] = {
+        "weapon_glock",
+        "weapon_hkp2000",
+        "weapon_usp_silencer"
+    };
+    for (int i = 0; i < 3; i++) {
+        if (StrEqual(weapon, defaultPistols[i])) {
+            return true;
+        }
+    }
+    return false;
+}

@@ -176,20 +176,7 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
         Client_SetArmor(client, 100);
     } else if (roundType == RoundType_Pistol) {
         SetEntData(client, g_iPlayers_HelmetOffset, 0);
-        char kevlarAllowed[][] = {
-            "weapon_glock",
-            "weapon_hkp2000",
-            "weapon_usp_silencer"
-        };
-
-        bool giveKevlar = false;
-        for (int i = 0; i < 3; i++) {
-            if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
-                giveKevlar = true;
-                break;
-            }
-        }
-
+        bool giveKevlar = IsDefaultPistol(g_SecondaryWeapon[client]);
         if (giveKevlar) {
             Client_SetArmor(client, 100);
         } else {
@@ -200,9 +187,19 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
     }
 
     int pistolBehavior = GetConVarInt(g_hPistolBehavior);
-    if (roundType == RoundType_Pistol || pistolBehavior == 0 || (pistolBehavior == 3 && roundType != RoundType_Awp)) {
+
+    bool giveSelected = (roundType == RoundType_Pistol) ||
+                        (pistolBehavior == 0) ||
+                        (pistolBehavior == 3 && roundType != RoundType_Awp) ||
+                        (pistolBehavior == 4 && IsDefaultPistol(g_SecondaryWeapon[client]));
+
+    bool giveFallback = (pistolBehavior == 2) ||
+                        (pistolBehavior == 3 && roundType == RoundType_Awp) ||
+                        (pistolBehavior == 4 && roundType == RoundType_Awp);
+
+    if (giveSelected) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
-    } else if (pistolBehavior == 2 || (pistolBehavior == 3 && roundType == RoundType_Awp) ) {
+    } else if (giveFallback) {
         char defaultPistol[32];
         GetConVarString(g_hDefaultPistol, defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
