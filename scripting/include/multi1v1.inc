@@ -68,6 +68,7 @@ native bool HasStats(int client);
 
 // Functions for getting a players' 1v1-stats.
 // You should confirm HasStats(client) is true before using any of these.
+// These are only valid for connected clients.
 native float GetRating(int client);
 native float GetRifleRating(int client);
 native float GetAwpRating(int client);
