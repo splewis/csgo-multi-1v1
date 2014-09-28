@@ -190,12 +190,10 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
 
     bool giveSelected = (roundType == RoundType_Pistol) ||
                         (pistolBehavior == 0) ||
-                        (pistolBehavior == 3 && roundType != RoundType_Awp) ||
-                        (pistolBehavior == 4 && IsDefaultPistol(g_SecondaryWeapon[client]));
+                        (pistolBehavior == 3 && roundType != RoundType_Awp);
 
     bool giveFallback = (pistolBehavior == 2) ||
-                        (pistolBehavior == 3 && roundType == RoundType_Awp) ||
-                        (pistolBehavior == 4 && roundType == RoundType_Awp);
+                        (pistolBehavior == 3 && roundType == RoundType_Awp);
 
     if (giveSelected) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
