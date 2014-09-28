@@ -35,25 +35,25 @@ public Action RemoveRadar(Handle timer, int client) {
 /**
  * Function to identify if a client is valid and in game.
  */
-public bool IsValidClient(int client) {
+stock bool IsValidClient(int client) {
     return client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client);
 }
 
-public bool IsConnected(int client) {
+stock bool IsConnected(int client) {
     return client > 0 && client <= MaxClients && IsClientConnected(client) && !IsFakeClient(client);
 }
 
 /**
  * Returns if a player is on an active/player team.
  */
-public bool IsPlayer(int client) {
+stock bool IsPlayer(int client) {
     return IsValidClient(client) && !IsFakeClient(client);
 }
 
 /**
  * Returns if a player is on an active/player team.
  */
-public bool IsActivePlayer(int client) {
+stock bool IsActivePlayer(int client) {
     if (!IsPlayer(client))
         return false;
     int client_team = GetClientTeam(client);
@@ -63,7 +63,7 @@ public bool IsActivePlayer(int client) {
 /**
  * Adds an integer to a menu as a string choice.
  */
-public void AddMenuInt(Handle menu, int value, char display[]) {
+stock void AddMenuInt(Handle menu, int value, char display[]) {
     char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     AddMenuItem(menu, buffer, display);
@@ -72,7 +72,7 @@ public void AddMenuInt(Handle menu, int value, char display[]) {
 /**
  * Gets an integer to a menu from a string choice.
  */
-public int GetMenuInt(Handle menu, any:param2) {
+stock int GetMenuInt(Handle menu, any:param2) {
     char choice[INTEGER_STRING_LENGTH];
     GetMenuItem(menu, param2, choice, sizeof(choice));
     return StringToInt(choice);
@@ -81,7 +81,7 @@ public int GetMenuInt(Handle menu, any:param2) {
 /**
  * Adds a boolean to a menu as a string choice.
  */
-public void AddMenuBool(Handle menu, bool value, char display[]) {
+stock void AddMenuBool(Handle menu, bool value, char display[]) {
     int convertedInt = value ? 1 : 0;
     AddMenuInt(menu, convertedInt, display);
 }
@@ -89,14 +89,14 @@ public void AddMenuBool(Handle menu, bool value, char display[]) {
 /**
  * Gets a boolean to a menu from a string choice.
  */
-public bool:GetMenuBool(Handle:menu, any:param2) {
+stock bool:GetMenuBool(Handle:menu, any:param2) {
     return GetMenuInt(menu, param2) != 0;
 }
 
 /**
  * Sets a cookie to an integer value by converting it to a string.
  */
-public void SetCookieInt(int client, Handle cookie, int value) {
+stock void SetCookieInt(int client, Handle cookie, int value) {
     char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     SetClientCookie(client, cookie, buffer);
@@ -105,7 +105,7 @@ public void SetCookieInt(int client, Handle cookie, int value) {
 /**
  * Fetches the value of a cookie that is an integer.
  */
-public int GetCookieInt(int client, Handle:cookie) {
+stock int GetCookieInt(int client, Handle:cookie) {
     char buffer[INTEGER_STRING_LENGTH];
     GetClientCookie(client, cookie, buffer, sizeof(buffer));
     return StringToInt(buffer);
@@ -114,7 +114,7 @@ public int GetCookieInt(int client, Handle:cookie) {
 /**
  * Sets a cookie to a boolean value.
  */
-public void SetCookieBool(int client, Handle cookie, bool value) {
+stock void SetCookieBool(int client, Handle cookie, bool value) {
     int convertedInt = value ? 1 : 0;
     SetCookieInt(client, cookie, convertedInt);
 }
@@ -122,14 +122,14 @@ public void SetCookieBool(int client, Handle cookie, bool value) {
 /**
  * Gets a cookie that represents a boolean.
  */
-public bool GetCookieBool(int client, Handle cookie) {
+stock bool GetCookieBool(int client, Handle cookie) {
     return GetCookieInt(client, cookie) != 0;
 }
 
 /**
  * Returns a random index from an array.
  */
-public int GetArrayRandomIndex(Handle array) {
+stock int GetArrayRandomIndex(Handle array) {
     int len = GetArraySize(array);
     if (len == 0)
         ThrowError("Can't get random index from empty array");
@@ -139,7 +139,7 @@ public int GetArrayRandomIndex(Handle array) {
 /**
  * Pushes an element to an array multiple times.
  */
-public void PushArrayCellReplicated(Handle array, any:value, any:times) {
+stock void PushArrayCellReplicated(Handle array, any:value, any:times) {
     for (int i = 0; i < times; i++)
         PushArrayCell(array, value);
 }
@@ -148,7 +148,7 @@ public void PushArrayCellReplicated(Handle array, any:value, any:times) {
  * Given an array of vectors, returns the index of the index
  * that minimizes the euclidean distance between the vectors.
  */
-public int NearestNeighborIndex(float vec[3], Handle others) {
+stock int NearestNeighborIndex(float vec[3], Handle others) {
     int closestIndex = -1;
     float closestDistance = 0.0;
     for (int i = 0; i < GetArraySize(others); i++) {
@@ -167,7 +167,7 @@ public int NearestNeighborIndex(float vec[3], Handle others) {
 /**
  * Closes all handles within an array of handles.
  */
-public void CloseHandleArray(Handle array) {
+stock void CloseHandleArray(Handle array) {
     for (int i = 0; i < GetArraySize(array); i++) {
         Handle tmp = GetArrayCell(array, i);
         CloseHandle(tmp);
@@ -178,7 +178,7 @@ public void CloseHandleArray(Handle array) {
 /**
  * Creates a table given an array of table arguments.
  */
-public void SQL_CreateTable(Handle db_connection, char table_name[], char fields[][], int num_fields) {
+stock void SQL_CreateTable(Handle db_connection, char table_name[], char fields[][], int num_fields) {
     Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
     for (int i = 0; i < num_fields; i++) {
         StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), fields[i]);
@@ -189,7 +189,7 @@ public void SQL_CreateTable(Handle db_connection, char table_name[], char fields
     SQL_FastQuery(db_connection, g_sqlBuffer);
 }
 
-public Colorize(String:msg[], size) {
+stock Colorize(String:msg[], size) {
     for (new i = 0; i < sizeof(g_ColorNames); i ++) {
         ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
     }
