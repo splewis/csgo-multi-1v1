@@ -40,7 +40,7 @@ public bool IsValidClient(int client) {
 }
 
 public bool IsConnected(int client) {
-    return client > 0 && client <= MaxClients && IsClientConnected(client);
+    return client > 0 && client <= MaxClients && IsClientConnected(client) && !IsFakeClient(client);
 }
 
 /**

@@ -55,64 +55,64 @@ public Native_GetNumActiveArenas(Handle plugin, numParams) {
 
 public Native_IsInWaitingQueue(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return Queue_Inside(g_waitingQueue, client);
 }
 
 public Native_HasStats(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return IsConnected(client) && !IsFakeClient(client) && g_FetchedPlayerInfo[client];
 }
 
 public Native_GetRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return _:g_Rating[client];
 }
 
 public Native_GetAwpRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return _:g_AwpRating[client];
 }
 
 public Native_GetRifleRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return _:g_RifleRating[client];
 }
 
 public Native_GetPistolRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return _:g_PistolRating[client];
 }
 
 public Native_GetRoundsPlayed(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return g_Wins[client] + g_Losses[client];
 }
 
 public Native_GetWins(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return g_Wins[client];
 }
 
 public Native_GetLosses(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client) && !IsFakeClient(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    if (!IsConnected(client))
+        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return g_Losses[client];
 }
 public Native_GetArenaNumber(Handle plugin, numParams) {
