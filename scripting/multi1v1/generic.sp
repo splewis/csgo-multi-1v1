@@ -39,6 +39,10 @@ public bool IsValidClient(int client) {
     return client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client);
 }
 
+public bool IsConnected(int client) {
+    return client > 0 && client <= MaxClients && IsClientConnected(client);
+}
+
 /**
  * Returns if a player is on an active/player team.
  */

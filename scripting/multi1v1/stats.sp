@@ -45,8 +45,8 @@ public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], data
 /**
  * Adds a player, updating their name if they already exist, to the database.
  */
-public void DB_AddPlayer(client) {
-    if (db != INVALID_HANDLE) {
+public void DB_AddPlayer(int client) {
+    if (db != INVALID_HANDLE && IsConnected(client)) {
         int id = GetSteamAccountID(client);
         if (id == 0) {
             LogMessage("Failed GetSteamAccountID for client %L", client);
@@ -74,7 +74,7 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
         LogError("Last Connect SQL Error: %s", error);
     } else {
         int client = GetClientFromSerial(serial);
-        if (client == 0)
+        if (!IsConnected(client))
             return;
 
         int id = GetSteamAccountID(client);
@@ -99,10 +99,10 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
 /**
  * Reads a player rating from the database.
  */
-public void DB_FetchRatings(client) {
+public void DB_FetchRatings(int client) {
     g_FetchedPlayerInfo[client] = false;
-    if (db != INVALID_HANDLE && IsPlayer(client)) {
-        int id =  GetSteamAccountID(client);
+    if (db != INVALID_HANDLE && IsConnected(client)) {
+        int id = GetSteamAccountID(client);
         if (id != 0) {
             Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                    "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d",
@@ -115,7 +115,7 @@ public void DB_FetchRatings(client) {
 public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int serial) {
     int client = GetClientFromSerial(serial);
     g_FetchedPlayerInfo[client] = false;
-    if (!IsPlayer(client))
+    if (!IsConnected(client))
         return;
 
     if (hndl == INVALID_HANDLE) {

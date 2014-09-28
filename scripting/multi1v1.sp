@@ -244,6 +244,7 @@ public OnMapEnd() {
 }
 
 public void OnClientAuthorized(int client, const char auth[]) {
+    LogMessage("OnClientAuthorized %s %s", client, auth);
     if (!StrEqual(auth, "BOT") && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
@@ -439,13 +440,13 @@ public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcas
     if (GetConVarInt(g_hUseDatabase) != 0) {
         if (!g_dbConnected)
             DB_Connect();
-        // if (g_dbConnected) {
-        //     for (int i = 1; i <= MaxClients; i++) {
-        //         if (IsValidClient(i) && !IsFakeClient(i) && !g_FetchedPlayerInfo[i]) {
-        //             DB_FetchRatings(i);
-        //         }
-        //     }
-        // }
+        if (g_dbConnected) {
+            for (int i = 1; i <= MaxClients; i++) {
+                if (IsValidClient(i) && !IsFakeClient(i) && !g_FetchedPlayerInfo[i]) {
+                    DB_FetchRatings(i);
+                }
+            }
+        }
     }
 
     for (int i = 1; i <= MaxClients; i++) {
