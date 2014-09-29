@@ -5,8 +5,8 @@
                                  // this is for converting ints to strings when setting menu values/cookies
 
 #if !defined NO_ASSERTS
-    #define assert(%1) if (!(%1)) ThrowError("Debug Assertion Failed");
-    #define assert_msg(%1,%2) if (!(%1)) ThrowError(%2);
+    #define assert(%1) if (!(%1)) LogError("Debug Assertion Failed");
+    #define assert_msg(%1,%2) if (!(%1)) LogError(%2);
 #else
     #define assert(%1)
     #define assert_msg(%1,%2)
@@ -139,7 +139,7 @@ stock int GetArrayRandomIndex(Handle array) {
 /**
  * Pushes an element to an array multiple times.
  */
-stock void PushArrayCellReplicated(Handle array, any:value, any:times) {
+stock void PushArrayCellReplicated(Handle array, any:value, int times) {
     for (int i = 0; i < times; i++)
         PushArrayCell(array, value);
 }
@@ -189,7 +189,7 @@ stock void SQL_CreateTable(Handle db_connection, char table_name[], char fields[
     SQL_FastQuery(db_connection, g_sqlBuffer);
 }
 
-stock Colorize(String:msg[], size) {
+stock Colorize(char msg[], int size) {
     for (new i = 0; i < sizeof(g_ColorNames); i ++) {
         ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
     }
