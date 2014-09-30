@@ -139,7 +139,7 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
 /**
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
-public void DB_WriteRatings(client) {
+public void DB_WriteRatings(int client) {
     if (g_FetchedPlayerInfo[client] && IsPlayer(client)) {
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d",
@@ -153,7 +153,7 @@ public void DB_WriteRatings(client) {
  * Performs all stats-related round-update logic for
  * a winner/loser pair.
  */
-public void DB_RoundUpdate(winner, loser, bool forceLoss) {
+public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
     if (IsPlayer(winner) && IsPlayer(loser)) {
         // TODO: this is a temporary band-aid for the first round ending
         //  too early sometimes and unfairly punishes early connectors

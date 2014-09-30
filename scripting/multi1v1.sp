@@ -244,7 +244,6 @@ public OnMapEnd() {
 }
 
 public void OnClientAuthorized(int client, const char auth[]) {
-    LogMessage("OnClientAuthorized %s %s", client, auth);
     if (!StrEqual(auth, "BOT") && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
@@ -610,8 +609,7 @@ public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) 
         return;
 
     int arena = g_Ranking[client];
-    if (arena == -1)
-        LogError("player %N had arena -1 on his spawn", client);
+    assert_msg(arena != -1, "%N had arena -1 on spawn")
 
     RoundType roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
     GivePlayerArenaWeapons(client, roundType);
