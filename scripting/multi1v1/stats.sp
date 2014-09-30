@@ -114,10 +114,10 @@ public void DB_FetchRatings(int client) {
 
 public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int serial) {
     int client = GetClientFromSerial(serial);
-    g_FetchedPlayerInfo[client] = false;
-    if (!IsConnected(client))
+    if (!IsConnected(client) || g_FetchedPlayerInfo[client])
         return;
 
+    g_FetchedPlayerInfo[client] = false;
     if (hndl == INVALID_HANDLE) {
         LogError("Query failed: (error: %s)", error);
     } else if (SQL_FetchRow(hndl)) {
