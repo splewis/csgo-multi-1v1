@@ -13,7 +13,11 @@ $generated = "<table class=\"tg\" width=\"450px\">
 
 $alt = 0;
 
-$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating AND s2.wins+s2.losses > 200)+1 AS rank FROM $mysql_table AS s1 WHERE s1.wins+s1.losses > 200 ORDER BY rating DESC LIMIT 0, 15";
+$server_limit = '';
+if (isset($_GET['server_id']))
+	$server_limit = 'AND serverID='.(int)$_GET['server_id'];
+
+$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating AND s2.wins+s2.losses > 200)+1 AS rank FROM $mysql_table AS s1 WHERE s1.wins+s1.losses > 200 $server_limit ORDER BY rating DESC LIMIT 0, 15";
 $query = mysqli_query($connect, $run_query);
 
 if (@$query){
