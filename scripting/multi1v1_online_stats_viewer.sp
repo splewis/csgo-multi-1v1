@@ -15,7 +15,7 @@ public Plugin:myinfo = {
 
 public OnPluginStart() {
     LoadTranslations("common.phrases");
-    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect.php. ?id=USER_ID&server_id=SERVER_ID will be appended to your url.");
+    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}&server_id={SERVER}.");
     AutoExecConfig(true, "multi1v1_online_stats_viewer", "sourcemod/multi1v1");
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
@@ -58,10 +58,19 @@ public void ShowStatsForPlayer(int client, target) {
     if (idCvar == INVALID_HANDLE) {
         LogError("Failed to get id cvar: sm_multi1v1_database_server_id");
     } else {
-        int serverID = GetConVarInt(idCvar);
-        char player_url[255];
-        Format(player_url, sizeof(player_url), "%s?id=%d&server_id=%d", url, GetSteamAccountID(target), serverID);
-        ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
+        char serverIDString[32];
+        Format(serverIDString, sizeof(serverIDString), "%d", GetConVarInt(idCvar));
+
+        char accountIDString[32];
+        Format(accountIDString, sizeof(accountIDString), "%d", GetSteamAccountID(target));
+
+        ReplaceString(url, sizeof(url), "{UID}", accountIDString, false);
+        ReplaceString(url, sizeof(url), "{USER}", accountIDString, false);
+        ReplaceString(url, sizeof(url), "{USERID}", accountIDString, false);
+        ReplaceString(url, sizeof(url), "{SID}", serverIDString, false);
+        ReplaceString(url, sizeof(url), "{SERVER}", serverIDString, false);
+        ReplaceString(url, sizeof(url), "{SERVERID}", serverIDString, false);
+        ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
         QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
     }
 }

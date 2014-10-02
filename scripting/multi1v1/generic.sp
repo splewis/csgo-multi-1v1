@@ -60,7 +60,7 @@ stock bool IsActivePlayer(int client) {
 /**
  * Adds an integer to a menu as a string choice.
  */
-stock void AddMenuInt(Handle menu, int value, char display[]) {
+stock void AddMenuInt(Handle menu, int value, const char display[]) {
     char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     AddMenuItem(menu, buffer, display);
@@ -78,7 +78,7 @@ stock int GetMenuInt(Handle menu, any:param2) {
 /**
  * Adds a boolean to a menu as a string choice.
  */
-stock void AddMenuBool(Handle menu, bool value, char display[]) {
+stock void AddMenuBool(Handle menu, bool value, const char display[]) {
     int convertedInt = value ? 1 : 0;
     AddMenuInt(menu, convertedInt, display);
 }
