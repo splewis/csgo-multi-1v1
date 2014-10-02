@@ -102,7 +102,7 @@ stock void SetCookieInt(int client, Handle cookie, int value) {
 /**
  * Fetches the value of a cookie that is an integer.
  */
-stock int GetCookieInt(int client, Handle:cookie) {
+stock int GetCookieInt(int client, Handle cookie) {
     char buffer[INTEGER_STRING_LENGTH];
     GetClientCookie(client, cookie, buffer, sizeof(buffer));
     return StringToInt(buffer);
@@ -145,7 +145,7 @@ stock void PushArrayCellReplicated(Handle array, any:value, int times) {
  * Given an array of vectors, returns the index of the index
  * that minimizes the euclidean distance between the vectors.
  */
-stock int NearestNeighborIndex(float vec[3], Handle others) {
+stock int NearestNeighborIndex(const float vec[3], Handle others) {
     int closestIndex = -1;
     float closestDistance = 0.0;
     for (int i = 0; i < GetArraySize(others); i++) {
@@ -175,7 +175,7 @@ stock void CloseHandleArray(Handle array) {
 /**
  * Creates a table given an array of table arguments.
  */
-stock void SQL_CreateTable(Handle db_connection, char table_name[], char fields[][], int num_fields) {
+stock void SQL_CreateTable(Handle db_connection, const char table_name[], const char fields[][], int num_fields) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
     for (int i = 0; i < num_fields; i++) {
@@ -192,7 +192,7 @@ stock void SQL_CreateTable(Handle db_connection, char table_name[], char fields[
     }
 }
 
-stock void SQL_AddColumn(Handle db_connection, char table_name[], char column_info[]) {
+stock void SQL_AddColumn(Handle db_connection, const char table_name[], const char column_info[]) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "ALTER TABLE %s ADD COLUMN %s", table_name, column_info);
     if (!SQL_FastQuery(db_connection, buffer)) {
@@ -204,7 +204,7 @@ stock void SQL_AddColumn(Handle db_connection, char table_name[], char column_in
     }
 }
 
-stock void SQL_UpdatePrimaryKey(Handle db_connection, char table_name[], char primary_key[]) {
+stock void SQL_UpdatePrimaryKey(Handle db_connection, const char table_name[], const char primary_key[]) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "ALTER TABLE %s DROP PRIMARY KEY, ADD PRIMARY KEY (%s)", table_name, primary_key);
     if (!SQL_FastQuery(db_connection, buffer)) {

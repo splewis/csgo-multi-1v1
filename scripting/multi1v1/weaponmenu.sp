@@ -107,7 +107,7 @@ static TeamStringToTeam(char teamString[]) {
  * Returns the cstrike team a weapon is intended for, or -1 if any can use the weapon.
  * This is only valid for weapons in the server's weapons config file.
  */
-public int GetWeaponTeam(char weapon[]) {
+public int GetWeaponTeam(const char weapon[]) {
     for (new i = 0; i < g_numRifles; i++) {
         if (StrEqual(weapon[0], g_Rifles[i][0])) {
             return TeamStringToTeam(g_Rifles[i][2][0]);
@@ -388,7 +388,7 @@ public UpdatePreferencesOnCookies(int client) {
 /**
  * Gives a player a weapon, taking care of getting them the appropriate skin.
  */
-public GiveWeapon(client, char weapon[]) {
+public GiveWeapon(int client, const char weapon[]) {
     int playerteam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     int weaponteam = GetWeaponTeam(weapon);
     if (weaponteam > 0)
@@ -400,7 +400,7 @@ public GiveWeapon(client, char weapon[]) {
 /**
  * Returns if the given weapon is a default starting pistol.
  */
-public bool IsDefaultPistol(char weapon[]) {
+public bool IsDefaultPistol(const char weapon[]) {
     char defaultPistols[][] = {
         "weapon_glock",
         "weapon_hkp2000",
