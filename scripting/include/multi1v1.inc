@@ -149,6 +149,8 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("GetRifleRating");
     MarkNativeAsOptional("GetPistolRating");
     MarkNativeAsOptional("GetArenaNumber");
+    MarkNativeAsOptional("GetArenaPlayer1");
+    MarkNativeAsOptional("GetArenaPlayer2");
     MarkNativeAsOptional("GetRoundsAtArena1");
     MarkNativeAsOptional("GetOpponent");
     MarkNativeAsOptional("GetRoundsPlayed");

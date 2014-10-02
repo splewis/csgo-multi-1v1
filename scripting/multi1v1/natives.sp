@@ -11,6 +11,8 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("GetRifleRating", Native_GetRifleRating);
     CreateNative("GetPistolRating", Native_GetPistolRating);
     CreateNative("GetArenaNumber", Native_GetArenaNumber);
+    CreateNative("GetArenaPlayer1", Native_GetArenaPlayer1);
+    CreateNative("GetArenaPlayer2", Native_GetArenaPlayer2);
     CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
     CreateNative("GetOpponent", Native_GetOpponent);
     CreateNative("GetRoundsPlayed", Native_GetRoundsPlayed);
@@ -115,6 +117,7 @@ public Native_GetLosses(Handle plugin, numParams) {
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
     return g_Losses[client];
 }
+
 public Native_GetArenaNumber(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     if (!IsPlayer(client))
@@ -127,6 +130,20 @@ public Native_GetRoundsAtArena1(Handle plugin, numParams) {
     if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
     return g_RoundsLeader[client];
+}
+
+public Native_GetArenaPlayer1(Handle plugin, numParams) {
+    int arena = GetNativeCell(1);
+    if (arena <= 0)
+        ThrowNativeError(SP_ERROR_PARAM, "Arena %d is not valid", arena);
+    return g_ArenaPlayer1[arena];
+}
+
+public Native_GetArenaPlayer2(Handle plugin, numParams) {
+    int arena = GetNativeCell(1);
+    if (arena <= 0)
+        ThrowNativeError(SP_ERROR_PARAM, "Arena %d is not valid", arena);
+    return g_ArenaPlayer2[arena];
 }
 
 public Native_GetOpponent(Handle plugin, numParams) {
