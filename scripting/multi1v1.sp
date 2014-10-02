@@ -26,10 +26,11 @@
 #define TABLE_NAME "multi1v1_stats"
 
 /** ConVar handles **/
-Handle g_hDefaultPistol = INVALID_HANDLE;
 Handle g_hAutoUpdate = INVALID_HANDLE;
 Handle g_hBlockRadio = INVALID_HANDLE;
 Handle g_hDatabaseName = INVALID_HANDLE;
+Handle g_hDatabaseServerId = INVALID_HANDLE;
+Handle g_hDefaultPistol = INVALID_HANDLE;
 Handle g_hExecDefaultConfig = INVALID_HANDLE;
 Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 Handle g_hPistolBehavior = INVALID_HANDLE;
@@ -155,7 +156,7 @@ public OnPluginStart() {
     g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
-    g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server (0 off)");
+    g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server( 0 off)");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
 
     /** Config file **/

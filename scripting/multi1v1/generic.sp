@@ -18,9 +18,6 @@ new String:g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",    
 #include <clientprefs>
 #include <cstrike>
 
-/* Global buffer for sql queries */
-char g_sqlBuffer[1024];
-
 /**
  * Removes the radar element from a client's HUD.
  */
@@ -179,14 +176,15 @@ stock void CloseHandleArray(Handle array) {
  * Creates a table given an array of table arguments.
  */
 stock void SQL_CreateTable(Handle db_connection, char table_name[], char fields[][], int num_fields) {
-    Format(g_sqlBuffer, sizeof(g_sqlBuffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
+    char buffer[1024];
+    Format(buffer, sizeof(buffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
     for (int i = 0; i < num_fields; i++) {
-        StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), fields[i]);
+        StrCat(buffer, sizeof(buffer), fields[i]);
         if (i != num_fields - 1)
-            StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ", ");
+            StrCat(buffer, sizeof(buffer), ", ");
     }
-    StrCat(g_sqlBuffer, sizeof(g_sqlBuffer), ");");
-    SQL_FastQuery(db_connection, g_sqlBuffer);
+    StrCat(buffer, sizeof(buffer), ");");
+    SQL_FastQuery(db_connection, buffer);
 }
 
 stock Colorize(char msg[], int size) {

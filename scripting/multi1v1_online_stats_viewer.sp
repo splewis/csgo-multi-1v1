@@ -54,12 +54,16 @@ public void ShowStatsForPlayer(int client, target) {
         return;
     }
 
-    char serverID[12];
-    GetConVarString(g_hDatabaseServerId, serverID, sizeof(serverID));
-    char player_url[255];
-    Format(player_url, sizeof(player_url), "%s?id=%d&server_id=%s", url, GetSteamAccountID(target), serverID);
-    ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
-    QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
+    Handle idCvar = FindConVar("sm_multi1v1_database_server_id");
+    if (idCvar == INVALID_HANDLE) {
+        LogError("Failed to get id cvar: sm_multi1v1_database_server_id");
+    } else {
+        int serverID = GetConVarInt(idCvar);
+        char player_url[255];
+        Format(player_url, sizeof(player_url), "%s?id=%d&server_id=%d", url, GetSteamAccountID(target), serverID);
+        ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
+        QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
+    }
 }
 
 public void CheckMOTDAllowed(QueryCookie cookie, int client, ConVarQueryResult result, const char cvarName[], const char cvarValue[]) {
