@@ -2,17 +2,26 @@
 #define WEAPON_MAX 16
 #define WEAPON_NAME_LENGTH 32
 
+// Stored data from the weapons config file.
+// Each array has 3 elements:
+//  0: game's name of the weapon (e.g. "weapon_ak47")
+//  1: player-readable name of the weapon (e.g. "AK47")
+//  2: team the weapon belongs to (e.g. "T", "CT", or "ANY")
 int g_numRifles;
 char g_Rifles[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
 int g_numPistols;
 char g_Pistols[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
 
+/**
+ * Initializes weapon-related data on map start.
+ * This includes the server-specific weapon config file configs/multi1v1_weapons.cfg.
+ */
 public void Weapons_MapStart() {
     // Opening the file
     g_numPistols = 0;
     g_numRifles = 0;
 
-    decl String:configFile[PLATFORM_MAX_PATH];
+    char configFile[PLATFORM_MAX_PATH];
     BuildPath(Path_SM, configFile, sizeof(configFile), "configs/multi1v1_weapons.cfg");
 
     if (!FileExists(configFile)) {
@@ -21,7 +30,7 @@ public void Weapons_MapStart() {
         return;
     }
 
-    new Handle:kv = CreateKeyValues("Weapons");
+    Handle kv = CreateKeyValues("Weapons");
     FileToKeyValues(kv, configFile);
 
     // Parse the rifles section
@@ -63,6 +72,9 @@ public void Weapons_MapStart() {
     CloseHandle(kv);
 }
 
+/**
+ * A simple backup with just a few weapons so bad config files don't totally break the server.
+ */
 static void LoadBackupConfig() {
     LogError("Plugin forced to fallback to backup weapons only");
     g_Rifles[0][0] = "weapon_ak47";
@@ -91,6 +103,10 @@ static TeamStringToTeam(char teamString[]) {
         return -1;
 }
 
+/**
+ * Returns the cstrike team a weapon is intended for, or -1 if any can use the weapon.
+ * This is only valid for weapons in the server's weapons config file.
+ */
 public int GetWeaponTeam(char weapon[]) {
     for (new i = 0; i < g_numRifles; i++) {
         if (StrEqual(weapon[0], g_Rifles[i][0])) {
@@ -141,6 +157,9 @@ public RoundType GetRoundType(int client1, int client2) {
     return roundType;
 }
 
+/**
+ * Returns a completely random round type.
+ */
 public RoundType GetRandomRoundType() {
     Handle types = CreateArray();
     PushArrayCell(types, RoundType_Rifle);
@@ -366,6 +385,9 @@ public UpdatePreferencesOnCookies(int client) {
     strcopy(g_SecondaryWeapon[client], sizeof(cookieValue), cookieValue);
 }
 
+/**
+ * Gives a player a weapon, taking care of getting them the appropriate skin.
+ */
 public GiveWeapon(client, char weapon[]) {
     int playerteam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     int weaponteam = GetWeaponTeam(weapon);
@@ -375,6 +397,9 @@ public GiveWeapon(client, char weapon[]) {
     SetEntProp(client, Prop_Data, "m_iTeamNum", playerteam);
 }
 
+/**
+ * Returns if the given weapon is a default starting pistol.
+ */
 public bool IsDefaultPistol(char weapon[]) {
     char defaultPistols[][] = {
         "weapon_glock",
