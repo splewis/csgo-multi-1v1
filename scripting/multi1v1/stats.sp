@@ -69,7 +69,7 @@ public void DB_AddPlayer(int client) {
         GetConVarString(g_hDatabaseServerId, serverID, sizeof(serverID));
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
                "INSERT IGNORE INTO %s (accountID,serverID,auth) VALUES (%d, %d, '%s');",
-               TABLE_NAME, id, id, auth);
+               TABLE_NAME, id, serverID, auth);
         SQL_TQuery(db, Callback_Insert, g_sqlBuffer, GetClientSerial(client));
     }
 }
@@ -96,7 +96,7 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
             char serverID[12];
             GetConVarString(g_hDatabaseServerId, serverID, sizeof(serverID));
             Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-                   "UPDATE %s SET name = '%s', lastTime = %d WHERE accountID = %d AND serverId = %d",
+                   "UPDATE %s SET name = '%s', lastTime = %d WHERE accountID = %d AND serverID = %d",
                    TABLE_NAME, sanitized_name, GetTime(), id, serverID);
             SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
         }
@@ -114,7 +114,7 @@ public void DB_FetchRatings(int client) {
             char serverID[12];
             GetConVarString(g_hDatabaseServerId, serverID, sizeof(serverID));
             Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-                   "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d AND serverId = %d",
+                   "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d AND serverID = %d",
                    TABLE_NAME, GetSteamAccountID(client), serverID);
             SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, GetClientSerial(client));
         }
@@ -153,7 +153,7 @@ public void DB_WriteRatings(int client) {
         char serverID[12];
         GetConVarString(g_hDatabaseServerId, serverID, sizeof(serverID));
         Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-               "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d AND serverId = %d",
+               "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d AND serverID = %d",
                TABLE_NAME, g_Rating[client], g_RifleRating[client], g_AwpRating[client], g_PistolRating[client],
                GetSteamAccountID(client), serverID);
         SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
@@ -199,7 +199,7 @@ public void Increment(int client, const char field[]) {
             char serverID[12];
             GetConVarString(g_hDatabaseServerId, serverID, sizeof(serverID));
             Format(g_sqlBuffer, sizeof(g_sqlBuffer),
-                "UPDATE %s SET %s = %s + 1 WHERE accountID = %d AND serverId = %d",
+                "UPDATE %s SET %s = %s + 1 WHERE accountID = %d AND serverID = %d",
                 TABLE_NAME, field, field, id);
             SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
         }
