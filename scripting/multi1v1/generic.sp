@@ -183,8 +183,35 @@ stock void SQL_CreateTable(Handle db_connection, char table_name[], char fields[
         if (i != num_fields - 1)
             StrCat(buffer, sizeof(buffer), ", ");
     }
-    StrCat(buffer, sizeof(buffer), ");");
-    SQL_FastQuery(db_connection, buffer);
+    StrCat(buffer, sizeof(buffer), ")");
+
+    if (!SQL_FastQuery(db_connection, buffer)) {
+        char err[255];
+        SQL_GetError(db_connection, err, sizeof(err));
+        LogError(err);
+    }
+}
+
+stock void SQL_AddColumn(Handle db_connection, char table_name[], char column_info[]) {
+    char buffer[1024];
+    Format(buffer, sizeof(buffer), "ALTER TABLE %s ADD COLUMN %s", table_name, column_info);
+    if (!SQL_FastQuery(db_connection, buffer)) {
+        char err[255];
+        SQL_GetError(db_connection, err, sizeof(err));
+        if (StrContains(err, "Duplicate column name", false) == -1) {
+            LogError(err);
+        }
+    }
+}
+
+stock void SQL_UpdatePrimaryKey(Handle db_connection, char table_name[], char primary_key[]) {
+    char buffer[1024];
+    Format(buffer, sizeof(buffer), "ALTER TABLE %s DROP PRIMARY KEY, ADD PRIMARY KEY (%s)", table_name, primary_key);
+    if (!SQL_FastQuery(db_connection, buffer)) {
+        char err[255];
+        SQL_GetError(db_connection, err, sizeof(err));
+        LogError(err);
+    }
 }
 
 stock Colorize(char msg[], int size) {

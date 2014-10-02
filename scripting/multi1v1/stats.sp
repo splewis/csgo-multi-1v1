@@ -13,7 +13,8 @@ char g_TableFormat[][] = {
     "pistolRating FLOAT NOT NULL default 1500.0",
     "awpRating FLOAT NOT NULL default 1500.0",
     "lastTime INT default 0 NOT NULL",
-    "recentRounds INT default 0 NOT NULL"
+    "recentRounds INT default 0 NOT NULL",
+    "PRIMARY KEY (accountID, serverID)"
 };
 
 /**
@@ -29,11 +30,19 @@ public DB_Connect() {
         g_dbConnected = false;
         LogError("Could not connect: %s", error);
     } else {
-        // create the table
         SQL_LockDatabase(db);
+
+        // create the table
         SQL_CreateTable(db, TABLE_NAME, g_TableFormat, sizeof(g_TableFormat));
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer), "ALTER TABLE `%s` ADD PRIMARY KEY (`accountID`,`serverID`);", TABLE_NAME);
-        SQL_FastQuery(db, g_sqlBuffer);
+
+        // Add new columns/key for backwards compaability reaons
+        SQL_AddColumn(db, TABLE_NAME, "serverID INT NOT NULL default 0");
+        SQL_AddColumn(db, TABLE_NAME, "rifleRating FLOAT NOT NULL default 1500.0");
+        SQL_AddColumn(db, TABLE_NAME, "pistolRating FLOAT NOT NULL default 1500.0");
+        SQL_AddColumn(db, TABLE_NAME, "awpRating FLOAT NOT NULL default 1500.0");
+        SQL_AddColumn(db, TABLE_NAME, "recentRounds INT default 0 NOT NULL");
+        SQL_UpdatePrimaryKey(db, TABLE_NAME, "`accountID`,`serverID`");
+
         SQL_UnlockDatabase(db);
         g_dbConnected = true;
     }
