@@ -80,6 +80,10 @@ native int GetLosses(int client);
 // Returns a client's arena number, or -1 if they aren't in an arena.
 native int GetArenaNumber(int client);
 
+// Returns players in arenas, or -1 if there is no player.
+native int GetArenaPlayer1(int arena);
+native int GetArenaPlayer2(int arena);
+
 // Returns the number of rounds a client has spent at arena 1.
 native int GetRoundsAtArena1(int client);
 
