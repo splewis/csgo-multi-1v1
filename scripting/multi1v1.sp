@@ -611,7 +611,7 @@ public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) 
         return;
 
     int arena = g_Ranking[client];
-    assert_msg(arena != -1, "%N had arena -1 on spawn")
+    assert_msg(arena != -1, "player had arena -1 on spawn")
 
     RoundType roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
     GivePlayerArenaWeapons(client, roundType);
