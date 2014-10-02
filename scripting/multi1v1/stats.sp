@@ -184,10 +184,14 @@ public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
             return;
         }
 
+        g_Losses[loser]++;
         Increment(loser, "losses");
+
         if (forceLoss) {
+            g_Losses[winner]++;
             Increment(winner, "losses");
         } else {
+            g_Wins[winner]++;
             Increment(winner, "wins");
         }
 
