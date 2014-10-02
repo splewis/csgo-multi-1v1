@@ -15,7 +15,7 @@ public Plugin:myinfo = {
 
 public OnPluginStart() {
     LoadTranslations("common.phrases");
-    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect_stats/. The accountID is appened to this url for each player.");
+    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. For example: http://csgo1v1.splewis.net/redirect.php. ?id=USER_ID&server_id=SERVER_ID will be appended to your url.");
     AutoExecConfig(true, "multi1v1_online_stats_viewer", "sourcemod/multi1v1");
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
@@ -54,8 +54,10 @@ public void ShowStatsForPlayer(int client, target) {
         return;
     }
 
+    char serverID[12];
+    GetConVarString(g_hDatabaseServerId, serverID, sizeof(serverID));
     char player_url[255];
-    Format(player_url, sizeof(player_url), "%s%d", url, GetSteamAccountID(target));
+    Format(player_url, sizeof(player_url), "%s?id=%d&server_id=%s", url, GetSteamAccountID(target), serverID);
     ShowMOTDPanel(client, "Multi1v1 Stats", player_url, MOTDPANEL_TYPE_URL);
     QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
 }
