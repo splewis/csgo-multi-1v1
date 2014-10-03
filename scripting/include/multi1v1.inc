@@ -25,7 +25,7 @@ forward OnPostArenaRankingsSet(Handle rankingQueue);
 
 // Called after the round-post stary is finished and all players + arenas
 // are setup and ready to go.
-forward OnAreanasReady();
+forward OnArenasReady();
 
 // After a player's spawn is finished and they have been given their weapons.
 // This may get called for the same client multiple times per round!

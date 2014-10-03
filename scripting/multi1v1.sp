@@ -192,7 +192,7 @@ public OnPluginStart() {
     /** Fowards **/
     g_hOnPreArenaRankingsSet = CreateGlobalForward("OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnPostArenaRankingsSet = CreateGlobalForward("OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
-    g_hOnArenasReady = CreateGlobalForward("OnAreanasReady", ET_Ignore);
+    g_hOnArenasReady = CreateGlobalForward("OnArenasReady", ET_Ignore);
     g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
     g_hAfterPlayerSetup = CreateGlobalForward("AfterPlayerSetup", ET_Ignore, Param_Cell);
     g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
