@@ -35,7 +35,7 @@ public void Weapons_MapStart() {
 
     // Parse the rifles section
     if (!KvJumpToKey(kv, "Rifles")) {
-        LogError("The weapon config file did contains a \"Rifles\" section: %s", configFile);
+        LogError("The weapon config file did not contain a \"Rifles\" section: %s", configFile);
         CloseHandle(kv);
         LoadBackupConfig();
         return;
@@ -53,7 +53,7 @@ public void Weapons_MapStart() {
 
     // Parse the pistols section
     if (!KvJumpToKey(kv, "Pistols")) {
-        LogError("The weapon config file did contains a \"Pistols\" section: %s", configFile);
+        LogError("The weapon config file did not contain a \"Pistols\" section: %s", configFile);
         CloseHandle(kv);
         LoadBackupConfig();
         return;
