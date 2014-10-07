@@ -12,8 +12,8 @@
     #define assert_msg(%1,%2)
 #endif
 
-new String:g_ColorNames[][] = {"{NORMAL}", "{DARK_RED}", "{PURPLE}", "{GREEN}", "{MOSS_GREEN}", "{LIGHT_GREEN}", "{LIGHT_RED}", "{GRAY}", "{ORANGE}", "{LIGHT_BLUE}", "{DARK_BLUE}", "{PURPLE}", "{CARRIAGE_RETURN}"};
-new String:g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",         "\x05",     "\x06",          "\x07",        "\x08",   "\x09",     "\x0B",         "\x0C",        "\x0E",     "\n"};
+char g_ColorNames[][] = {"{NORMAL}", "{DARK_RED}", "{PURPLE}", "{GREEN}", "{MOSS_GREEN}", "{LIGHT_GREEN}", "{LIGHT_RED}", "{GRAY}", "{ORANGE}", "{LIGHT_BLUE}", "{DARK_BLUE}", "{PURPLE}", "{CARRIAGE_RETURN}"};
+char g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",         "\x05",     "\x06",          "\x07",        "\x08",   "\x09",     "\x0B",         "\x0C",        "\x0E",     "\n"};
 
 #include <clientprefs>
 #include <cstrike>
@@ -86,7 +86,7 @@ stock void AddMenuBool(Handle menu, bool value, const char display[]) {
 /**
  * Gets a boolean to a menu from a string choice.
  */
-stock bool:GetMenuBool(Handle:menu, any:param2) {
+stock bool GetMenuBool(Handle menu, any:param2) {
     return GetMenuInt(menu, param2) != 0;
 }
 
@@ -214,7 +214,7 @@ stock void SQL_UpdatePrimaryKey(Handle db_connection, const char table_name[], c
     }
 }
 
-stock Colorize(char msg[], int size) {
+stock void Colorize(char msg[], int size) {
     for (new i = 0; i < sizeof(g_ColorNames); i ++) {
         ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
     }

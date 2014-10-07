@@ -1,6 +1,3 @@
-/* Global buffer for sql queries */
-char g_sqlBuffer[1024];
-
 char g_TableFormat[][] = {
     "accountID INT NOT NULL default 0",
     "serverID INT NOT NULL default 0",
@@ -78,10 +75,11 @@ public void DB_AddPlayer(int client) {
 
         // insert if not already in the table
         int serverID = GetConVarInt(g_hDatabaseServerId);
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+        char query[1024];
+        Format(query, sizeof(query),
                "INSERT IGNORE INTO %s (accountID,serverID,auth) VALUES (%d, %d, '%s');",
                TABLE_NAME, id, serverID, auth);
-        SQL_TQuery(db, Callback_Insert, g_sqlBuffer, GetClientSerial(client));
+        SQL_TQuery(db, Callback_Insert, query, GetClientSerial(client));
     }
 }
 
@@ -105,10 +103,11 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
 
             // update the player name and last connect time
             int serverID = GetConVarInt(g_hDatabaseServerId);
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+            char query[1024];
+            Format(query, sizeof(query),
                    "UPDATE %s SET name = '%s', lastTime = %d WHERE accountID = %d AND serverID = %d",
                    TABLE_NAME, sanitized_name, GetTime(), id, serverID);
-            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+            SQL_TQuery(db, SQLErrorCheckCallback, query);
         }
     }
 }
@@ -122,10 +121,11 @@ public void DB_FetchRatings(int client) {
         int id = GetSteamAccountID(client);
         if (id != 0) {
             int serverID = GetConVarInt(g_hDatabaseServerId);
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+            char query[1024];
+            Format(query, sizeof(query),
                    "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d AND serverID = %d",
                    TABLE_NAME, GetSteamAccountID(client), serverID);
-            SQL_TQuery(db, Callback_FetchRating, g_sqlBuffer, GetClientSerial(client));
+            SQL_TQuery(db, Callback_FetchRating, query, GetClientSerial(client));
         }
     }
 }
@@ -160,11 +160,12 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
 public void DB_WriteRatings(int client) {
     if (g_FetchedPlayerInfo[client] && IsPlayer(client)) {
         int serverID = GetConVarInt(g_hDatabaseServerId);
-        Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+        char query[1024];
+        Format(query, sizeof(query),
                "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d AND serverID = %d",
                TABLE_NAME, g_Rating[client], g_RifleRating[client], g_AwpRating[client], g_PistolRating[client],
                GetSteamAccountID(client), serverID);
-        SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+        SQL_TQuery(db, SQLErrorCheckCallback, query);
     }
 }
 
@@ -209,10 +210,11 @@ public void Increment(int client, const char field[]) {
         int id = GetSteamAccountID(client);
         if (id >= 1) {
             int serverid = GetConVarInt(g_hDatabaseServerId);
-            Format(g_sqlBuffer, sizeof(g_sqlBuffer),
+            char query[1024];
+            Format(query, sizeof(query),
                 "UPDATE %s SET %s = %s + 1 WHERE accountID = %d AND serverID = %d",
                 TABLE_NAME, field, field, id, serverid);
-            SQL_TQuery(db, SQLErrorCheckCallback, g_sqlBuffer);
+            SQL_TQuery(db, SQLErrorCheckCallback, query);
         }
     }
 }
