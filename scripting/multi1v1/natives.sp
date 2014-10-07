@@ -253,12 +253,10 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
     char buffer[1024];
     int bytesWritten = 0;
     FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
-
-    char finalMsg[1024];
-    Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
-    Colorize(finalMsg, sizeof(finalMsg));
-
-    PrintToChatAll(finalMsg);
+    for (int i = 1; i <= MaxClients; i++) {
+        if (IsPlayer(i))
+            Multi1v1Message(i, buffer);
+    }
 }
 
 public Native_BlockRatingChanges(Handle plugin, numParams) {
