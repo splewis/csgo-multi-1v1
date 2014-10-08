@@ -66,19 +66,25 @@ public void DB_AddPlayer(int client) {
         }
 
         // steam id
-        // TODO: maybe there should be a convar for choosing which auth string to use
-        char auth[64];
+        char auth[32];
         if (!GetClientAuthId(client, AuthId_Steam2, auth, sizeof(auth))) {
             LogMessage("Failed to get steam2 id for %L", client);
             return;
         }
 
-        // insert if not already in the table
+        char authSanitized[64];
+        if (!SQL_EscapeString(db, auth, authSanitized, sizeof(authSanitized))) {
+            LogMessage("Failed to get sanitized auth string for %L", client);
+            return;
+        }
+
         int serverID = GetConVarInt(g_hDatabaseServerId);
+
+        // insert if not already in the table
         char query[1024];
         Format(query, sizeof(query),
                "INSERT IGNORE INTO %s (accountID,serverID,auth) VALUES (%d, %d, '%s');",
-               TABLE_NAME, id, serverID, auth);
+               TABLE_NAME, id, serverID, authSanitized);
         SQL_TQuery(db, Callback_Insert, query, GetClientSerial(client));
     }
 }
