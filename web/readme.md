@@ -18,7 +18,10 @@ wget http://www.domain.com/stats/cron/antisquatter.php?p={YOUR_PASSWORD} && rm -
 ```
 
 ###In-Game Stats
-"sm_multi1v1_stats_url" should be set to something like "http://www.domain.com/stats/redirect.php?id=". Do this in the multi1v1.cfg config file.
+If you are using the included ``multi1v1_online_stats_viewer`` plugin, you should set the ``sm_multi1v1_stats_url``  to something like:
+``http://www.domain.com/stats/redirect.php?id={USER}&server_id={SERVER}``. 
+
+This cvar should be set in ``cfg/multi1v1/multi1v1_online_stats_viewer.cfg``.
 
 ###Web Interface
 This web interface was a quick job that I randomly took up while I was learning PHP. I will try and keep it updated when I can, but no promises. If you have any issues setting it up, feel free to email me at clayton@hiddenempire.org
