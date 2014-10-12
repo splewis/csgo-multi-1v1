@@ -1,8 +1,8 @@
 char g_TableFormat[][] = {
     "accountID INT NOT NULL default 0",
     "serverID INT NOT NULL default 0",
-    "auth varchar(64) NOT NULL default ''",
-    "name varchar(64) NOT NULL default ''",
+    "auth varchar(72) NOT NULL default ''",
+    "name varchar(72) NOT NULL default ''",
     "wins INT NOT NULL default 0",
     "losses INT NOT NULL default 0",
     "rating FLOAT NOT NULL default 1500.0",
@@ -18,7 +18,7 @@ char g_TableFormat[][] = {
  * Attempts to connect to the database.
  * Creates the stats (TABLE_NAME) if needed.
  */
-public DB_Connect() {
+public void DB_Connect() {
     char error[255];
     char dbCfgName[255];
     GetConVarString(g_hDatabaseName, dbCfgName, sizeof(dbCfgName));
@@ -72,7 +72,7 @@ public void DB_AddPlayer(int client) {
             return;
         }
 
-        char authSanitized[64];
+        char authSanitized[sizeof(auth)*2 + 1];
         if (!SQL_EscapeString(db, auth, authSanitized, sizeof(authSanitized))) {
             LogMessage("Failed to get sanitized auth string for %L", client);
             return;
@@ -102,10 +102,17 @@ public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial
         if (id > 0) {
             DB_FetchRatings(client);
 
-            char name[64];
-            GetClientName(client, name, sizeof(name));
-            char sanitized_name[64];
-            SQL_EscapeString(db, name, sanitized_name, sizeof(name));
+            char name[32];
+            if (!GetClientName(client, name, sizeof(name))) {
+                LogError("Failed to get name for %L", client);
+                return;
+            }
+
+            char sanitized_name[sizeof(name)*2 + 1];
+            if (!SQL_EscapeString(db, name, sanitized_name, sizeof(sanitized_name))) {
+                LogError("Failed to get sanitized name for %L", client);
+                return;
+            }
 
             // update the player name and last connect time
             int serverID = GetConVarInt(g_hDatabaseServerId);
@@ -180,14 +187,10 @@ public void DB_WriteRatings(int client) {
  * a winner/loser pair.
  */
 public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
-    if (IsPlayer(winner) && IsPlayer(loser)) {
+    if (IsPlayer(winner) && IsPlayer(loser) && GetConVarInt(g_hUseDatabase) != 0) {
         // TODO: this is a temporary band-aid for the first round ending
         //  too early sometimes and unfairly punishes early connectors
         if (forceLoss && g_totalRounds <= 3) {
-            return;
-        }
-
-        if (GetConVarInt(g_hUseDatabase) == 0) {
             return;
         }
 
@@ -228,7 +231,7 @@ public void Increment(int client, const char field[]) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-public void UpdateRatings(int winner, int loser, bool forceLoss) {
+static void UpdateRatings(int winner, int loser, bool forceLoss) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (!g_FetchedPlayerInfo[winner]) {
