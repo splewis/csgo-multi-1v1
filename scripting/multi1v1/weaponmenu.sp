@@ -330,7 +330,7 @@ public MenuHandler_PistolChoice(Handle menu, MenuAction action, param1, param2) 
 }
 
 /**
- * Displays flashbang menu to a player
+ * Displays the flashbang menu to a player.
  */
 public FlashbangChoiceMenu(int client) {
     Handle menu = CreateMenu(MenuHandler_FlashChoice);
@@ -342,7 +342,7 @@ public FlashbangChoiceMenu(int client) {
 }
 
 /**
- * Pistol choice handler - updates secondary weapon.
+ * Flashbang choice handler - updates a client's flashbang preference.
  */
 public MenuHandler_FlashChoice(Handle menu, MenuAction action, param1, param2) {
     if (action == MenuAction_Select) {
