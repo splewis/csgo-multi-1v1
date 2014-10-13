@@ -219,3 +219,32 @@ stock void Colorize(char msg[], int size) {
         ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
     }
 }
+
+/**
+ * Removes all guns of a client - this EXCLUDES KNIFES.
+ */
+stock void RemoveAllGuns(int client) {
+    int offset = Client_GetWeaponsOffset(client) - 4;
+
+    for (int i = 0; i < MAX_WEAPONS; i++) {
+        offset += 4;
+        int weapon = GetEntDataEnt2(client, offset);
+
+        if (!Weapon_IsValid(weapon)) {
+            continue;
+        }
+
+        char className[32];
+        GetEntityClassname(weapon, className, sizeof(className));
+
+        if (Entity_ClassNameMatches(weapon, "knife", true)) {
+            Client_SetActiveWeapon(client, weapon);
+            continue;
+        }
+
+        if (RemovePlayerItem(client, weapon)) {
+            Entity_Kill(weapon);
+        }
+
+    }
+}
