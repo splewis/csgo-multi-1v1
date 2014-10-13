@@ -181,7 +181,7 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
     if (!IsPlayer(client))
         ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
 
-    Client_RemoveAllWeapons(client, "", true);
+    RemoveAllGuns(client);
 
     if (roundType == RoundType_Rifle) {
         GiveWeapon(client, g_PrimaryWeapon[client]);
@@ -220,7 +220,6 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
         GiveWeapon(client,  defaultPistol);
     }
 
-    GiveWeapon(client, "weapon_knife");
 }
 
 public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
