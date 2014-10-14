@@ -258,7 +258,7 @@ static void UpdateRatings(int winner, int loser, bool forceLoss) {
         }
 
         if (IsValidClient(winner) && IsValidClient(loser)) {
-            float delta = ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
+            float delta = Multi1v1_ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
             g_Rating[winner] += delta;
             g_Rating[loser] -= delta;
             RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
@@ -266,7 +266,7 @@ static void UpdateRatings(int winner, int loser, bool forceLoss) {
             // rndTypeUpdate(RoundType roundType, float ratingArray[])
             #define rndTypeUpdate(%1,%2) \
             if (g_roundTypes[arena] == %1) { \
-                delta = ELORatingDelta(%2[winner], %2[loser], K_FACTOR); \
+                delta = Multi1v1_ELORatingDelta(%2[winner], %2[loser], K_FACTOR); \
                 %2[winner] += delta; \
                 %2[loser] -= delta; \
             }
@@ -297,10 +297,10 @@ static void ForceLoss(int winner, int loser) {
 static void RatingMessage(int winner, int loser, float winner_rating, float loser_rating, float delta) {
     int winner_int = RoundToNearest(winner_rating);
     int loser_int = RoundToNearest(loser_rating);
-    Multi1v1Message(winner, "%t", "WonMessage", winner_int, delta, loser, loser_int, delta);
-    Multi1v1Message(loser, "%t", "LossMessage", loser_int, delta, winner, winner_int, delta);
+    Multi1v1_Message(winner, "%t", "WonMessage", winner_int, delta, loser, loser_int, delta);
+    Multi1v1_Message(loser, "%t", "LossMessage", loser_int, delta, winner, winner_int, delta);
 }
 
 static void ForceLossMessage(int client, float rating, float delta) {
-    Multi1v1Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
+    Multi1v1_Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
 }

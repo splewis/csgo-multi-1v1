@@ -190,14 +190,14 @@ public OnPluginStart() {
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
 
     /** Fowards **/
-    g_hOnPreArenaRankingsSet = CreateGlobalForward("OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
-    g_hOnPostArenaRankingsSet = CreateGlobalForward("OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
-    g_hOnArenasReady = CreateGlobalForward("OnArenasReady", ET_Ignore);
-    g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
-    g_hAfterPlayerSetup = CreateGlobalForward("AfterPlayerSetup", ET_Ignore, Param_Cell);
-    g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
-    g_hOnStatsCached = CreateGlobalForward("OnStatsCached", ET_Ignore, Param_Cell);
-    g_hOnGunsMenuDone = CreateGlobalForward("OnGunsMenuDone", ET_Ignore, Param_Cell);
+    g_hOnPreArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnPostArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnArenasReady = CreateGlobalForward("Multi1v1_OnArenasReady", ET_Ignore);
+    g_hAfterPlayerSpawn = CreateGlobalForward("Multi1v1_AfterPlayerSpawn", ET_Ignore, Param_Cell);
+    g_hAfterPlayerSetup = CreateGlobalForward("Multi1v1_AfterPlayerSetup", ET_Ignore, Param_Cell);
+    g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+    g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
+    g_hOnGunsMenuDone = CreateGlobalForward("Multi1v1_OnGunsMenuDone", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -325,8 +325,8 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
     int queueLength = Queue_Length(g_waitingQueue);
     for (int i = 0; i < queueLength; i++) {
         int client = GetArrayCell(g_waitingQueue, i);
-        Multi1v1Message(client, "%t", "ArenasFull");
-        Multi1v1Message(client, "%t", "QueuePosition", i + 1);
+        Multi1v1_Message(client, "%t", "ArenasFull");
+        Multi1v1_Message(client, "%t", "QueuePosition", i + 1);
     }
 
     Call_StartForward(g_hOnPostArenaRankingsSet);
@@ -380,8 +380,8 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
 public int spectatorSortFunction(index1, index2, Handle array, Handle hndl) {
     int client1 = GetArrayCell(array, index1);
     int client2 = GetArrayCell(array, index2);
-    if (HasStats(client1) && HasStats(client2)) {
-        return RoundToNearest(GetRating(client2) - RoundToNearest(GetRating(client1)));
+    if (Multi1v1_HasStats(client1) && Multi1v1_HasStats(client2)) {
+        return RoundToNearest(Multi1v1_GetRating(client2) - RoundToNearest(Multi1v1_GetRating(client1)));
     } else {
         return client1 - client2;
     }
@@ -454,12 +454,12 @@ public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcas
         if (!IsActivePlayer(i) || g_BlockChatMessages[i])
             continue;
 
-        int other = GetOpponent(i);
+        int other = Multi1v1_GetOpponent(i);
         int arena = g_Ranking[i];
         if (IsValidClient(other)) {
-            Multi1v1Message(i, "%t", "FacingOff", arena - g_arenaOffsetValue, other);
+            Multi1v1_Message(i, "%t", "FacingOff", arena - g_arenaOffsetValue, other);
         } else {
-            Multi1v1Message(i, "%t", "NoOpponent", arena - g_arenaOffsetValue);
+            Multi1v1_Message(i, "%t", "NoOpponent", arena - g_arenaOffsetValue);
         }
     }
 
@@ -478,7 +478,7 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
 
     int team = onCT ? CS_TEAM_CT : CS_TEAM_T;
     SwitchPlayerTeam(client, team);
-    GetArenaSpawn(arena, team, spawn, angles);
+    Multi1v1_GetArenaSpawn(arena, team, spawn, angles);
 
     CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);
@@ -614,7 +614,7 @@ public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) 
     assert_msg(arena != -1, "player had arena -1 on spawn")
 
     RoundType roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
-    GivePlayerArenaWeapons(client, roundType);
+    Multi1v1_GivePlayerArenaWeapons(client, roundType);
     CreateTimer(0.1, RemoveRadar, client);
 
     Call_StartForward(g_hAfterPlayerSpawn);

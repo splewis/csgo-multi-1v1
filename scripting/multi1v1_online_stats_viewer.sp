@@ -50,7 +50,7 @@ public void ShowStatsForPlayer(int client, target) {
     char url[255];
     GetConVarString(g_hStatsWebsite, url, sizeof(url));
     if (StrEqual(url, "")) {
-        Multi1v1Message(client, "Sorry, there is no stats website for this server.");
+        Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
         return;
     }
 
@@ -77,6 +77,6 @@ public void ShowStatsForPlayer(int client, target) {
 
 public void CheckMOTDAllowed(QueryCookie cookie, int client, ConVarQueryResult result, const char cvarName[], const char cvarValue[]) {
     if (!StrEqual(cvarValue, "0")) {
-        Multi1v1Message(client, "You must have {LIGHT_GREEN}cl_disablehtmlmotd 0 {NORMAL}to use that command.");
+        Multi1v1_Message(client, "You must have {LIGHT_GREEN}cl_disablehtmlmotd 0 {NORMAL}to use that command.");
     }
 }

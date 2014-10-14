@@ -1,41 +1,41 @@
 // See include/multi1v1.inc for documentation.
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
-    CreateNative("IsInArena", Native_IsInArena);
-    CreateNative("GetMaximumArenas", Native_GetMaximumArenas);
-    CreateNative("GetNumActiveArenas", Native_GetNumActiveArenas);
-    CreateNative("IsInWaitingQueue", Native_IsInWaitingQueue);
-    CreateNative("HasStats", Native_HasStats);
-    CreateNative("GetRating", Native_GetRating);
-    CreateNative("GetAwpRating", Native_GetAwpRating);
-    CreateNative("GetRifleRating", Native_GetRifleRating);
-    CreateNative("GetPistolRating", Native_GetPistolRating);
-    CreateNative("GetArenaNumber", Native_GetArenaNumber);
-    CreateNative("GetArenaPlayer1", Native_GetArenaPlayer1);
-    CreateNative("GetArenaPlayer2", Native_GetArenaPlayer2);
-    CreateNative("GetRoundsAtArena1", Native_GetRoundsAtArena1);
-    CreateNative("GetOpponent", Native_GetOpponent);
-    CreateNative("GetRoundsPlayed", Native_GetRoundsPlayed);
-    CreateNative("GetWins", Native_GetWins);
-    CreateNative("GetLosses", Native_GetLosses);
-    CreateNative("HasDatabase", Native_HasDatabase);
-    CreateNative("GetDatabase", Native_GetDatabase);
-    CreateNative("GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
-    CreateNative("GivePlayerArenaWeaponsNoNades", Native_GivePlayerArenaWeaponsNoNades);
-    CreateNative("Multi1v1Message", Native_Multi1v1Message);
-    CreateNative("Multi1v1MessageToAll", Native_Multi1v1MessageToAll);
-    CreateNative("BlockRatingChanges", Native_BlockRatingChanges);
-    CreateNative("UnblockRatingChanges", Native_UnblockRatingChanges);
-    CreateNative("BlockChatMessages", Native_BlockChatMessages);
-    CreateNative("UnblockChatMessages", Native_UnblockChatMessages);
-    CreateNative("BlockMVPStars", Native_BlockMVPStars);
-    CreateNative("UnblockMVPStars", Native_UnblockMVPStars);
-    CreateNative("BlockArenaDones", Native_BlockArenaDones);
-    CreateNative("UnblockArenaDones", Native_UnblockArenaDones);
-    CreateNative("SetArenaOffsetValue", Native_SetArenaOffsetValue);
-    CreateNative("ELORatingDelta", Native_ELORatingDelta);
-    CreateNative("GetNumSpawnsInArena", Native_GetNumSpawnsInArena);
-    CreateNative("GetArenaSpawn", Native_GetArenaSpawn);
+    CreateNative("Multi1v1_IsInArena", Native_IsInArena);
+    CreateNative("Multi1v1_GetMaximumArenas", Native_GetMaximumArenas);
+    CreateNative("Multi1v1_GetNumActiveArenas", Native_GetNumActiveArenas);
+    CreateNative("Multi1v1_IsInWaitingQueue", Native_IsInWaitingQueue);
+    CreateNative("Multi1v1_HasStats", Native_HasStats);
+    CreateNative("Multi1v1_GetRating", Native_GetRating);
+    CreateNative("Multi1v1_GetAwpRating", Native_GetAwpRating);
+    CreateNative("Multi1v1_GetRifleRating", Native_GetRifleRating);
+    CreateNative("Multi1v1_GetPistolRating", Native_GetPistolRating);
+    CreateNative("Multi1v1_GetArenaNumber", Native_GetArenaNumber);
+    CreateNative("Multi1v1_GetArenaPlayer1", Native_GetArenaPlayer1);
+    CreateNative("Multi1v1_GetArenaPlayer2", Native_GetArenaPlayer2);
+    CreateNative("Multi1v1_GetRoundsAtArena1", Native_GetRoundsAtArena1);
+    CreateNative("Multi1v1_GetOpponent", Native_GetOpponent);
+    CreateNative("Multi1v1_GetRoundsPlayed", Native_GetRoundsPlayed);
+    CreateNative("Multi1v1_GetWins", Native_GetWins);
+    CreateNative("Multi1v1_GetLosses", Native_GetLosses);
+    CreateNative("Multi1v1_HasDatabase", Native_HasDatabase);
+    CreateNative("Multi1v1_GetDatabase", Native_GetDatabase);
+    CreateNative("Multi1v1_GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
+    CreateNative("Multi1v1_GivePlayerArenaWeaponsNoNades", Native_GivePlayerArenaWeaponsNoNades);
+    CreateNative("Multi1v1_Message", Native_Multi1v1Message);
+    CreateNative("Multi1v1_MessageToAll", Native_Multi1v1MessageToAll);
+    CreateNative("Multi1v1_BlockRatingChanges", Native_BlockRatingChanges);
+    CreateNative("Multi1v1_UnblockRatingChanges", Native_UnblockRatingChanges);
+    CreateNative("Multi1v1_BlockChatMessages", Native_BlockChatMessages);
+    CreateNative("Multi1v1_UnblockChatMessages", Native_UnblockChatMessages);
+    CreateNative("Multi1v1_BlockMVPStars", Native_BlockMVPStars);
+    CreateNative("Multi1v1_UnblockMVPStars", Native_UnblockMVPStars);
+    CreateNative("Multi1v1_BlockArenaDones", Native_BlockArenaDones);
+    CreateNative("Multi1v1_UnblockArenaDones", Native_UnblockArenaDones);
+    CreateNative("Multi1v1_SetArenaOffsetValue", Native_SetArenaOffsetValue);
+    CreateNative("Multi1v1_ELORatingDelta", Native_ELORatingDelta);
+    CreateNative("Multi1v1_GetNumSpawnsInArena", Native_GetNumSpawnsInArena);
+    CreateNative("Multi1v1_GetArenaSpawn", Native_GetArenaSpawn);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -166,7 +166,7 @@ public Native_HasDatabase(Handle plugin, numParams) {
 }
 
 public Native_GetDatabase(Handle plugin, numParams) {
-    if (!HasDatabase()) {
+    if (!Multi1v1_HasDatabase()) {
         ThrowNativeError(SP_ERROR_PARAM, "The multi1v1 database is not connected");
         return _:INVALID_HANDLE;
     } else {
@@ -226,8 +226,8 @@ public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
 public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     RoundType roundType = RoundType:GetNativeCell(2);
-    GivePlayerArenaWeaponsNoNades(client, roundType);
-    int other = GetOpponent(client);
+    Multi1v1_GivePlayerArenaWeaponsNoNades(client, roundType);
+    int other = Multi1v1_GetOpponent(client);
     if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
         GivePlayerItem(client, "weapon_flashbang");
     }
@@ -255,7 +255,7 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
     FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
     for (int i = 1; i <= MaxClients; i++) {
         if (IsPlayer(i))
-            Multi1v1Message(i, buffer);
+            Multi1v1_Message(i, buffer);
     }
 }
 
@@ -344,7 +344,7 @@ public Native_GetArenaSpawn(Handle plugin, numParams) {
     int arena = GetNativeCell(1);
     int team = GetNativeCell(2);
 
-    if (arena <= 0 || arena > GetMaximumArenas())
+    if (arena <= 0 || arena > Multi1v1_GetMaximumArenas())
         ThrowNativeError(SP_ERROR_PARAM, "Arena %d is invalid", arena);
     if (team != CS_TEAM_T && team != CS_TEAM_CT)
         ThrowNativeError(SP_ERROR_PARAM, "Invalid team: %d", team);
