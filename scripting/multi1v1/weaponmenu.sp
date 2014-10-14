@@ -342,7 +342,7 @@ public FlashbangChoiceMenu(int client) {
 }
 
 /**
- * Pistol choice handler - updates secondary weapon.
+ * Flashbang choice handler - updates flashbang preference.
  */
 public MenuHandler_FlashChoice(Handle menu, MenuAction action, param1, param2) {
     if (action == MenuAction_Select) {
@@ -379,10 +379,12 @@ public UpdatePreferencesOnCookies(int client) {
 
     char cookieValue[WEAPON_LENGTH];
     GetClientCookie(client, g_hRifleCookie, cookieValue, sizeof(cookieValue));
-    strcopy(g_PrimaryWeapon[client], sizeof(cookieValue), cookieValue);
+    if (IsAllowedRifle(cookieValue))
+        strcopy(g_PrimaryWeapon[client], sizeof(cookieValue), cookieValue);
 
     GetClientCookie(client, g_hPistolCookie, cookieValue, sizeof(cookieValue));
-    strcopy(g_SecondaryWeapon[client], sizeof(cookieValue), cookieValue);
+    if (IsAllowedPistol(cookieValue))
+        strcopy(g_SecondaryWeapon[client], sizeof(cookieValue), cookieValue);
 }
 
 /**
@@ -408,6 +410,24 @@ public bool IsDefaultPistol(const char weapon[]) {
     };
     for (int i = 0; i < 3; i++) {
         if (StrEqual(weapon, defaultPistols[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsAllowedRifle(char weapon[]) {
+    for (int i = 0; i < sizeof(g_Rifles); i++) {
+        if (StrEqual(g_Rifles[i][0], weapon, false)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsAllowedPistol(char weapon[]) {
+    for (int i = 0; i < sizeof(g_Pistols); i++) {
+        if (StrEqual(g_Pistols[i][0], weapon, false)) {
             return true;
         }
     }
