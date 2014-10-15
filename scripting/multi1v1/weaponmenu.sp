@@ -143,7 +143,7 @@ public RoundType GetRoundType(int client1, int client2) {
         roundType = pref1;
     } else {
         // create array of "allowed" round types
-        Handle types = CreateArray();
+        ArrayList types = ArrayList();
 
         AddRounds_CheckAllowed(types, client1, client2, RoundType_Awp, g_AllowAWP);
         AddRounds_CheckAllowed(types, client1, client2, RoundType_Pistol, g_AllowPistol);
@@ -161,22 +161,22 @@ public RoundType GetRoundType(int client1, int client2) {
  * Returns a completely random round type.
  */
 public RoundType GetRandomRoundType() {
-    Handle types = CreateArray();
-    PushArrayCell(types, RoundType_Rifle);
-    PushArrayCell(types, RoundType_Awp);
-    PushArrayCell(types, RoundType_Pistol);
-    RoundType choice = GetArrayCell(types, GetArrayRandomIndex(types));
+    ArrayList types = ArrayList();
+    types.Push(RoundType_Rifle);
+    types.Push(RoundType_Awp);
+    types.Push(RoundType_Pistol);
+    RoundType choice = types.Get(GetArrayRandomIndex(types));
     CloseHandle(types);
     return choice;
 }
 
-static AddRounds(Handle types, int client1, int client2, RoundType roundType) {
-    PushArrayCell(types, roundType);
+static AddRounds(ArrayList types, int client1, int client2, RoundType roundType) {
+    types.Push(roundType);
     if (g_Preference[client1] == roundType || g_Preference[client2] == roundType)
-        PushArrayCell(types, roundType);
+        types.Push(roundType);
 }
 
-static AddRounds_CheckAllowed(Handle types, int client1, int client2, RoundType roundType, bool allowed[]) {
+static AddRounds_CheckAllowed(ArrayList types, int client1, int client2, RoundType roundType, bool allowed[]) {
     if (allowed[client1] && allowed[client2]) {
         AddRounds(types, client1, client2, roundType);
     }

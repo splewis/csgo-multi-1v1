@@ -3,7 +3,7 @@
 #endif
 #define __MULTI1V1_INCLUDE__
 
-// The different round types
+// The different round types.
 enum RoundType {
     RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
     RoundType_Rifle = 0,
@@ -11,38 +11,72 @@ enum RoundType {
     RoundType_Pistol = 2
 };
 
-// Called before the plugin has put any players in the ranking queue.
-// It is always empty at this call.
-// The ranking queue is an adt array.
+/**
+ * Called right before the plugin puts players into the ranking queue.
+ * This is the best place to put players into the front of the queue.
+ *
+ * @param rankingQueue empty adt array to be used for arena placement
+ * @noreturn
+ */
 forward Multi1v1_OnPreArenaRankingsSet(Handle rankingQueue);
 
-// Called after the plugin has finished putting players in the ranking queue
-// for next round. The ranking queue is an adt array.
-// You could reorder the players or add a new player here.
-// Warning: if you add players check the maximum number of arenas
-// using GetMaximumArenas.
+/**
+ * Called after the plugin is done putting players into the ranking queue.
+ *
+ * @param rankingQueue adt array of the players in order of their arena placement
+ * @noreturn
+ */
 forward Multi1v1_OnPostArenaRankingsSet(Handle rankingQueue);
 
-// Called after the round-post stary is finished and all players + arenas
-// are setup and ready to go.
+/**
+ * Called when all players have been placed into their arena.
+ * GetArenaNumber is now valid to call for clients.
+ *
+ * @noreturn
+ */
 forward Multi1v1_OnArenasReady();
 
-// After a player's spawn is finished and they have been given their weapons.
-// This may get called for the same client multiple times per round!
+/**
+ * Called after a player's spawn setup (e.g. giving weapons) is processed.
+ *
+ * @param client        Player's index.
+ * @noreturn
+ */
 forward Multi1v1_AfterPlayerSpawn(int client);
 
-// Called after a client they have been moved to the right team and teleported
-// to the right spawn location. This will only be called once per round.
+/**
+ * Called after core player setup functions (teleporting, printing their opponent to chat)
+ * are processed.
+ *
+ * @param client        Player's index.
+ * @noreturn
+ */
 forward Multi1v1_AfterPlayerSetup(int client);
 
-// When a round is decided. Not guaranteed to be called for
-// a client every round.
+/**
+ * Called when an arena finishes it's fighting.
+ *
+ * @param winner        Winner's client index.
+ * @param loser        Loser's client index.
+ * @param forceLoss        Whether it was a "force loss" for both payers (e.g. time ran out)
+ * @noreturn
+ */
 forward Multi1v1_OnRoundWon(int winner, int loser, bool forceLoss);
 
-// Called when a client's stats are received from the database.
+/**
+ * Called when a client's stats have been fetched successfully.
+ *
+ * @param client        Player's index.
+ * @noreturn
+ */
 forward Multi1v1_OnStatsCached(int client);
 
-// Called when a player finishes going through the weapons menu.
+/**
+ * Called after a player finishes going through the weapons menu.
+ *
+ * @param client        Player's index.
+ * @noreturn
+ */
 forward Multi1v1_OnGunsMenuDone(int client);
 
 // Returns if a player is actively in an arena.
