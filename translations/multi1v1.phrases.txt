@@ -34,4 +34,9 @@
 		"#format"	"{1:i},{2:.1f}"
 		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) let time run out."
 	}
+	"MostWins"
+	{
+		"#format"	"{1:N},{2:d}"
+		"en"		"{GREEN]{1} {NORMAL}had the most wins {PURPLE}({2}) {NORMAL}in arena 1 this map."
+	}
 }

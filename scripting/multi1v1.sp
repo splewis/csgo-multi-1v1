@@ -183,6 +183,7 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
+    HookEvent("cs_win_panel_match", Event_MatchOver);
 
     /** Commands **/
     AddCommandListener(Command_TeamJoin, "jointeam");
@@ -250,6 +251,27 @@ public void OnClientAuthorized(int client, const char auth[]) {
         DB_AddPlayer(client);
     }
 }
+
+public OnClientConnected(int client) {
+    ResetClientVariables(client);
+}
+
+public OnClientDisconnect(int client) {
+    if (GetConVarInt(g_hUseDatabase) != 0)
+        DB_WriteRatings(client);
+
+    Queue_Drop(g_waitingQueue, client);
+    int arena = g_Ranking[client];
+    UpdateArena(arena);
+    ResetClientVariables(client);
+}
+
+public OnClientCookiesCached(int client) {
+    if (IsFakeClient(client))
+        return;
+    UpdatePreferencesOnCookies(client);
+}
+
 
 
 /***********************
@@ -622,33 +644,21 @@ public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) 
     Call_Finish();
 }
 
-/**
- * Resets variables for connecting player.
- */
-public OnClientConnected(int client) {
-    ResetClientVariables(client);
-}
 
-/**
- * Writes back player stats and resets the player client index data.
- */
-public OnClientDisconnect(int client) {
-    if (GetConVarInt(g_hUseDatabase) != 0)
-        DB_WriteRatings(client);
+public Event_MatchOver(Handle event, const char name[], bool dontBroadcast) {
+    int maxClient = -1;
+    int maxScore = -1;
+    for (int i = 1; i <= MaxClients; i++) {
+        int score = g_RoundsLeader[i];
+        if (maxClient == -1 || score > maxScore) {
+            maxClient = i;
+            maxScore = score;
+        }
+    }
 
-    Queue_Drop(g_waitingQueue, client);
-    int arena = g_Ranking[client];
-    UpdateArena(arena);
-    ResetClientVariables(client);
-}
-
-/**
- * Updates client weapon settings according to their cookies.
- */
-public OnClientCookiesCached(int client) {
-    if (IsFakeClient(client))
-        return;
-    UpdatePreferencesOnCookies(client);
+    if (IsPlayer(maxClient)) {
+        Multi1v1_MessageToAll("MostWins", maxClient, maxScore);
+    }
 }
 
 
