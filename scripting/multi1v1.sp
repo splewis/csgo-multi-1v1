@@ -650,14 +650,14 @@ public Event_MatchOver(Handle event, const char name[], bool dontBroadcast) {
     int maxScore = -1;
     for (int i = 1; i <= MaxClients; i++) {
         int score = g_RoundsLeader[i];
-        if (maxClient == -1 || score > maxScore) {
+        if (IsPlayer(i) && (maxClient == -1 || score > maxScore)) {
             maxClient = i;
             maxScore = score;
         }
     }
 
     if (IsPlayer(maxClient)) {
-        Multi1v1_MessageToAll("MostWins", maxClient, maxScore);
+        Multi1v1_MessageToAll("%t", "MostWins", maxClient, maxScore);
     }
 }
 
