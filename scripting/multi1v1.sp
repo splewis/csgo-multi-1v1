@@ -33,6 +33,7 @@ Handle g_hDatabaseServerId = INVALID_HANDLE;
 Handle g_hDefaultPistol = INVALID_HANDLE;
 Handle g_hExecDefaultConfig = INVALID_HANDLE;
 Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
+Handle g_hHideGunsChatCommands = INVALID_HANDLE;
 Handle g_hPistolBehavior = INVALID_HANDLE;
 Handle g_hRoundTime = INVALID_HANDLE;
 Handle g_hUseDatabase = INVALID_HANDLE;
@@ -147,16 +148,17 @@ public OnPluginStart() {
     LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
-    g_hDefaultPistol = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to use the auto-update plugin? Requies the \"Updater\" plugin.");
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
+    g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server( 0 off)");
+    g_hDefaultPistol = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
     g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically on their first connect");
+    g_hHideGunsChatCommands = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
     g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
-    g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server( 0 off)");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
 
     /** Config file **/
@@ -709,11 +711,13 @@ public Action Command_TeamJoin(int client, const char command[], argc) {
 public Action OnClientSayCommand(client, const char command[], const char sArgs[]) {
     // To avoid cluttering up chat, these commands are hidden
     char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns", "gnus" };
+    bool block = (GetConVarInt(g_hHideGunsChatCommands) != 0);
+    Action ret = block ? Plugin_Handled : Plugin_Continue;
 
     for (int i = 0; i < sizeof(gunsChatCommands); i++) {
         if (strcmp(sArgs[0], gunsChatCommands[i], false) == 0) {
             GiveWeaponMenu(client);
-            return Plugin_Handled;
+            return ret;
         }
     }
     return Plugin_Continue;
