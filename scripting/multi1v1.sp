@@ -136,7 +136,7 @@ int g_iPlayers_HelmetOffset;
  ***********************/
 
 public Plugin:myinfo = {
-    name = "[Multi1v1] Base plugin",
+    name = "CS:GO Multi1v1",
     author = "splewis",
     description = "Multi-arena 1v1 laddering",
     version = PLUGIN_VERSION,

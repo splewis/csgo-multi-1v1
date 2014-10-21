@@ -6,7 +6,7 @@
 Handle g_hStatsWebsite = INVALID_HANDLE;
 
 public Plugin:myinfo = {
-    name = "[Multi1v1] online stats viewer",
+    name = "CS:GO Multi1v1: online stats viewer",
     author = "splewis",
     description = "Opens up a motd-style panel for players to view their 1v1 stats",
     version = PLUGIN_VERSION,

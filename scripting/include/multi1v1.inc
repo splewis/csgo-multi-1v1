@@ -100,9 +100,10 @@ native bool Multi1v1_IsInWaitingQueue(int client);
 // Returns if a client has a rating stored.
 native bool Multi1v1_HasStats(int client);
 
-// Functions for getting a players' 1v1-stats.
+// Functions for getting/setting a players' 1v1-stats.
 // You should confirm HasStats(client) is true before using any of these.
 // These are only valid for connected clients.
+native void Multi1v1_SetRating(int client, float rating);
 native float Multi1v1_GetRating(int client);
 native float Multi1v1_GetRifleRating(int client);
 native float Multi1v1_GetAwpRating(int client);

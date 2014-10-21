@@ -1,11 +1,14 @@
 // See include/multi1v1.inc for documentation.
 
+#define CHECK_CONNECTED(%1) if (!IsConnected(client)) ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client)
+
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
     CreateNative("Multi1v1_IsInArena", Native_IsInArena);
     CreateNative("Multi1v1_GetMaximumArenas", Native_GetMaximumArenas);
     CreateNative("Multi1v1_GetNumActiveArenas", Native_GetNumActiveArenas);
     CreateNative("Multi1v1_IsInWaitingQueue", Native_IsInWaitingQueue);
     CreateNative("Multi1v1_HasStats", Native_HasStats);
+    CreateNative("Multi1v1_SetRating", Native_SetRating);
     CreateNative("Multi1v1_GetRating", Native_GetRating);
     CreateNative("Multi1v1_GetAwpRating", Native_GetAwpRating);
     CreateNative("Multi1v1_GetRifleRating", Native_GetRifleRating);
@@ -42,8 +45,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
 
 public Native_IsInArena(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    CHECK_CONNECTED(client);
     return g_Ranking[client] > 0;
 }
 
@@ -57,78 +59,74 @@ public Native_GetNumActiveArenas(Handle plugin, numParams) {
 
 public Native_IsInWaitingQueue(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return Queue_Inside(g_waitingQueue, client);
 }
 
 public Native_HasStats(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return IsConnected(client) && !IsFakeClient(client) && g_FetchedPlayerInfo[client];
 }
 
 public Native_GetRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return _:g_Rating[client];
+}
+
+public Native_SetRating(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    float rating = GetNativeCell(2);
+    CHECK_CONNECTED(client);
+    g_Rating[client] = rating;
 }
 
 public Native_GetAwpRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return _:g_AwpRating[client];
 }
 
 public Native_GetRifleRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return _:g_RifleRating[client];
 }
 
 public Native_GetPistolRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return _:g_PistolRating[client];
 }
 
 public Native_GetRoundsPlayed(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return g_Wins[client] + g_Losses[client];
 }
 
 public Native_GetWins(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return g_Wins[client];
 }
 
 public Native_GetLosses(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsConnected(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client);
+    CHECK_CONNECTED(client);
     return g_Losses[client];
 }
 
 public Native_GetArenaNumber(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    CHECK_CONNECTED(client);
     return g_Ranking[client];
 }
 
 public Native_GetRoundsAtArena1(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    CHECK_CONNECTED(client);
     return g_RoundsLeader[client];
 }
 
@@ -177,10 +175,7 @@ public Native_GetDatabase(Handle plugin, numParams) {
 public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     RoundType roundType = RoundType:GetNativeCell(2);
-
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
-
+    CHECK_CONNECTED(client);
     Client_RemoveAllWeapons(client, "", true);
 
     if (roundType == RoundType_Rifle) {
@@ -235,8 +230,7 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
 
 public Native_Multi1v1Message(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
+    CHECK_CONNECTED(client);
 
     char buffer[1024];
     int bytesWritten = 0;
@@ -276,49 +270,37 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
 
 public Native_BlockRatingChanges(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
-
+    CHECK_CONNECTED(client);
     g_BlockStatChanges[client] = true;
 }
 
 public Native_UnblockRatingChanges(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
-
+    CHECK_CONNECTED(client);
     g_BlockStatChanges[client] = false;
 }
 
 public Native_BlockChatMessages(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
-
+    CHECK_CONNECTED(client);
     g_BlockChatMessages[client] = true;
 }
 
 public Native_UnblockChatMessages(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
-
+    CHECK_CONNECTED(client);
     g_BlockChatMessages[client] = false;
 }
 
 public Native_BlockMVPStars(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
-
+    CHECK_CONNECTED(client);
     g_BlockMVPStars[client] = true;
 }
 
 public Native_UnblockMVPStars(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    if (!IsPlayer(client))
-        ThrowNativeError(SP_ERROR_PARAM, "Client %d is not a player", client);
-
+    CHECK_CONNECTED(client);
     g_BlockMVPStars[client] = false;
 }
 
