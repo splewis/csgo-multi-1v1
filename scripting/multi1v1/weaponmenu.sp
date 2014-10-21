@@ -408,7 +408,7 @@ public bool IsDefaultPistol(const char weapon[]) {
         "weapon_hkp2000",
         "weapon_usp_silencer"
     };
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < sizeof(defaultPistols); i++) {
         if (StrEqual(weapon, defaultPistols[i])) {
             return true;
         }
