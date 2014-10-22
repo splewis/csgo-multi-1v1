@@ -416,9 +416,13 @@ public int spectatorSortFunction(index1, index2, Handle array, Handle hndl) {
  */
 public void AddPlayer(int client, Handle rankingQueue) {
     bool player = IsPlayer(client);
+    if (!player)
+        return;
+
     bool space = Queue_Length(rankingQueue) < 2 *g_maxArenas;
     bool alreadyin = Queue_Inside(rankingQueue, client);
-    if (player && space && !alreadyin) {
+    bool movedtospec = (GetClientTeam(client) == CS_TEAM_SPECTATOR) && !Multi1v1_IsInWaitingQueue(client);
+    if (space && !alreadyin && !movedtospec) {
         Queue_Enqueue(rankingQueue, client);
     }
 
