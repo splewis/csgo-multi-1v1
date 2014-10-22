@@ -415,8 +415,7 @@ public int spectatorSortFunction(index1, index2, Handle array, Handle hndl) {
  * Function to add a player to the ranking queue with some validity checks.
  */
 public void AddPlayer(int client, Handle rankingQueue) {
-    bool player = IsPlayer(client);
-    if (!player)
+    if (!IsPlayer(client))
         return;
 
     bool space = Queue_Length(rankingQueue) < 2 *g_maxArenas;
@@ -426,7 +425,7 @@ public void AddPlayer(int client, Handle rankingQueue) {
         Queue_Enqueue(rankingQueue, client);
     }
 
-    if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && player && !g_GunsSelected[client]) {
+    if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && !g_GunsSelected[client]) {
         g_GunsSelected[client] = true;
         GiveWeaponMenu(client);
     }
