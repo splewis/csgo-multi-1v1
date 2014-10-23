@@ -314,20 +314,20 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
     Call_PushCell(rankingQueue);
     Call_Finish();
 
-    //  top arena
-    AddPlayer(g_ArenaWinners[1], rankingQueue);
-    AddPlayer(g_ArenaWinners[2], rankingQueue);
+    // top arena
+    AddPlayer_NoSpec(g_ArenaWinners[1], rankingQueue);
+    AddPlayer_NoSpec(g_ArenaWinners[2], rankingQueue);
 
     // middle arenas
     for (int i = 2; i <= g_arenas - 1; i++) {
-        AddPlayer(g_ArenaLosers[i - 1], rankingQueue);
-        AddPlayer(g_ArenaWinners[i + 1], rankingQueue);
+        AddPlayer_NoSpec(g_ArenaLosers[i - 1], rankingQueue);
+        AddPlayer_NoSpec(g_ArenaWinners[i + 1], rankingQueue);
     }
 
     // bottom arena
     if (g_arenas >= 1) {
-        AddPlayer(g_ArenaLosers[g_arenas - 1], rankingQueue);
-        AddPlayer(g_ArenaLosers[g_arenas], rankingQueue);
+        AddPlayer_NoSpec(g_ArenaLosers[g_arenas - 1], rankingQueue);
+        AddPlayer_NoSpec(g_ArenaLosers[g_arenas], rankingQueue);
     }
 
     // pulls all the spectators out of the waiting queue that can we can add
@@ -412,16 +412,32 @@ public int spectatorSortFunction(index1, index2, Handle array, Handle hndl) {
 }
 
 /**
+ * Wrapper on the geneic AddPlayer function that doesn't allow spectators not in
+ * the waiting queue to join. This is meant to deal with players being moved to spectator
+ * by another plugin (e.g. afk managers).
+ */
+public void AddPlayer_NoSpec(int client, Handle rankingQueue) {
+    if (!IsPlayer(client)) {
+        return;
+    }
+
+    if (GetClientTeam(client) == CS_TEAM_SPECTATOR && !Multi1v1_IsInWaitingQueue(client)) {
+        AddPlayer(client, rankingQueue);
+    }
+}
+
+/**
  * Function to add a player to the ranking queue with some validity checks.
  */
 public void AddPlayer(int client, Handle rankingQueue) {
-    if (!IsPlayer(client))
+    if (!IsPlayer(client)) {
         return;
+    }
 
     bool space = Queue_Length(rankingQueue) < 2 *g_maxArenas;
     bool alreadyin = Queue_Inside(rankingQueue, client);
-    bool movedtospec = (GetClientTeam(client) == CS_TEAM_SPECTATOR) && !Multi1v1_IsInWaitingQueue(client);
-    if (space && !alreadyin && !movedtospec) {
+
+    if (space && !alreadyin) {
         Queue_Enqueue(rankingQueue, client);
     }
 
