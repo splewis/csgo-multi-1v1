@@ -421,7 +421,7 @@ public void AddPlayer_NoSpec(int client, Handle rankingQueue) {
         return;
     }
 
-    if (GetClientTeam(client) == CS_TEAM_SPECTATOR && !Multi1v1_IsInWaitingQueue(client)) {
+    if (GetClientTeam(client) != CS_TEAM_SPECTATOR || Multi1v1_IsInWaitingQueue(client)) {
         AddPlayer(client, rankingQueue);
     }
 }
