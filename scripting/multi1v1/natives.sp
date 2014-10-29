@@ -79,11 +79,11 @@ public Native_GetRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     int roundType = GetNativeCell(2);
     CHECK_CONNECTED(client);
-    CHECK_ROUNDTYPE(roundType);
 
     if (roundType < 0) {
         return _:g_Rating[client];
     } else {
+        CHECK_ROUNDTYPE(roundType);
         if (g_RoundTypeRanked[roundType])
             ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not ranked", roundType);
 
