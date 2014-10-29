@@ -15,7 +15,7 @@ public Plugin:myinfo = {
 
 public OnPluginStart() {
     LoadTranslations("common.phrases");
-    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}&server_id={SERVER}.");
+    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}.");
     AutoExecConfig(true, "multi1v1_online_stats_viewer", "sourcemod/multi1v1");
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
