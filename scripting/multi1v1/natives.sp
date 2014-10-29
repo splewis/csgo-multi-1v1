@@ -1,6 +1,8 @@
 // See include/multi1v1.inc for documentation.
 
-#define CHECK_CONNECTED(%1) if (!IsConnected(client)) ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", client)
+#define CHECK_CONNECTED(%1) if (!IsConnected(%1)) ThrowNativeError(SP_ERROR_PARAM, "Client %d is not connected", %1)
+#define CHECK_ARENA(%1) if (%1 <= 0 || %1 > g_maxArenas) ThrowNativeError(SP_ERROR_PARAM, "Arena %d is not valid", %1)
+#define CHECK_ROUNDTYPE(%1) if (%1 < 0 || %1 >= g_numRoundTypes) ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not valid", %1)
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
     CreateNative("Multi1v1_IsInArena", Native_IsInArena);
@@ -77,13 +79,11 @@ public Native_GetRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     int roundType = GetNativeCell(2);
     CHECK_CONNECTED(client);
+    CHECK_ROUNDTYPE(roundType);
 
     if (roundType < 0) {
         return _:g_Rating[client];
     } else {
-        if (roundType < g_numRoundTypes)
-            ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not valid", roundType);
-
         if (g_RoundTypeRanked[roundType])
             ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not ranked", roundType);
 
@@ -130,15 +130,13 @@ public Native_GetRoundsAtArena1(Handle plugin, numParams) {
 
 public Native_GetArenaPlayer1(Handle plugin, numParams) {
     int arena = GetNativeCell(1);
-    if (arena <= 0)
-        ThrowNativeError(SP_ERROR_PARAM, "Arena %d is not valid", arena);
+    CHECK_ARENA(arena);
     return g_ArenaPlayer1[arena];
 }
 
 public Native_GetArenaPlayer2(Handle plugin, numParams) {
     int arena = GetNativeCell(1);
-    if (arena <= 0)
-        ThrowNativeError(SP_ERROR_PARAM, "Arena %d is not valid", arena);
+    CHECK_ARENA(arena);
     return g_ArenaPlayer2[arena];
 }
 
@@ -174,9 +172,9 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     int roundType = GetNativeCell(2);
     CHECK_CONNECTED(client);
+    CHECK_ROUNDTYPE(roundType);
 
     if (roundType < 0 || roundType >= g_numRoundTypes) {
-        LogError("Tried to give weapons for non-existent round type %d", roundType);
         RifleHandler(client);
     } else {
         Handle pluginSource = g_RoundTypeSourcePlugin[roundType];
@@ -300,8 +298,7 @@ public Native_GetArenaSpawn(Handle plugin, numParams) {
     int arena = GetNativeCell(1);
     int team = GetNativeCell(2);
 
-    if (arena <= 0 || arena > Multi1v1_GetMaximumArenas())
-        ThrowNativeError(SP_ERROR_PARAM, "Arena %d is invalid", arena);
+    CHECK_ARENA(arena);
     if (team != CS_TEAM_T && team != CS_TEAM_CT)
         ThrowNativeError(SP_ERROR_PARAM, "Invalid team: %d", team);
 
