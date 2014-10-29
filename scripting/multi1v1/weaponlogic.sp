@@ -145,7 +145,7 @@ public GivePreferenceMenu(int client) {
         }
     }
 
-    if (count > 2) {
+    if (count >= 2) {
         DisplayMenu(menu, client, MENU_TIME_LENGTH);
     } else {
         CloseHandle(menu);
