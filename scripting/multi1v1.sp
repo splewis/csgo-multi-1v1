@@ -20,10 +20,13 @@
  *                     *
  ***********************/
 
-#define WEAPON_LENGTH 32
-#define K_FACTOR 8.0
 #define DISTRIBUTION_SPREAD 1000.0
+#define K_FACTOR 8.0
+#define MAX_ROUND_TYPES 16
+#define MENU_TIME_LENGTH 15
+#define ROUND_TYPE_NAME_LENGTH 64
 #define TABLE_NAME "multi1v1_stats"
+#define WEAPON_LENGTH 32
 
 /** ConVar handles **/
 Handle g_hAutoUpdate = INVALID_HANDLE;
@@ -48,9 +51,7 @@ bool g_FetchedPlayerInfo[MAXPLAYERS+1];
 int g_Wins[MAXPLAYERS+1];
 int g_Losses[MAXPLAYERS+1];
 float g_Rating[MAXPLAYERS+1];
-float g_RifleRating[MAXPLAYERS+1];
-float g_AwpRating[MAXPLAYERS+1];
-float g_PistolRating[MAXPLAYERS+1];
+float g_RoundTypeRating[MAXPLAYERS+1][MAX_ROUND_TYPES];
 
 /** Database interactions **/
 bool g_dbConnected = false;
@@ -62,9 +63,12 @@ bool g_LetTimeExpire[MAXPLAYERS+1];
 bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
 bool g_AllowAWP[MAXPLAYERS+1];
 bool g_AllowPistol[MAXPLAYERS+1];
-bool g_GiveFlash[MAXPLAYERS+1];
 bool g_GunsSelected[MAXPLAYERS+1];
-RoundType g_Preference[MAXPLAYERS+1];
+
+bool g_WaitingOnRoundAllow[MAXPLAYERS+1];
+int g_CurrentRoundTypeMenuIndex[MAXPLAYERS+1];
+
+int g_Preference[MAXPLAYERS+1];
 char g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 char g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 bool g_BlockStatChanges[MAXPLAYERS+1];
@@ -72,13 +76,24 @@ bool g_BlockChatMessages[MAXPLAYERS+1];
 bool g_BlockMVPStars[MAXPLAYERS+1];
 bool g_BlockArenaDones[MAXPLAYERS+1];
 
+/** Round-type data **/
+int g_numRoundTypes = 0;
+char g_RoundTypeNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
+char g_RoundTypeDisplayNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
+RoundTypeWeaponHandler g_RoundTypeWeaponHandlers[MAX_ROUND_TYPES];
+RoundTypeMenuHandler g_RoundTypeMenuHandlers[MAX_ROUND_TYPES];
+bool g_RoundTypeRanked[MAX_ROUND_TYPES];
+bool g_RoundTypeOptional[MAX_ROUND_TYPES];
+Handle g_RoundTypeSourcePlugin[MAX_ROUND_TYPES];
+bool g_AllowedRoundTypes[MAXPLAYERS+1][MAX_ROUND_TYPES];
+
 /** Arena arrays **/
 bool g_ArenaStatsUpdated[MAXPLAYERS+1];
 int g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
 int g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
 int g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
 int g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
-RoundType g_roundTypes[MAXPLAYERS+1];
+int g_roundTypes[MAXPLAYERS+1];         // the round type being used in the arena
 int g_RoundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
@@ -96,24 +111,16 @@ Handle g_hTAngles = INVALID_HANDLE;
 Handle g_hCTSpawns = INVALID_HANDLE;
 Handle g_hCTAngles = INVALID_HANDLE;
 
-/** Weapon menu choice cookies **/
-Handle g_hAllowPistolCookie = INVALID_HANDLE;
-Handle g_hAllowAWPCookie = INVALID_HANDLE;
-Handle g_hPreferenceCookie = INVALID_HANDLE;
-Handle g_hRifleCookie = INVALID_HANDLE;
-Handle g_hPistolCookie = INVALID_HANDLE;
-Handle g_hFlashCookie = INVALID_HANDLE;
-Handle g_hSetCookies = INVALID_HANDLE;
-
 /** Forwards **/
-Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
-Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
-Handle g_hOnArenasReady = INVALID_HANDLE;
-Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
 Handle g_hAfterPlayerSetup = INVALID_HANDLE;
+Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
+Handle g_hOnArenasReady = INVALID_HANDLE;
+Handle g_hOnGunsMenuDone = INVALID_HANDLE;
+Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
+Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
+Handle g_hOnRoundTypesAdded = INVALID_HANDLE;
 Handle g_hOnRoundWon = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
-Handle g_hOnGunsMenuDone = INVALID_HANDLE;
 
 /** Constant offsets values **/
 int g_iPlayers_HelmetOffset;
@@ -123,9 +130,10 @@ int g_iPlayers_HelmetOffset;
 #include "multi1v1/natives.sp"
 #include "multi1v1/queue.sp"
 #include "multi1v1/radiocommands.sp"
+#include "multi1v1/roundtypes.sp"
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
-#include "multi1v1/weaponmenu.sp"
+#include "multi1v1/weaponlogic.sp"
 
 
 
@@ -168,15 +176,6 @@ public OnPluginStart() {
     g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     SetConVarString(g_hVersion, PLUGIN_VERSION);
 
-    /** Cookies **/
-    g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Protected);
-    g_hAllowAWPCookie = RegClientCookie("multi1v1_allowawp", "Multi-1v1 allow AWP rounds", CookieAccess_Protected);
-    g_hPreferenceCookie = RegClientCookie("multi1v1_preference", "Multi-1v1 round-type preference", CookieAccess_Protected);
-    g_hRifleCookie = RegClientCookie("multi1v1_rifle", "Multi-1v1 rifle choice", CookieAccess_Protected);
-    g_hPistolCookie = RegClientCookie("multi1v1_pistol", "Multi-1v1 pistol choice", CookieAccess_Protected);
-    g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 allow flashbangs in rounds", CookieAccess_Protected);
-    g_hSetCookies = RegClientCookie("multi1v1_setprefs", "Multi-1v1 if prefs are saved", CookieAccess_Protected);
-
     /** Hooks **/
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
     HookEvent("player_connect_full", Event_OnFullConnect);
@@ -193,14 +192,15 @@ public OnPluginStart() {
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
 
     /** Fowards **/
-    g_hOnPreArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
-    g_hOnPostArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
-    g_hOnArenasReady = CreateGlobalForward("Multi1v1_OnArenasReady", ET_Ignore);
-    g_hAfterPlayerSpawn = CreateGlobalForward("Multi1v1_AfterPlayerSpawn", ET_Ignore, Param_Cell);
     g_hAfterPlayerSetup = CreateGlobalForward("Multi1v1_AfterPlayerSetup", ET_Ignore, Param_Cell);
+    g_hAfterPlayerSpawn = CreateGlobalForward("Multi1v1_AfterPlayerSpawn", ET_Ignore, Param_Cell);
+    g_hOnArenasReady = CreateGlobalForward("Multi1v1_OnArenasReady", ET_Ignore);
+    g_hOnGunsMenuDone = CreateGlobalForward("Multi1v1_OnGunsMenuDone", ET_Ignore, Param_Cell);
+    g_hOnPostArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnPreArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnRoundTypesAdded = CreateGlobalForward("Multi1v1_OnRoundTypesAdded", ET_Ignore);
     g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
     g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
-    g_hOnGunsMenuDone = CreateGlobalForward("Multi1v1_OnGunsMenuDone", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
     g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
@@ -221,6 +221,13 @@ public OnLibraryAdded(const char name[]) {
 public OnMapStart() {
     Spawns_MapStart();
     Weapons_MapStart();
+
+    Multi1v1_ClearRoundTypes();
+    Multi1v1_AddStandardRounds();
+    Call_StartForward(g_hOnRoundTypesAdded);
+    Call_Finish();
+
+
     Queue_Clear(g_waitingQueue);
 
     g_arenaOffsetValue = 0;
@@ -656,7 +663,7 @@ public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) 
     int arena = g_Ranking[client];
     assert_msg(arena != -1, "player had arena -1 on spawn")
 
-    RoundType roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
+    int roundType = (arena == -1) ? 0 : g_roundTypes[arena];
     Multi1v1_GivePlayerArenaWeapons(client, roundType);
     CreateTimer(0.1, RemoveRadar, client);
 
@@ -866,15 +873,11 @@ public void ResetClientVariables(int client) {
     g_Wins[client] = 0;
     g_Losses[client] = 0;
     g_Rating[client] = 0.0;
-    g_RifleRating[client] = 0.0;
-    g_PistolRating[client] = 0.0;
-    g_AwpRating[client] = 0.0;
     g_Ranking[client] = -1;
     g_LetTimeExpire[client] = false;
     g_AllowAWP[client] = false;
     g_AllowPistol[client] = false;
-    g_GiveFlash[client] = false;
-    g_Preference[client] = RoundType_Rifle;
+    g_Preference[client] = 0;
     g_PrimaryWeapon[client] = "weapon_ak47";
     g_SecondaryWeapon[client] = "weapon_glock";
 }

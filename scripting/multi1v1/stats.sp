@@ -6,9 +6,6 @@ char g_TableFormat[][] = {
     "wins INT NOT NULL default 0",
     "losses INT NOT NULL default 0",
     "rating FLOAT NOT NULL default 1500.0",
-    "rifleRating FLOAT NOT NULL default 1500.0",
-    "pistolRating FLOAT NOT NULL default 1500.0",
-    "awpRating FLOAT NOT NULL default 1500.0",
     "lastTime INT default 0 NOT NULL",
     "recentRounds INT default 0 NOT NULL",
     "PRIMARY KEY (accountID, serverID)"
@@ -34,10 +31,15 @@ public void DB_Connect() {
 
         // Add new columns/key for backwards compaability reaons
         SQL_AddColumn(db, TABLE_NAME, "serverID INT NOT NULL default 0");
-        SQL_AddColumn(db, TABLE_NAME, "rifleRating FLOAT NOT NULL default 1500.0");
-        SQL_AddColumn(db, TABLE_NAME, "pistolRating FLOAT NOT NULL default 1500.0");
-        SQL_AddColumn(db, TABLE_NAME, "awpRating FLOAT NOT NULL default 1500.0");
         SQL_AddColumn(db, TABLE_NAME, "recentRounds INT default 0 NOT NULL");
+        for (int i = 0; i < g_numRoundTypes; i++) {
+            if (g_RoundTypeRanked[i]) {
+                char buffer[255];
+                Format(buffer, sizeof(buffer), "%sRating FLOAT NOT NULL default 1500.0", g_RoundTypeNames[i]);
+                SQL_AddColumn(db, TABLE_NAME, buffer);
+            }
+        }
+
         SQL_UpdatePrimaryKey(db, TABLE_NAME, "`accountID`,`serverID`");
 
         SQL_UnlockDatabase(db);
@@ -134,10 +136,26 @@ public void DB_FetchRatings(int client) {
         int id = GetSteamAccountID(client);
         if (id != 0) {
             int serverID = GetConVarInt(g_hDatabaseServerId);
-            char query[1024];
+
+            char roundTypeRatings[1024] = "";
+            int count = 0;
+            for (int i = 0; i < g_numRoundTypes; i++) {
+                if (!g_RoundTypeRanked[i])
+                    continue;
+
+                if (count > 0)
+                    StrCat(roundTypeRatings, sizeof(roundTypeRatings), ", ");
+                count++;
+
+                char buffer[128];
+                Format(buffer, sizeof(buffer), "%sRating", g_RoundTypeNames[i]);
+                StrCat(roundTypeRatings, sizeof(roundTypeRatings), buffer);
+            }
+
+            char query[2048];
             Format(query, sizeof(query),
-                   "SELECT rating, rifleRating, pistolRating, awpRating, wins, losses FROM %s WHERE accountID = %d AND serverID = %d",
-                   TABLE_NAME, GetSteamAccountID(client), serverID);
+                   "SELECT rating, wins, losses, %s FROM %s WHERE accountID = %d AND serverID = %d",
+                   roundTypeRatings, TABLE_NAME, GetSteamAccountID(client), serverID);
             SQL_TQuery(db, Callback_FetchRating, query, GetClientSerial(client));
         }
     }
@@ -153,11 +171,17 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
         LogError("Query failed: (error: %s)", error);
     } else if (SQL_FetchRow(hndl)) {
         g_Rating[client] = SQL_FetchFloat(hndl, 0);
-        g_RifleRating[client] = SQL_FetchFloat(hndl, 1);
-        g_PistolRating[client] = SQL_FetchFloat(hndl, 2);
-        g_AwpRating[client] = SQL_FetchFloat(hndl, 3);
-        g_Wins[client] = SQL_FetchInt(hndl, 4);
-        g_Losses[client] = SQL_FetchInt(hndl, 5);
+        g_Wins[client] = SQL_FetchInt(hndl, 1);
+        g_Losses[client] = SQL_FetchInt(hndl, 2);
+
+        int fieldIndex = 3;
+        for (int i = 0; i < g_numRoundTypes; i++) {
+            if (!g_RoundTypeRanked[i])
+                continue;
+            g_RoundTypeRating[client][i] = SQL_FetchFloat(hndl, fieldIndex);
+            fieldIndex++;
+        }
+
         g_FetchedPlayerInfo[client] = true;
         Call_StartForward(g_hOnStatsCached);
         Call_PushCell(client);
@@ -173,11 +197,21 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
 public void DB_WriteRatings(int client) {
     if (g_FetchedPlayerInfo[client] && IsPlayer(client)) {
         int serverID = GetConVarInt(g_hDatabaseServerId);
-        char query[1024];
+
+        char roundTypeRatings[1024] = "";
+        for (int i = 0; i < g_numRoundTypes; i++) {
+            if (!g_RoundTypeRanked[i])
+                continue;
+
+            char buffer[128];
+            Format(buffer, sizeof(buffer), ", %sRating = %f", g_RoundTypeNames[i], g_RoundTypeRating[client][i]);
+            StrCat(roundTypeRatings, sizeof(roundTypeRatings), buffer);
+        }
+
+        char query[2048];
         Format(query, sizeof(query),
-               "UPDATE %s set rating = %f, rifleRating = %f, awpRating = %f, pistolRating = %f WHERE accountID = %d AND serverID = %d",
-               TABLE_NAME, g_Rating[client], g_RifleRating[client], g_AwpRating[client], g_PistolRating[client],
-               GetSteamAccountID(client), serverID);
+               "UPDATE %s set rating = %f %s WHERE accountID = %d AND serverID = %d",
+               TABLE_NAME, g_Rating[client], roundTypeRatings, GetSteamAccountID(client), serverID);
         SQL_TQuery(db, SQLErrorCheckCallback, query);
     }
 }
@@ -247,7 +281,9 @@ static void UpdateRatings(int winner, int loser, bool forceLoss) {
             return;
         }
 
-        bool block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser];
+        int arena = g_Ranking[winner];
+        int roundType = g_roundTypes[arena];
+        bool block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser] || !g_RoundTypeRanked[roundType];
         if (block) {
             return;
         }
@@ -263,19 +299,10 @@ static void UpdateRatings(int winner, int loser, bool forceLoss) {
             g_Rating[loser] -= delta;
             RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
 
-            // rndTypeUpdate(RoundType roundType, float ratingArray[])
-            #define rndTypeUpdate(%1,%2) \
-            if (g_roundTypes[arena] == %1) { \
-                delta = Multi1v1_ELORatingDelta(%2[winner], %2[loser], K_FACTOR); \
-                %2[winner] += delta; \
-                %2[loser] -= delta; \
-            }
-
-            int arena = g_Ranking[winner];
-            if (arena > 0) {
-                rndTypeUpdate(RoundType_Rifle, g_RifleRating)
-                rndTypeUpdate(RoundType_Pistol, g_PistolRating)
-                rndTypeUpdate(RoundType_Awp, g_AwpRating)
+            if (g_RoundTypeRanked[roundType]) {
+                delta = Multi1v1_ELORatingDelta(g_RoundTypeRating[winner][roundType], g_RoundTypeRating[loser][roundType], K_FACTOR);
+                g_RoundTypeRating[winner][roundType] += delta;
+                g_RoundTypeRating[loser][roundType] -= delta;
             }
 
             DB_WriteRatings(winner);
