@@ -33,7 +33,7 @@ forward Multi1v1_OnArenasReady();
 /**
  * Called after a player's spawn setup (e.g. giving weapons) is processed.
  *
- * @param client        Player's index.
+ * @param client Player's index.
  * @noreturn
  */
 forward Multi1v1_AfterPlayerSpawn(int client);
@@ -42,7 +42,7 @@ forward Multi1v1_AfterPlayerSpawn(int client);
  * Called after core player setup functions (teleporting, printing their opponent to chat)
  * are processed.
  *
- * @param client        Player's index.
+ * @param client Player's index.
  * @noreturn
  */
 forward Multi1v1_AfterPlayerSetup(int client);
@@ -50,9 +50,9 @@ forward Multi1v1_AfterPlayerSetup(int client);
 /**
  * Called when an arena finishes it's fighting.
  *
- * @param winner        Winner's client index.
- * @param loser        Loser's client index.
- * @param forceLoss        Whether it was a "force loss" for both payers (e.g. time ran out)
+ * @param winner Winner's client index.
+ * @param loser Loser's client index.
+ * @param forceLoss Whether it was a "force loss" for both payers (e.g. time ran out)
  * @noreturn
  */
 forward Multi1v1_OnRoundWon(int winner, int loser, bool forceLoss);
@@ -60,7 +60,7 @@ forward Multi1v1_OnRoundWon(int winner, int loser, bool forceLoss);
 /**
  * Called when a client's stats have been fetched successfully.
  *
- * @param client        Player's index.
+ * @param client Player's index.
  * @noreturn
  */
 forward Multi1v1_OnStatsCached(int client);
@@ -68,11 +68,16 @@ forward Multi1v1_OnStatsCached(int client);
 /**
  * Called after a player finishes going through the weapons menu.
  *
- * @param client        Player's index.
+ * @param client Player's index.
  * @noreturn
  */
 forward Multi1v1_OnGunsMenuDone(int client);
 
+/**
+ * Called each map start after the standard round types have been added.
+ *
+ * @noreturn
+ */
 forward Multi1v1_OnRoundTypesAdded();
 
 // Returns if a player is actively in an arena.
@@ -159,27 +164,39 @@ native int Multi1v1_GetNumSpawnsInArena(int arena);
 // Gets a spawn point/angle pair from an arena for a given team.
 native void Multi1v1_GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);
 
+// Gets the rifle the client has selected in the weapons menu.
 native void Multi1v1_GetRifleChoice(int client, char buffer[WEAPON_NAME_LENGTH]);
+
+// Gets the pistol the client has selected in the weapons menu.
 native void Multi1v1_GetPistolChoice(int client, char buffer[WEAPON_NAME_LENGTH]);
 
 typedef RoundTypeWeaponHandler = function void (int client);
 typedef RoundTypeMenuHandler = function void (int client);
 
+// Registers a new round type by the plugin.
 native int Multi1v1_AddRoundType(const char displayName[], const char internalName[],
                                  RoundTypeWeaponHandler weaponsHandler,
                                  RoundTypeMenuHandler menuHandler,
                                  bool optional=true, bool ranked=false);
 
+// Clears all registered round types.
 native void Multi1v1_ClearRoundTypes();
-native void Multi1v1_ReturnMenuControl(int client);
-native int Multi1v1_GetRoundTypeIndex(const char name[]);
+
+// Adds the standard, default round types.
 native void Multi1v1_AddStandardRounds();
 
+// Returns the unique identifier (an index) of a round type given its internal name.
+native int Multi1v1_GetRoundTypeIndex(const char internalName[]);
 
+// Returns menu control to the menu controller.
+// This is intended to be called from within a RoundTypeMenuHandler in the guns menu
+// once a client has picked an option.
+native void Multi1v1_ReturnMenuControl(int client);
+
+// Helper function to ass as a mneuHandler when the client doesn't have any choices to make.
 public void Multi1v1_NullChoiceMenu(int client) {
     Multi1v1_ReturnMenuControl(client);
 }
-
 
 public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",

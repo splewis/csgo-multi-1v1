@@ -91,7 +91,7 @@ stock bool GetMenuBool(Handle menu, any:param2) {
 }
 
 /**
- *
+ * Returns a handle to a cookie with the given name, creating it if it doesn't exist.
  */
 stock Handle FindNamedCookie(const char cookieName[]) {
     Handle cookie = FindClientCookie(cookieName);
@@ -102,7 +102,7 @@ stock Handle FindNamedCookie(const char cookieName[]) {
 }
 
 /**
- *
+ * Sets the value of a client cookie given the cookie name.
  */
 stock void SetCookieStringByName(int client, const char cookieName[], const char value[]) {
     Handle cookie = FindNamedCookie(cookieName);
@@ -111,7 +111,7 @@ stock void SetCookieStringByName(int client, const char cookieName[], const char
 }
 
 /**
- *
+ * Gets the value of a client cookie given the cookie name.
  */
 stock void GetCookieStringByName(int client, const char cookieName[], char buffer[], int length) {
     Handle cookie = FindNamedCookie(cookieName);
@@ -254,6 +254,9 @@ stock void SQL_CreateTable(Handle db_connection, const char table_name[], const 
     }
 }
 
+/**
+ * Adds a new field to a table.
+ */
 stock void SQL_AddColumn(Handle db_connection, const char table_name[], const char column_info[]) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "ALTER TABLE %s ADD COLUMN %s", table_name, column_info);
@@ -266,6 +269,9 @@ stock void SQL_AddColumn(Handle db_connection, const char table_name[], const ch
     }
 }
 
+/**
+ * Sets the primary key for a table.
+ */
 stock void SQL_UpdatePrimaryKey(Handle db_connection, const char table_name[], const char primary_key[]) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "ALTER TABLE %s DROP PRIMARY KEY, ADD PRIMARY KEY (%s)", table_name, primary_key);
@@ -276,6 +282,9 @@ stock void SQL_UpdatePrimaryKey(Handle db_connection, const char table_name[], c
     }
 }
 
+/**
+ * Applies colorized characters across a string to replace color tags.
+ */
 stock void Colorize(char msg[], int size) {
     for (new i = 0; i < sizeof(g_ColorNames); i ++) {
         ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
@@ -283,6 +292,9 @@ stock void Colorize(char msg[], int size) {
 }
 
 // Thanks to KissLick https://forums.alliedmods.net/member.php?u=210752
+/**
+ * Splits a string to the right at the first occurance of a substring.
+ */
 stock bool SplitStringRight(const char source[], const char split[], char part[], int partLen) {
     int index = StrContains(source, split);
     if (index == -1)

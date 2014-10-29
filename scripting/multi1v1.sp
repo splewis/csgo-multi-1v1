@@ -78,7 +78,6 @@ bool g_BlockArenaDones[MAXPLAYERS+1];
 
 /** Round-type data **/
 int g_numRoundTypes = 0;
-
 char g_RoundTypeNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
 char g_RoundTypeDisplayNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
 RoundTypeWeaponHandler g_RoundTypeWeaponHandlers[MAX_ROUND_TYPES];

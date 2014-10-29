@@ -244,25 +244,12 @@ public MenuHandler_PistolChoice(Handle menu, MenuAction action, param1, param2) 
  */
 public UpdatePreferencesOnCookies(int client) {
     g_GunsSelected[client] = true;
-    char cookieName[128];
-    char desc[128];
-    CookieAccess access;
-    Handle it = GetCookieIterator();
 
-    // TODO: rather than iterate all cookies, this should instead iterate round types,
-    // and check for the cookies per each round type.
-    while (ReadCookieIterator(it, cookieName, sizeof(cookieName), access, desc, sizeof(desc))) {
-        char roundTypeName[128];
-
-        if (SplitStringRight(cookieName, "multi1v1_allow", roundTypeName, sizeof(roundTypeName))) {
-            int roundType = Multi1v1_GetRoundTypeIndex(roundTypeName);
-            if (roundType >= 0) {
-                g_AllowedRoundTypes[client][roundType] = GetCookieBoolByName(client, cookieName);
-            }
-        }
+    for (int i = 0; i < g_numRoundTypes; i++) {
+        char cookieName[128];
+        Format(cookieName, sizeof(cookieName), "multi1v1_allow%s", g_RoundTypeNames[i]);
+        g_AllowedRoundTypes[client][i] = GetCookieBoolByName(client, cookieName);
     }
-
-    CloseHandle(it);
 
     char cookieValue[WEAPON_LENGTH];
     GetCookieStringByName(client, "multi1v1_rifle", cookieValue, sizeof(cookieValue));

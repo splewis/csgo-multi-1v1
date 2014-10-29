@@ -37,13 +37,11 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("Multi1v1_GetArenaSpawn", Native_GetArenaSpawn);
     CreateNative("Multi1v1_GetRifleChoice", Native_GetRifleChoice);
     CreateNative("Multi1v1_GetPistolChoice", Native_GetPistolChoice);
-
     CreateNative("Multi1v1_GetRoundTypeIndex", Native_GetRoundTypeIndex);
     CreateNative("Multi1v1_AddRoundType", Native_AddRoundType);
     CreateNative("Multi1v1_ClearRoundTypes", Native_ClearRoundTypes);
     CreateNative("Multi1v1_ReturnMenuControl", Native_ReturnMenuControl);
     CreateNative("Multi1v1_AddStandardRounds", Native_AddStandardRounds);
-
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -342,6 +340,11 @@ public Native_ClearRoundTypes(Handle plugin, numParams) {
 }
 
 public Native_AddRoundType(Handle plugin, numParams) {
+    if (g_numRoundTypes >= MAX_ROUND_TYPES) {
+        ThrowNativeError(SP_ERROR_PARAM, "Tried to add new round when %d round types already added", MAX_ROUND_TYPES);
+        return -1;
+    }
+
     char displayName[ROUND_TYPE_NAME_LENGTH];
     char internalName[ROUND_TYPE_NAME_LENGTH];
     GetNativeString(1, displayName, sizeof(displayName));
@@ -355,6 +358,7 @@ public Native_AddRoundType(Handle plugin, numParams) {
 
 public Native_ReturnMenuControl(Handle plugin, numParams) {
     int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
     ReturnMenuControl(client);
 }
 

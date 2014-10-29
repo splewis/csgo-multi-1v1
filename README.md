@@ -13,18 +13,19 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 - Player preference: players can also select a preference of round type, if player preferences match they will play that type
 - Weapon selection: players can select their primary (i.e. their rifle) and their pistol
 - Armor on pistol rounds: helmets are taken away, and kevlar is also taken away if the player selected an upgraded pistol
-- Optional flashbangs: players can select to "allow flashbangs" - if both players allow them, they each get 1
 - ELO ranking system: optionally, player statistics can be stored in a database, see below for details
 
 ## For plugin developers
 Work to make the plugin extensible is currently underway (and **not released**). For a preview, check [multi1v1.inc](scripting/include/multi1v1.inc).
 
-The general idea of everything I do with sourcemod plugins is to **keep it simple, stupid**. This plugin and its implementation details are no exception.
+Though there may seem to a lot of natives, I've found some use from almost all of them. Most were added to meet a specific need.
 
 
 ## Extra plugins
 Sometimes it's easier to add something in a seperate plugin than add more convars, thus some features may be in support plugins. These are all optional.
 
+- **multi1v1_flashbangs**: if both players in an arena say "yes" to getting flashbangs, a flashbang is given to each player
+- **multi1v1_kniferounds**: adds unranked knife rounds
 - **multi1v1_online_stats_viewer**: adds the !stats and related commands that open up a stats webpage in a MOTD panel
 
 
@@ -88,42 +89,42 @@ Guidelines for making a multi-1v1 map:
 #### Using the statistics database
 You should add a database named mult1v1 to your databases.cfg file like so:
 
-	"multi1v1"
-	{
-		"driver"			"mysql"
-		"host"				"123.123.123.123"	// localhost works too
-		"database"			"game_servers_database"
-		"user"				"mymulti1v1server"
-		"pass"				"strongpassword"
-		"timeout"			"10"
-		"port"			"3306"	// whatever port MySQL is set up on, 3306 is default
-	}
+    "multi1v1"
+    {
+        "driver"            "mysql"
+        "host"              "123.123.123.123"   // localhost works too
+        "database"          "game_servers_database"
+        "user"              "mymulti1v1server"
+        "pass"              "strongpassword"
+        "timeout"           "10"
+        "port"          "3306"  // whatever port MySQL is set up on, 3306 is default
+    }
 
 To create a MySQL user and database on the database server, you can run:
 
-	CREATE DATABASE game_servers_database;
-	CREATE USER 'mymulti1v1server'@'123.123.123.123' IDENTIFIED BY 'strongpassword';
-	GRANT ALL PRIVILEGES ON game_servers_database.multi1v1_stats TO 'mymulti1v1server'@'123.123.123.123';
-	FLUSH PRIVILEGES;
+    CREATE DATABASE game_servers_database;
+    CREATE USER 'mymulti1v1server'@'123.123.123.123' IDENTIFIED BY 'strongpassword';
+    GRANT ALL PRIVILEGES ON game_servers_database.multi1v1_stats TO 'mymulti1v1server'@'123.123.123.123';
+    FLUSH PRIVILEGES;
 
 Make sure to change the IP, the username, and the password. You should probably change the database as well, especially if you already have one set up you can use.
 
 Schema:
 
-	mysql> describe multi1v1_stats;
-	+--------------+-------------+------+-----+---------+-------+
-	| Field        | Type        | Null | Key | Default | Extra |
-	+--------------+-------------+------+-----+---------+-------+
-	| accountID    | int(11)     | NO   | PRI | 0       |       |
-	| serverID     | int(11)     | NO   | PRI | 0       |       |
-	| auth         | varchar(64) | NO   |     |         |       |
-	| name         | varchar(64) | NO   |     |         |       |
-	| wins         | int(11)     | NO   |     | 0       |       |
-	| losses       | int(11)     | NO   |     | 0       |       |
-	| rating       | float       | NO   |     | 1500    |       |
-	| lastTime     | int         | NO   |     | 0       |       |
-	| recentRounds | int         | NO   |     | 0       |       |
-	+--------------+-------------+------+-----+---------+-------+
+    mysql> describe multi1v1_stats;
+    +--------------+-------------+------+-----+---------+-------+
+    | Field        | Type        | Null | Key | Default | Extra |
+    +--------------+-------------+------+-----+---------+-------+
+    | accountID    | int(11)     | NO   | PRI | 0       |       |
+    | serverID     | int(11)     | NO   | PRI | 0       |       |
+    | auth         | varchar(64) | NO   |     |         |       |
+    | name         | varchar(64) | NO   |     |         |       |
+    | wins         | int(11)     | NO   |     | 0       |       |
+    | losses       | int(11)     | NO   |     | 0       |       |
+    | rating       | float       | NO   |     | 1500    |       |
+    | lastTime     | int         | NO   |     | 0       |       |
+    | recentRounds | int         | NO   |     | 0       |       |
+    +--------------+-------------+------+-----+---------+-------+
 
 
 Note that the ``accountID`` field is what is returned by [GetSteamAccountID](https://wiki.alliedmods.net/SourceMod_1.5.0_API_Changes#Clients), which is "the lower 32 bits of the full 64-bit Steam ID (referred to as community id by some) and is unique per account."
@@ -138,6 +139,30 @@ The time comes from [GetTime](http://docs.sourcemod.net/api/index.php?fastload=s
 Player choices (round type preferences, weapon choices) can be saved so they persist across maps for players (via the SourceMod clientprefs API). Installing SQLite should be sufficient for this to work.
 
 If you have a game-hosting specific provider, they may already have SQLite installed
+
+
+## Custom Round Types
+[multi1v1.inc](scripting/include/multi1v1.inc) contains a few very useful forwards and natives for adding new round types. To get a simple example, check [multi1v1_kniferounds.sp](scripting/multi1v1_kniferounds.sp). The key is calling ``Multi1v1_AddRoundType`` within the ``Multi1v1_OnRoundTypesAdded`` forward.
+
+```
+typedef RoundTypeWeaponHandler = function void (int client);
+typedef RoundTypeMenuHandler = function void (int client);
+
+// Registers a new round type by the plugin.
+native int Multi1v1_AddRoundType(const char displayName[],
+                                 const char internalName[],
+                                 RoundTypeWeaponHandler weaponsHandler,
+                                 RoundTypeMenuHandler menuHandler,
+                                 bool optional=true, bool ranked=false);
+```
+
+More advanced usage would involve passing a real function as the 4th parameter instead of ``Multi1v1_NullChoiceMenu``.
+You could pass a function, for example, that lets you choose some option that goes along with the round type.
+The menu-handler callback should call ``ReturnMenuControl`` once the client has finished the selection.
+
+Note that the multi1v1 plugin will
+- create and update the column for the round-type stats if you set the round type as ranked
+- create and update the "allow x rounds" clientprefs cookie for you
 
 
 ## Contribution and Suggestions
