@@ -264,8 +264,6 @@ public UpdatePreferencesOnCookies(int client) {
 
     CloseHandle(it);
 
-    // g_GiveFlash[client] = GetCookieBool(client, g_hFlashCookie);
-
     char cookieValue[WEAPON_LENGTH];
     GetCookieStringByName(client, "multi1v1_rifle", cookieValue, sizeof(cookieValue));
     if (IsAllowedRifle(cookieValue))

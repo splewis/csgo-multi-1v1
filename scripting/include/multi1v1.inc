@@ -5,14 +5,6 @@
 
 #define WEAPON_NAME_LENGTH 32
 
-// The different round types.
-// enum RoundType {
-//     RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
-//     RoundType_Rifle = 0,
-//     RoundType_Awp = 1,
-//     RoundType_Pistol = 2
-// };
-
 /**
  * Called right before the plugin puts players into the ranking queue.
  * This is the best place to put players into the front of the queue.
