@@ -1,0 +1,63 @@
+#include <sourcemod>
+#include <smlib>
+#include "include/multi1v1.inc"
+#include "multi1v1/generic.sp"
+
+bool g_GiveFlash[MAXPLAYERS+1];
+Handle g_hFlashCookie = INVALID_HANDLE;
+
+public Plugin:myinfo = {
+    name = "CS:GO Multi1v1: flashbangs addon",
+    author = "splewis",
+    description = "Adds an option to give players flashbangs",
+    version = PLUGIN_VERSION,
+    url = "https://github.com/splewis/csgo-multi-1v1"
+};
+
+public OnPluginStart() {
+	g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 allow flashbangs in rounds", CookieAccess_Protected);
+}
+
+public OnClientConnected(int client) {
+    g_GiveFlash[client] = false;
+}
+
+public Multi1v1_OnGunsMenuDone(int client) {
+    Handle menu = CreateMenu(MenuHandler_FlashChoice);
+    SetMenuExitButton(menu, true);
+    SetMenuTitle(menu, "Give players flashbangs?");
+    AddMenuBool(menu, true, "Yes");
+    AddMenuBool(menu, false, "No");
+    DisplayMenu(menu, client, 10);
+}
+
+public MenuHandler_FlashChoice(Handle menu, MenuAction action, param1, param2) {
+    if (action == MenuAction_Select) {
+        int client = param1;
+        bool choice = GetMenuBool(menu, param2);
+        g_GiveFlash[client] = choice;
+        SetCookieBool(client, g_hFlashCookie, choice);
+    } else if (action == MenuAction_End) {
+        CloseHandle(menu);
+    }
+}
+
+public Multi1v1_AfterPlayerSpawn(int client) {
+    if (!IsActivePlayer(client)) {
+        return;
+    }
+
+    int arena = Multi1v1_GetArenaNumber(client);
+    int p1 = Multi1v1_GetArenaPlayer1(arena);
+    int p2 = Multi1v1_GetArenaPlayer2(arena);
+
+    if (p1 >= 0 && p2 >= 0 && g_GiveFlash[p1] && g_GiveFlash[p2]) {
+        GivePlayerItem(client, "weapon_flashbang");
+    }
+}
+
+public OnClientCookiesCached(int client) {
+    if (IsFakeClient(client))
+        return;
+    g_GiveFlash[client] = GetCookieBool(client, g_hFlashCookie);
+}

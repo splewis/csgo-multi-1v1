@@ -1,6 +1,4 @@
-#define MENU_TIME_LENGTH 15
 #define WEAPON_MAX 16
-#define WEAPON_NAME_LENGTH 32
 
 // Stored data from the weapons config file.
 // Each array has 3 elements:
@@ -17,7 +15,6 @@ char g_Pistols[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
  * This includes the server-specific weapon config file configs/multi1v1_weapons.cfg.
  */
 public void Weapons_MapStart() {
-    // Opening the file
     g_numPistols = 0;
     g_numRifles = 0;
 
@@ -124,136 +121,36 @@ public int GetWeaponTeam(const char weapon[]) {
 /**
  * Opens up the weapon menu for a client.
  */
-public GiveWeaponMenu(client) {
-    AWPMenu(client);
-}
-
-/**
- * Returns an appropriate round type for a pair of clients.
- */
-public RoundType GetRoundType(int client1, int client2) {
-    if (!IsPlayer(client1) || !IsPlayer(client2))
-        return RoundType_Rifle;
-
-    RoundType roundType = RoundType_Rifle;
-    RoundType pref1 = RoundType:g_Preference[client1];
-    RoundType pref2 = RoundType:g_Preference[client2];
-
-    if (pref1 == pref2 && pref1 != RoundType_NoPreference) {
-        roundType = pref1;
-    } else {
-        // create array of "allowed" round types
-        ArrayList types = ArrayList();
-
-        AddRounds_CheckAllowed(types, client1, client2, RoundType_Awp, g_AllowAWP);
-        AddRounds_CheckAllowed(types, client1, client2, RoundType_Pistol, g_AllowPistol);
-        AddRounds(types, client1, client2, RoundType_Rifle);
-
-        // pick a random value from the allowed round types
-        roundType = RoundType:GetArrayCell(types, GetArrayRandomIndex(types));
-        CloseHandle(types);
-    }
-
-    return roundType;
-}
-
-/**
- * Returns a completely random round type.
- */
-public RoundType GetRandomRoundType() {
-    ArrayList types = ArrayList();
-    types.Push(RoundType_Rifle);
-    types.Push(RoundType_Awp);
-    types.Push(RoundType_Pistol);
-    RoundType choice = types.Get(GetArrayRandomIndex(types));
-    CloseHandle(types);
-    return choice;
-}
-
-static AddRounds(ArrayList types, int client1, int client2, RoundType roundType) {
-    types.Push(roundType);
-    if (g_Preference[client1] == roundType || g_Preference[client2] == roundType)
-        types.Push(roundType);
-}
-
-static AddRounds_CheckAllowed(ArrayList types, int client1, int client2, RoundType roundType, bool allowed[]) {
-    if (allowed[client1] && allowed[client2]) {
-        AddRounds(types, client1, client2, roundType);
-    }
-}
-
-/**
- * Displays the AWP menu to the client.
- */
-public AWPMenu(client) {
-    Handle menu = CreateMenu(MenuHandler_AWP);
-    SetMenuTitle(menu, "Allow AWP rounds?");
-    AddMenuBool(menu, true, "Yes");
-    AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, MENU_TIME_LENGTH);
-}
-
-/**
- * Menu Handler for the allow awps menu.
- */
-public MenuHandler_AWP(Handle menu, MenuAction action, param1, param2) {
-    if (action == MenuAction_Select) {
-        int client = param1;
-        bool choice = GetMenuBool(menu, param2);
-        g_AllowAWP[client] = choice;
-        SetCookieBool(client, g_hAllowAWPCookie, choice);
-        PistolMenu(client);
-    } else if (action == MenuAction_End) {
-        CloseHandle(menu);
-    }
-}
-
-/**
- * Displays the allow pistol menu to the client.
- */
-public PistolMenu(client) {
-    Handle menu = CreateMenu(MenuHandler_Pistol);
-    SetMenuTitle(menu, "Allow pistol rounds?");
-    AddMenuBool(menu, true, "Yes");
-    AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, MENU_TIME_LENGTH);
-}
-
-/**
- * Menu Handler for the allow pistol menu.
- */
-public MenuHandler_Pistol(Handle menu, MenuAction action, param1, param2) {
-    if (action == MenuAction_Select) {
-        int client = param1;
-        bool choice = GetMenuBool(menu, param2);
-        g_AllowPistol[client] = choice;
-        SetCookieBool(client, g_hAllowPistolCookie, choice);
-
-        if (g_AllowPistol[client] || g_AllowAWP[client]) {
-            PreferenceMenu(client);
-        } else {
-            g_Preference[client] = RoundType_Rifle;
-            SetCookieInt(client, g_hPreferenceCookie, _:RoundType_Rifle);
-            RifleChoiceMenu(client);
-        }
-    } else if (action == MenuAction_End) {
-        CloseHandle(menu);
-    }
+public GiveWeaponMenu(int client) {
+    g_CurrentRoundTypeMenuIndex[client] = -1;
+    g_WaitingOnRoundAllow[client] = false;
+    RifleChoiceMenu(client);
 }
 
 /**
  * Displays the round-type preference menu to a client.
  */
-public PreferenceMenu(client) {
+public GivePreferenceMenu(int client) {
     Handle menu = CreateMenu(MenuHandler_Preference);
     SetMenuTitle(menu, "Choose your preference:");
-    AddMenuInt(menu, _:RoundType_NoPreference, "No Preference");
-    AddMenuInt(menu, _:RoundType_Rifle, "Rifle Rounds");
-    if (g_AllowAWP[client])
-        AddMenuInt(menu, _:RoundType_Awp, "AWP Rounds");
-    if (g_AllowPistol[client])
-        AddMenuInt(menu, _:RoundType_Pistol, "Pistol Rounds");
-    DisplayMenu(menu, client, MENU_TIME_LENGTH);
+    AddMenuInt(menu, -1, "No Preference");
+
+    int count = 0;
+    for (int i = 0; i < g_numRoundTypes; i++) {
+        if (g_AllowedRoundTypes[client][i] || !g_RoundTypeOptional[i]) {
+            count++;
+            char buffer[128];
+            Format(buffer, sizeof(buffer), "%s rounds", g_RoundTypeDisplayNames[i]);
+            AddMenuInt(menu, i, buffer);
+        }
+    }
+
+    if (count > 2) {
+        DisplayMenu(menu, client, MENU_TIME_LENGTH);
+    } else {
+        CloseHandle(menu);
+        FinishGunsMenu(client);
+    }
 }
 
 /**
@@ -262,13 +159,26 @@ public PreferenceMenu(client) {
 public MenuHandler_Preference(Handle menu, MenuAction action, param1, param2) {
     if (action == MenuAction_Select) {
         int client = param1;
-        RoundType choice = RoundType:GetMenuInt(menu, param2);
+        int choice = GetMenuInt(menu, param2);
         g_Preference[client] = choice;
-        SetCookieInt(client, g_hPreferenceCookie, _:choice);
-        RifleChoiceMenu(client);
+
+        if (choice == -1) {
+            SetCookieStringByName(client, "multi1v1_preference", g_RoundTypeNames[choice]);
+        } else {
+            SetCookieStringByName(client, "multi1v1_preference", "none");
+        }
+        FinishGunsMenu(client);
+
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
     }
+}
+
+public void FinishGunsMenu(int client) {
+    g_GunsSelected[client] = true;
+    Call_StartForward(g_hOnGunsMenuDone);
+    Call_PushCell(client);
+    Call_Finish();
 }
 
 /**
@@ -293,7 +203,7 @@ public MenuHandler_RifleChoice(Handle menu, MenuAction action, param1, param2) {
         char info[WEAPON_LENGTH];
         GetMenuItem(menu, param2, info, sizeof(info));
         g_PrimaryWeapon[client] = info;
-        SetClientCookie(client, g_hRifleCookie, info);
+        SetCookieStringByName(client, "multi1v1_rifle", info);
         PistolChoiceMenu(client);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
@@ -322,69 +232,54 @@ public MenuHandler_PistolChoice(Handle menu, MenuAction action, param1, param2) 
         char info[WEAPON_LENGTH];
         GetMenuItem(menu, param2, info, sizeof(info));
         g_SecondaryWeapon[client] = info;
-        SetClientCookie(client, g_hPistolCookie, info);
-        FlashbangChoiceMenu(client);
+        SetCookieStringByName(client, "multi1v1_pistol", info);
+        ReturnMenuControl(client);
     } else if (action == MenuAction_End) {
         CloseHandle(menu);
     }
-}
-
-/**
- * Displays flashbang menu to a player
- */
-public FlashbangChoiceMenu(int client) {
-    Handle menu = CreateMenu(MenuHandler_FlashChoice);
-    SetMenuExitButton(menu, true);
-    SetMenuTitle(menu, "Give players flashbangs?");
-    AddMenuBool(menu, true, "Yes");
-    AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, MENU_TIME_LENGTH);
-}
-
-/**
- * Flashbang choice handler - updates flashbang preference.
- */
-public MenuHandler_FlashChoice(Handle menu, MenuAction action, param1, param2) {
-    if (action == MenuAction_Select) {
-        int client = param1;
-        bool choice = GetMenuBool(menu, param2);
-        g_GiveFlash[client] = choice;
-        SetCookieBool(client, g_hFlashCookie, choice);
-        FinishGunsMenu(client);
-    } else if (action == MenuAction_End) {
-        CloseHandle(menu);
-    }
-}
-
-public FinishGunsMenu(int client) {
-    SetCookieBool(client, g_hSetCookies, true);
-    g_GunsSelected[client] = true;
-    Call_StartForward(g_hOnGunsMenuDone);
-    Call_PushCell(client);
-    Call_Finish();
 }
 
 /**
  * Sets all the weapon choices based on the client's cookies.
  */
 public UpdatePreferencesOnCookies(int client) {
-    if (!GetCookieBool(client, g_hSetCookies))
-        return;
-
     g_GunsSelected[client] = true;
-    g_AllowAWP[client] = GetCookieBool(client, g_hAllowAWPCookie);
-    g_AllowPistol[client] = GetCookieBool(client, g_hAllowPistolCookie);
-    g_Preference[client] = RoundType:GetCookieInt(client, g_hPreferenceCookie);
-    g_GiveFlash[client] = GetCookieBool(client, g_hFlashCookie);
+    char cookieName[128];
+    char desc[128];
+    CookieAccess access;
+    Handle it = GetCookieIterator();
+
+    // TODO: rather than iterate all cookies, this should instead iterate round types,
+    // and check for the cookies per each round type.
+    while (ReadCookieIterator(it, cookieName, sizeof(cookieName), access, desc, sizeof(desc))) {
+        char roundTypeName[128];
+
+        if (SplitStringRight(cookieName, "multi1v1_allow", roundTypeName, sizeof(roundTypeName))) {
+            int roundType = Multi1v1_GetRoundTypeIndex(roundTypeName);
+            if (roundType >= 0) {
+                g_AllowedRoundTypes[client][roundType] = GetCookieBoolByName(client, cookieName);
+            }
+        }
+    }
+
+    CloseHandle(it);
+
+    // g_GiveFlash[client] = GetCookieBool(client, g_hFlashCookie);
 
     char cookieValue[WEAPON_LENGTH];
-    GetClientCookie(client, g_hRifleCookie, cookieValue, sizeof(cookieValue));
+    GetCookieStringByName(client, "multi1v1_rifle", cookieValue, sizeof(cookieValue));
     if (IsAllowedRifle(cookieValue))
         strcopy(g_PrimaryWeapon[client], sizeof(cookieValue), cookieValue);
 
-    GetClientCookie(client, g_hPistolCookie, cookieValue, sizeof(cookieValue));
+    GetCookieStringByName(client, "multi1v1_pistol", cookieValue, sizeof(cookieValue));
     if (IsAllowedPistol(cookieValue))
         strcopy(g_SecondaryWeapon[client], sizeof(cookieValue), cookieValue);
+
+    GetCookieStringByName(client, "multi1v1_preference", cookieValue, sizeof(cookieValue));
+    g_Preference[client] = Multi1v1_GetRoundTypeIndex(cookieValue);
+
+    if (StrEqual(cookieValue, "") && GetConVarInt(g_hGunsMenuOnFirstConnct) != 0)
+        GiveWeaponMenu(client);
 }
 
 /**

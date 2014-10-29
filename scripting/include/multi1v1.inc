@@ -3,13 +3,15 @@
 #endif
 #define __MULTI1V1_INCLUDE__
 
+#define WEAPON_NAME_LENGTH 32
+
 // The different round types.
-enum RoundType {
-    RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
-    RoundType_Rifle = 0,
-    RoundType_Awp = 1,
-    RoundType_Pistol = 2
-};
+// enum RoundType {
+//     RoundType_NoPreference = -1, // not an actual round type, but a preference-only identifier
+//     RoundType_Rifle = 0,
+//     RoundType_Awp = 1,
+//     RoundType_Pistol = 2
+// };
 
 /**
  * Called right before the plugin puts players into the ranking queue.
@@ -79,6 +81,8 @@ forward Multi1v1_OnStatsCached(int client);
  */
 forward Multi1v1_OnGunsMenuDone(int client);
 
+forward Multi1v1_OnRoundTypesAdded();
+
 // Returns if a player is actively in an arena.
 native bool Multi1v1_IsInArena(int client);
 
@@ -104,10 +108,7 @@ native bool Multi1v1_HasStats(int client);
 // You should confirm HasStats(client) is true before using any of these.
 // These are only valid for connected clients.
 native void Multi1v1_SetRating(int client, float rating);
-native float Multi1v1_GetRating(int client);
-native float Multi1v1_GetRifleRating(int client);
-native float Multi1v1_GetAwpRating(int client);
-native float Multi1v1_GetPistolRating(int client);
+native float Multi1v1_GetRating(int client, int roundType=-1);
 native int Multi1v1_GetRoundsPlayed(int client);
 native int Multi1v1_GetWins(int client);
 native int Multi1v1_GetLosses(int client);
@@ -133,8 +134,8 @@ native bool Multi1v1_HasDatabase();
 native Handle Multi1v1_GetDatabase();
 
 // Gives a player their weapons according to a round type.
-native void Multi1v1_GivePlayerArenaWeapons(int client, RoundType roundType);
-native void Multi1v1_GivePlayerArenaWeaponsNoNades(int client, RoundType roundType);
+native void Multi1v1_GivePlayerArenaWeapons(int client, int roundType);
+// native void Multi1v1_GivePlayerArenaWeaponsNoNades(int client, RoundType roundType);
 
 // These are helpers you can use to supress normal plugin behavior.
 // You can block rating changes and the chat messages about
@@ -166,6 +167,28 @@ native int Multi1v1_GetNumSpawnsInArena(int arena);
 // Gets a spawn point/angle pair from an arena for a given team.
 native void Multi1v1_GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);
 
+native void Multi1v1_GetRifleChoice(int client, char buffer[WEAPON_NAME_LENGTH]);
+native void Multi1v1_GetPistolChoice(int client, char buffer[WEAPON_NAME_LENGTH]);
+
+typedef RoundTypeWeaponHandler = function void (int client);
+typedef RoundTypeMenuHandler = function void (int client);
+
+native int Multi1v1_AddRoundType(const char displayName[], const char internalName[],
+                                 RoundTypeWeaponHandler weaponsHandler,
+                                 RoundTypeMenuHandler menuHandler,
+                                 bool optional=true, bool ranked=false);
+
+native void Multi1v1_ClearRoundTypes();
+native void Multi1v1_ReturnMenuControl(int client);
+native int Multi1v1_GetRoundTypeIndex(const char name[]);
+native void Multi1v1_AddStandardRounds();
+
+
+public void Multi1v1_NullChoiceMenu(int client) {
+    Multi1v1_ReturnMenuControl(client);
+}
+
+
 public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",
     file = "multi1v1.smx",
@@ -184,9 +207,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_IsInWaitingQueue");
     MarkNativeAsOptional("Multi1v1_HasStats");
     MarkNativeAsOptional("Multi1v1_GetRating");
-    MarkNativeAsOptional("Multi1v1_GetAwpRating");
-    MarkNativeAsOptional("Multi1v1_GetRifleRating");
-    MarkNativeAsOptional("Multi1v1_GetPistolRating");
     MarkNativeAsOptional("Multi1v1_GetArenaNumber");
     MarkNativeAsOptional("Multi1v1_GetArenaPlayer1");
     MarkNativeAsOptional("Multi1v1_GetArenaPlayer2");
@@ -197,7 +217,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_GetLosses");
     MarkNativeAsOptional("Multi1v1_HasDatabase");
     MarkNativeAsOptional("Multi1v1_GivePlayerArenaWeapons");
-    MarkNativeAsOptional("Multi1v1_GivePlayerArenaWeaponsNoNades");
     MarkNativeAsOptional("Multi1v1_Message");
     MarkNativeAsOptional("Multi1v1_MessageToAll");
     MarkNativeAsOptional("Multi1v1_BlockRatingChanges");
@@ -212,5 +231,12 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_ELORatingDelta");
     MarkNativeAsOptional("Multi1v1_GetNumSpawnsInArena");
     MarkNativeAsOptional("Multi1v1_GetArenaSpawn");
+    MarkNativeAsOptional("Multi1v1_GetRifleChoice");
+    MarkNativeAsOptional("Multi1v1_GetPistolChoice");
+    MarkNativeAsOptional("Multi1v1_AddRoundType");
+    MarkNativeAsOptional("Multi1v1_ClearRoundTypes");
+    MarkNativeAsOptional("Multi1v1_ReturnMenuControl");
+    MarkNativeAsOptional("Multi1v1_GetRoundTypeIndex");
+    MarkNativeAsOptional("Multi1v1_AddStandardRounds");
 }
 #endif

@@ -10,9 +10,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("Multi1v1_HasStats", Native_HasStats);
     CreateNative("Multi1v1_SetRating", Native_SetRating);
     CreateNative("Multi1v1_GetRating", Native_GetRating);
-    CreateNative("Multi1v1_GetAwpRating", Native_GetAwpRating);
-    CreateNative("Multi1v1_GetRifleRating", Native_GetRifleRating);
-    CreateNative("Multi1v1_GetPistolRating", Native_GetPistolRating);
     CreateNative("Multi1v1_GetArenaNumber", Native_GetArenaNumber);
     CreateNative("Multi1v1_GetArenaPlayer1", Native_GetArenaPlayer1);
     CreateNative("Multi1v1_GetArenaPlayer2", Native_GetArenaPlayer2);
@@ -24,7 +21,6 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("Multi1v1_HasDatabase", Native_HasDatabase);
     CreateNative("Multi1v1_GetDatabase", Native_GetDatabase);
     CreateNative("Multi1v1_GivePlayerArenaWeapons", Native_GivePlayerArenaWeapons);
-    CreateNative("Multi1v1_GivePlayerArenaWeaponsNoNades", Native_GivePlayerArenaWeaponsNoNades);
     CreateNative("Multi1v1_Message", Native_Multi1v1Message);
     CreateNative("Multi1v1_MessageToAll", Native_Multi1v1MessageToAll);
     CreateNative("Multi1v1_BlockRatingChanges", Native_BlockRatingChanges);
@@ -39,6 +35,15 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("Multi1v1_ELORatingDelta", Native_ELORatingDelta);
     CreateNative("Multi1v1_GetNumSpawnsInArena", Native_GetNumSpawnsInArena);
     CreateNative("Multi1v1_GetArenaSpawn", Native_GetArenaSpawn);
+    CreateNative("Multi1v1_GetRifleChoice", Native_GetRifleChoice);
+    CreateNative("Multi1v1_GetPistolChoice", Native_GetPistolChoice);
+
+    CreateNative("Multi1v1_GetRoundTypeIndex", Native_GetRoundTypeIndex);
+    CreateNative("Multi1v1_AddRoundType", Native_AddRoundType);
+    CreateNative("Multi1v1_ClearRoundTypes", Native_ClearRoundTypes);
+    CreateNative("Multi1v1_ReturnMenuControl", Native_ReturnMenuControl);
+    CreateNative("Multi1v1_AddStandardRounds", Native_AddStandardRounds);
+
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -66,13 +71,25 @@ public Native_IsInWaitingQueue(Handle plugin, numParams) {
 public Native_HasStats(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
-    return IsConnected(client) && !IsFakeClient(client) && g_FetchedPlayerInfo[client];
+    return !IsFakeClient(client) && g_FetchedPlayerInfo[client];
 }
 
 public Native_GetRating(Handle plugin, numParams) {
     int client = GetNativeCell(1);
+    int roundType = GetNativeCell(2);
     CHECK_CONNECTED(client);
-    return _:g_Rating[client];
+
+    if (roundType < 0) {
+        return _:g_Rating[client];
+    } else {
+        if (roundType < g_numRoundTypes)
+            ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not valid", roundType);
+
+        if (g_RoundTypeRanked[roundType])
+            ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not ranked", roundType);
+
+        return _:g_RoundTypeRating[client][roundType];
+    }
 }
 
 public Native_SetRating(Handle plugin, numParams) {
@@ -80,24 +97,6 @@ public Native_SetRating(Handle plugin, numParams) {
     float rating = GetNativeCell(2);
     CHECK_CONNECTED(client);
     g_Rating[client] = rating;
-}
-
-public Native_GetAwpRating(Handle plugin, numParams) {
-    int client = GetNativeCell(1);
-    CHECK_CONNECTED(client);
-    return _:g_AwpRating[client];
-}
-
-public Native_GetRifleRating(Handle plugin, numParams) {
-    int client = GetNativeCell(1);
-    CHECK_CONNECTED(client);
-    return _:g_RifleRating[client];
-}
-
-public Native_GetPistolRating(Handle plugin, numParams) {
-    int client = GetNativeCell(1);
-    CHECK_CONNECTED(client);
-    return _:g_PistolRating[client];
 }
 
 public Native_GetRoundsPlayed(Handle plugin, numParams) {
@@ -172,59 +171,20 @@ public Native_GetDatabase(Handle plugin, numParams) {
     }
 }
 
-public Native_GivePlayerArenaWeaponsNoNades(Handle plugin, numParams) {
-    int client = GetNativeCell(1);
-    RoundType roundType = RoundType:GetNativeCell(2);
-    CHECK_CONNECTED(client);
-    Client_RemoveAllWeapons(client, "", true);
-
-    if (roundType == RoundType_Rifle) {
-        GiveWeapon(client, g_PrimaryWeapon[client]);
-        SetEntData(client, g_iPlayers_HelmetOffset, 1);
-        Client_SetArmor(client, 100);
-    } else if (roundType == RoundType_Awp) {
-        GiveWeapon(client, "weapon_awp");
-        SetEntData(client, g_iPlayers_HelmetOffset, 1);
-        Client_SetArmor(client, 100);
-    } else if (roundType == RoundType_Pistol) {
-        SetEntData(client, g_iPlayers_HelmetOffset, 0);
-        bool giveKevlar = IsDefaultPistol(g_SecondaryWeapon[client]);
-        if (giveKevlar) {
-            Client_SetArmor(client, 100);
-        } else {
-            Client_SetArmor(client, 0);
-        }
-    } else {
-        LogError("Unknown round type for %N: %d", client, roundType);
-    }
-
-    int pistolBehavior = GetConVarInt(g_hPistolBehavior);
-
-    bool giveSelected = (roundType == RoundType_Pistol) ||
-                        (pistolBehavior == 0) ||
-                        (pistolBehavior == 3 && roundType != RoundType_Awp);
-
-    bool giveFallback = (pistolBehavior == 2) ||
-                        (pistolBehavior == 3 && roundType == RoundType_Awp);
-
-    if (giveSelected) {
-        GiveWeapon(client, g_SecondaryWeapon[client]);
-    } else if (giveFallback) {
-        char defaultPistol[32];
-        GetConVarString(g_hDefaultPistol, defaultPistol, sizeof(defaultPistol));
-        GiveWeapon(client,  defaultPistol);
-    }
-
-    GiveWeapon(client, "weapon_knife");
-}
-
 public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
     int client = GetNativeCell(1);
-    RoundType roundType = RoundType:GetNativeCell(2);
-    Multi1v1_GivePlayerArenaWeaponsNoNades(client, roundType);
-    int other = Multi1v1_GetOpponent(client);
-    if (IsValidClient(other) && g_GiveFlash[client] && g_GiveFlash[other]) {
-        GivePlayerItem(client, "weapon_flashbang");
+    int roundType = GetNativeCell(2);
+    CHECK_CONNECTED(client);
+
+    if (roundType < 0 || roundType >= g_numRoundTypes) {
+        LogError("Tried to give weapons for non-existent round type %d", roundType);
+        RifleHandler(client);
+    } else {
+        Handle pluginSource = g_RoundTypeSourcePlugin[roundType];
+        RoundTypeWeaponHandler weaponHandler = g_RoundTypeWeaponHandlers[roundType];
+        Call_StartFunction(pluginSource, weaponHandler);
+        Call_PushCell(client);
+        Call_Finish();
     }
 }
 
@@ -363,4 +323,53 @@ public Native_GetArenaSpawn(Handle plugin, numParams) {
 
     SetNativeArray(3, origin, sizeof(origin));
     SetNativeArray(4, angle, sizeof(angle));
+}
+
+public Native_GetRifleChoice(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
+    SetNativeString(2, g_PrimaryWeapon[client], WEAPON_NAME_LENGTH);
+}
+
+public Native_GetPistolChoice(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
+    SetNativeString(2, g_SecondaryWeapon[client], WEAPON_NAME_LENGTH);
+}
+
+public Native_ClearRoundTypes(Handle plugin, numParams) {
+    g_numRoundTypes = 0;
+}
+
+public Native_AddRoundType(Handle plugin, numParams) {
+    char displayName[ROUND_TYPE_NAME_LENGTH];
+    char internalName[ROUND_TYPE_NAME_LENGTH];
+    GetNativeString(1, displayName, sizeof(displayName));
+    GetNativeString(2, internalName, sizeof(internalName));
+    RoundTypeWeaponHandler weaponHandler = RoundTypeWeaponHandler:GetNativeFunction(3);
+    RoundTypeMenuHandler menuHandler = RoundTypeMenuHandler:GetNativeFunction(4);
+    bool optional = GetNativeCell(5);
+    bool ranked = GetNativeCell(6);
+    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked);
+}
+
+public Native_ReturnMenuControl(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    ReturnMenuControl(client);
+}
+
+public Native_GetRoundTypeIndex(Handle plugin, numParams) {
+    char buffer[ROUND_TYPE_NAME_LENGTH];
+    GetNativeString(1, buffer, sizeof(buffer));
+    for (int i = 0; i < g_numRoundTypes; i++) {
+        if (StrEqual(buffer, g_RoundTypeNames[i], false)) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+public Native_AddStandardRounds(Handle plugin, numParams) {
+    AddStandardRounds();
 }
