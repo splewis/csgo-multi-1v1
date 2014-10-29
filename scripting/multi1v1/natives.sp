@@ -42,6 +42,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("Multi1v1_ClearRoundTypes", Native_ClearRoundTypes);
     CreateNative("Multi1v1_ReturnMenuControl", Native_ReturnMenuControl);
     CreateNative("Multi1v1_AddStandardRounds", Native_AddStandardRounds);
+    CreateNative("Multi1v1_GetCurrentRoundType", Native_GetCurrentRoundType);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -376,4 +377,9 @@ public Native_GetRoundTypeIndex(Handle plugin, numParams) {
 
 public Native_AddStandardRounds(Handle plugin, numParams) {
     AddStandardRounds();
+}
+
+public Native_GetCurrentRoundType(Handle plugin, numParams) {
+    int arena = GetNativeCell(1);
+    return g_roundTypes[arena];
 }

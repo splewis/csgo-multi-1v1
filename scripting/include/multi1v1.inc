@@ -198,6 +198,9 @@ public void Multi1v1_NullChoiceMenu(int client) {
     Multi1v1_ReturnMenuControl(client);
 }
 
+// Returns the current round type in an arena.
+native int Multi1v1_GetCurrentRoundType(int arena);
+
 public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",
     file = "multi1v1.smx",
@@ -247,5 +250,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_ReturnMenuControl");
     MarkNativeAsOptional("Multi1v1_GetRoundTypeIndex");
     MarkNativeAsOptional("Multi1v1_AddStandardRounds");
+    MarkNativeAsOptional("Multi1v1_GetCurrentRoundType");
 }
 #endif
