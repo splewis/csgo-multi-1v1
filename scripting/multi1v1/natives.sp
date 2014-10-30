@@ -200,9 +200,6 @@ public Native_Multi1v1Message(Handle plugin, numParams) {
     Colorize(finalMsg, sizeof(finalMsg));
 
     PrintToChat(client, finalMsg);
-
-    // Reset language back (TODO: may not be needed?)
-    SetGlobalTransTarget(LANG_SERVER);
 }
 
 public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
@@ -220,9 +217,6 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
             PrintToChat(i, finalMsg);
         }
     }
-
-    // Reset language back (TODO: may not be needed?)
-    SetGlobalTransTarget(LANG_SERVER);
 }
 
 public Native_BlockRatingChanges(Handle plugin, numParams) {
