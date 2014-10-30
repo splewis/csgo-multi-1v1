@@ -17,7 +17,7 @@ public Plugin:myinfo = {
 public OnPluginStart() {
     LoadTranslations("common.phrases");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}.");
-    g_hStatsTop = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL. example link: For example: http://csgo1v1.splewis.net/redirect.php?id=");
+    g_hStatsTop = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL");
     AutoExecConfig(true, "multi1v1_online_stats_viewer", "sourcemod/multi1v1");
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
@@ -39,7 +39,15 @@ public Action Command_Stats(int client, args) {
     return Plugin_Handled;
 }
 public Action Command_Top(int client, args) {
-    ShowTop(client);
+    char url[255];
+    GetConVarString(g_hStatsTop, url, sizeof(url));
+    if (StrEqual(url, "")) {
+        Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
+        return Plugin_Handled;
+    }
+    ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
+    QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
+	
     return Plugin_Handled;
 }
 public Action OnClientSayCommand(client, const char command[], const char sArgs[]) {
@@ -78,17 +86,6 @@ public void ShowStatsForPlayer(int client, target) {
         ReplaceString(url, sizeof(url), "{SERVERID}", serverIDString, false);
         ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
         QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
-    }
-}
-public void ShowTop(int client) {
-    char url[255];
-    GetConVarString(g_hStatsTop, url, sizeof(url));
-    if (StrEqual(url, "")) {
-        Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
-        return;
-    }
-    ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
-    QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
     }
 }
 public void CheckMOTDAllowed(QueryCookie cookie, int client, ConVarQueryResult result, const char cvarName[], const char cvarValue[]) {
