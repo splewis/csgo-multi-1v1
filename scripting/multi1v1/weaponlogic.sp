@@ -163,9 +163,9 @@ public MenuHandler_Preference(Handle menu, MenuAction action, param1, param2) {
         g_Preference[client] = choice;
 
         if (choice == -1) {
-            SetCookieStringByName(client, "multi1v1_preference", g_RoundTypeNames[choice]);
-        } else {
             SetCookieStringByName(client, "multi1v1_preference", "none");
+        } else {
+            SetCookieStringByName(client, "multi1v1_preference", g_RoundTypeNames[choice]);
         }
         FinishGunsMenu(client);
 
