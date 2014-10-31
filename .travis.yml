@@ -5,6 +5,7 @@ before_install:
     - sudo apt-get install -y gcc-multilib lynx git
     - git clone https://github.com/splewis/sm-builder
     - cd sm-builder
+    - sudo pip install -r requirements.txt
     - sudo python setup.py install
 
 before_script:
@@ -13,7 +14,6 @@ before_script:
     - SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
     - wget $SMPACKAGE
     - tar -xzf $(basename "$SMPACKAGE")
-    - cp -R scripting/ addons/sourcemod/
     - cd addons/sourcemod/scripting/
     - chmod +x spcomp
     - PATH+=":$PWD"
