@@ -47,6 +47,7 @@ If you must use sourcemod 1.6, you will have to use [0.5.2](https://github.com/s
 #### Instructions
 Download the archive and extract the files to the game server. From the download, you should have installed the following (to the ``csgo`` directory):
 - ``addons/sourcemod/plugins/multi1v1.smx``
+- ``addons/sourcemod/configs/multi1v1_weapons.cfg``
 - ``addons/sourcemod/translations``
 - ``cfg/sourcemod/multi1v1``
 
