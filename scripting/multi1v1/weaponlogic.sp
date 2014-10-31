@@ -297,7 +297,7 @@ public bool IsDefaultPistol(const char weapon[]) {
 }
 
 static bool IsAllowedRifle(char weapon[]) {
-    for (int i = 0; i < sizeof(g_Rifles); i++) {
+    for (int i = 0; i < g_numRifles; i++) {
         if (StrEqual(g_Rifles[i][0], weapon, false)) {
             return true;
         }
@@ -306,7 +306,7 @@ static bool IsAllowedRifle(char weapon[]) {
 }
 
 static bool IsAllowedPistol(char weapon[]) {
-    for (int i = 0; i < sizeof(g_Pistols); i++) {
+    for (int i = 0; i < g_numPistols; i++) {
         if (StrEqual(g_Pistols[i][0], weapon, false)) {
             return true;
         }
