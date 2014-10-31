@@ -49,7 +49,7 @@ public int AddRoundType(Handle pluginSource, const char[] displayName, const cha
                         bool optional, bool ranked) {
     g_RoundTypeSourcePlugin[g_numRoundTypes] = pluginSource;
     strcopy(g_RoundTypeDisplayNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, displayName);
-    strcopy(g_RoundTypeNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, internalName);
+    String_ToLower(internalName, g_RoundTypeNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH);
     g_RoundTypeWeaponHandlers[g_numRoundTypes] = weaponHandler;
     g_RoundTypeMenuHandlers[g_numRoundTypes] = menuHandler;
     g_RoundTypeOptional[g_numRoundTypes] = optional;
@@ -121,9 +121,7 @@ public MenuHandler_AllowRoundType(Handle menu, MenuAction action, param1, param2
 
 
 static void GetRoundCookieName(int roundType, char buffer[], int length) {
-    char lowerCaseRoundType[length];
-    String_ToLower(g_RoundTypeNames[roundType], lowerCaseRoundType, length);
-    Format(buffer, length, "multi1v1_allow%s", lowerCaseRoundType);
+    Format(buffer, length, "multi1v1_allow%s", g_RoundTypeNames[roundType]);
 }
 
 
