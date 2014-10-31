@@ -8,6 +8,9 @@ before_install:
     - sudo pip install -r requirements.txt
     - sudo python setup.py install
 
+install:
+
+
 before_script:
     - SMPATTERN="http:.*sourcemod-.*-linux.*"
     - SMURL="http://www.sourcemod.net/smdrop/1.7/"
@@ -21,6 +24,7 @@ before_script:
     - git clone https://github.com/bcserv/smlib
     - cp -r smlib/scripting/include/* .
     - wget https://bitbucket.org/GoD_Tony/updater/raw/94c43b6e49ac2e8f322b252bce52d6aef5c6a477/include/updater.inc
+    - cd ../../../..
 
 script:
     - smbuilder
