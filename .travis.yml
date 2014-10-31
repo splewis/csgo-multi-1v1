@@ -1,16 +1,13 @@
 language: c
 
-before_install:
+install:
     - sudo apt-get update
-    - sudo apt-get install -y gcc-multilib lynx git
+    - sudo apt-get install -y gcc-multilib lynx git lib32stdc++6
     - git clone https://github.com/splewis/sm-builder
     - cd sm-builder
     - sudo pip install -r requirements.txt
     - sudo python setup.py install
     - cd ..
-
-install:
-
 
 before_script:
     - SMPATTERN="http:.*sourcemod-.*-linux.*"
