@@ -155,8 +155,10 @@ typedef RoundTypeMenuHandler = function void (int client);
 native int Multi1v1_AddRoundType(const char displayName[],
                                  const char internalName[],
                                  RoundTypeWeaponHandler weaponsHandler,
-                                 RoundTypeMenuHandler menuHandler,
-                                 bool optional=true, bool ranked=false, const char ratingFieldName[]="");
+                                 RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
+                                 bool optional=true,
+                                 bool ranked=false,
+                                 const char ratingFieldName[]="");
 ```
 
 More advanced usage would involve passing a real function as the 4th parameter instead of ``Multi1v1_NullChoiceMenu``.

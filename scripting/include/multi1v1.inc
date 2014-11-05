@@ -327,10 +327,13 @@ typedef RoundTypeMenuHandler = function void (int client);
  * @error If the number of round types registered exceeds the max allowed round types.
  * @return the unique int identifier for the round type (an index into an internal array)
  */
-native int Multi1v1_AddRoundType(const char displayName[], const char internalName[],
+native int Multi1v1_AddRoundType(const char displayName[],
+                                 const char internalName[],
                                  RoundTypeWeaponHandler weaponsHandler,
                                  RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
-                                 bool optional=true, bool ranked=false, const char ratingFieldName[]="");
+                                 bool optional=true,
+                                 bool ranked=false,
+                                 const char ratingFieldName[]="");
 /**
  * Clears all registered round types.
  *
