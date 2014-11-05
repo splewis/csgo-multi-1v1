@@ -322,13 +322,15 @@ typedef RoundTypeMenuHandler = function void (int client);
  * @param menuHandler The function called for a client when they "allowed" the round type in the menu
  * @param optional Whether the round type is optional or not (i.e. if they get to chose to disallow it)
  * @param ranked Whether those rounds count toward player ratings
+ * @param ratingFieldName Name of the field for round-type specific rating updates
+ *                        leave as the empty string for no round-type specific rating
  * @error If the number of round types registered exceeds the max allowed round types.
  * @return the unique int identifier for the round type (an index into an internal array)
  */
 native int Multi1v1_AddRoundType(const char displayName[], const char internalName[],
                                  RoundTypeWeaponHandler weaponsHandler,
                                  RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
-                                 bool optional=true, bool ranked=false);
+                                 bool optional=true, bool ranked=false, const char ratingFieldName[]="");
 /**
  * Clears all registered round types.
  *

@@ -46,7 +46,7 @@ static AddRounds_CheckAllowed(ArrayList types, int client1, int client2, int rou
 
 public int AddRoundType(Handle pluginSource, const char[] displayName, const char[] internalName,
                         RoundTypeWeaponHandler weaponHandler, RoundTypeMenuHandler menuHandler,
-                        bool optional, bool ranked) {
+                        bool optional, bool ranked, const char ratingFieldName[]) {
     g_RoundTypeSourcePlugin[g_numRoundTypes] = pluginSource;
     strcopy(g_RoundTypeDisplayNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, displayName);
     String_ToLower(internalName, g_RoundTypeNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH);
@@ -54,6 +54,7 @@ public int AddRoundType(Handle pluginSource, const char[] displayName, const cha
     g_RoundTypeMenuHandlers[g_numRoundTypes] = menuHandler;
     g_RoundTypeOptional[g_numRoundTypes] = optional;
     g_RoundTypeRanked[g_numRoundTypes] = ranked;
+    strcopy(g_RoundTypeFieldNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, ratingFieldName);
     g_numRoundTypes++;
     return g_numRoundTypes - 1;
 }
@@ -133,9 +134,9 @@ static void GetRoundCookieName(int roundType, char buffer[], int length) {
  *************************/
 
 public void AddStandardRounds() {
-    AddRoundType(INVALID_HANDLE, "Rifle", "rifle", RifleHandler, Multi1v1_NullChoiceMenu, false, true);
-    AddRoundType(INVALID_HANDLE, "Pistol", "pistol", PistolHandler, Multi1v1_NullChoiceMenu, true, true);
-    AddRoundType(INVALID_HANDLE, "AWP", "awp", AwpHandler, Multi1v1_NullChoiceMenu, true, true);
+    AddRoundType(INVALID_HANDLE, "Rifle", "rifle", RifleHandler, Multi1v1_NullChoiceMenu, false, true, "rifleRating");
+    AddRoundType(INVALID_HANDLE, "Pistol", "pistol", PistolHandler, Multi1v1_NullChoiceMenu, true, true, "pistolRating");
+    AddRoundType(INVALID_HANDLE, "AWP", "awp", AwpHandler, Multi1v1_NullChoiceMenu, true, true, "awpRating");
 }
 
 public void RifleHandler(int client) {

@@ -339,13 +339,16 @@ public Native_AddRoundType(Handle plugin, numParams) {
 
     char displayName[ROUND_TYPE_NAME_LENGTH];
     char internalName[ROUND_TYPE_NAME_LENGTH];
+    char ratingFieldName[ROUND_TYPE_NAME_LENGTH];
+
     GetNativeString(1, displayName, sizeof(displayName));
     GetNativeString(2, internalName, sizeof(internalName));
     RoundTypeWeaponHandler weaponHandler = RoundTypeWeaponHandler:GetNativeFunction(3);
     RoundTypeMenuHandler menuHandler = RoundTypeMenuHandler:GetNativeFunction(4);
     bool optional = GetNativeCell(5);
     bool ranked = GetNativeCell(6);
-    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked);
+    GetNativeString(7, ratingFieldName, sizeof(ratingFieldName));
+    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName);
 }
 
 public Native_ReturnMenuControl(Handle plugin, numParams) {

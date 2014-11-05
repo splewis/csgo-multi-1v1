@@ -29,13 +29,13 @@ public void DB_Connect() {
         // create the table
         SQL_CreateTable(db, TABLE_NAME, g_TableFormat, sizeof(g_TableFormat));
 
-        // Add new columns/key for backwards compaability reaons
+        // Add new columns/key for backwards compatability reaons
         SQL_AddColumn(db, TABLE_NAME, "serverID INT NOT NULL default 0");
         SQL_AddColumn(db, TABLE_NAME, "recentRounds INT default 0 NOT NULL");
         for (int i = 0; i < g_numRoundTypes; i++) {
-            if (g_RoundTypeRanked[i]) {
+            if (HasRoundTypeSpecificRating(i)) {
                 char buffer[255];
-                Format(buffer, sizeof(buffer), "%sRating FLOAT NOT NULL default 1500.0", g_RoundTypeNames[i]);
+                Format(buffer, sizeof(buffer), "%s FLOAT NOT NULL default 1500.0", g_RoundTypeFieldNames[i]);
                 SQL_AddColumn(db, TABLE_NAME, buffer);
             }
         }
@@ -140,16 +140,14 @@ public void DB_FetchRatings(int client) {
             char roundTypeRatings[1024] = "";
             int count = 0;
             for (int i = 0; i < g_numRoundTypes; i++) {
-                if (!g_RoundTypeRanked[i])
+                if (!HasRoundTypeSpecificRating(i))
                     continue;
 
                 if (count > 0)
                     StrCat(roundTypeRatings, sizeof(roundTypeRatings), ", ");
                 count++;
 
-                char buffer[128];
-                Format(buffer, sizeof(buffer), "%sRating", g_RoundTypeNames[i]);
-                StrCat(roundTypeRatings, sizeof(roundTypeRatings), buffer);
+                StrCat(roundTypeRatings, sizeof(roundTypeRatings), g_RoundTypeFieldNames[i]);
             }
 
             char query[2048];
@@ -176,7 +174,7 @@ public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int s
 
         int fieldIndex = 3;
         for (int i = 0; i < g_numRoundTypes; i++) {
-            if (!g_RoundTypeRanked[i])
+            if (!HasRoundTypeSpecificRating(i))
                 continue;
             g_RoundTypeRating[client][i] = SQL_FetchFloat(hndl, fieldIndex);
             fieldIndex++;
@@ -200,11 +198,11 @@ public void DB_WriteRatings(int client) {
 
         char roundTypeRatings[1024] = "";
         for (int i = 0; i < g_numRoundTypes; i++) {
-            if (!g_RoundTypeRanked[i])
+            if (HasRoundTypeSpecificRating(i))
                 continue;
 
             char buffer[128];
-            Format(buffer, sizeof(buffer), ", %sRating = %f", g_RoundTypeNames[i], g_RoundTypeRating[client][i]);
+            Format(buffer, sizeof(buffer), ", %s = %f", g_RoundTypeFieldNames[i], g_RoundTypeRating[client][i]);
             StrCat(roundTypeRatings, sizeof(roundTypeRatings), buffer);
         }
 
@@ -330,4 +328,8 @@ static void RatingMessage(int winner, int loser, float winner_rating, float lose
 
 static void ForceLossMessage(int client, float rating, float delta) {
     Multi1v1_Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
+}
+
+static bool HasRoundTypeSpecificRating(int roundType) {
+    return g_RoundTypeRanked[roundType] && !StrEqual(g_RoundTypeFieldNames[roundType], "");
 }

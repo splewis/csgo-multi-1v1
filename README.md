@@ -156,7 +156,7 @@ native int Multi1v1_AddRoundType(const char displayName[],
                                  const char internalName[],
                                  RoundTypeWeaponHandler weaponsHandler,
                                  RoundTypeMenuHandler menuHandler,
-                                 bool optional=true, bool ranked=false);
+                                 bool optional=true, bool ranked=false, const char ratingFieldName[]="");
 ```
 
 More advanced usage would involve passing a real function as the 4th parameter instead of ``Multi1v1_NullChoiceMenu``.
@@ -164,8 +164,8 @@ You could pass a function, for example, that lets you choose some option that go
 The menu-handler callback should call ``Multi1v1_ReturnMenuControl`` once the client has finished the selection.
 
 Note that the multi1v1 plugin will
-- create and update the column for the round-type stats if you set the round type as ranked
-- create and update the "allow x rounds" clientprefs cookie for you
+- create and update the column for the round-type stats if you set the round type as ranked and give a non-empty string as the ``ratingFieldName`` parameter
+- create and update the "allow x rounds" clientprefs cookie for you (it uses the interalName when naming the cookie)
 
 
 ## Contribution and Suggestions
