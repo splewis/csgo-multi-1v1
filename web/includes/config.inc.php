@@ -21,5 +21,6 @@ $anti_squatter_pass = ""; //Used to access anti-squatter.php
 $days_until_inactivity = 7; //Number of days before a player is given an inactive status.
 
 $connect = mysqli_connect($mysql_host,$mysql_user,$mysql_pass) or die('Cannot connect to server.');
+$connect->set_charset('utf8');
 $select_db = mysqli_select_db($connect, $mysql_db) or die('Cannot find database.')
 ?>
