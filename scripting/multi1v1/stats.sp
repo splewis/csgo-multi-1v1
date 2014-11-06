@@ -279,25 +279,22 @@ static void UpdateRatings(int winner, int loser, bool forceLoss) {
             return;
         }
 
-        int arena = g_Ranking[winner];
-        int roundType = g_roundTypes[arena];
-        bool block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser] || !g_RoundTypeRanked[roundType];
+        bool block = g_BlockStatChanges[winner] || g_BlockStatChanges[loser];
         if (block) {
             return;
         }
 
         if (forceLoss) {
             ForceLoss(winner, loser);
-            return;
-        }
-
-        if (IsValidClient(winner) && IsValidClient(loser)) {
+        } else {
             float delta = Multi1v1_ELORatingDelta(g_Rating[winner], g_Rating[loser], K_FACTOR);
             g_Rating[winner] += delta;
             g_Rating[loser] -= delta;
             RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
 
-            if (g_RoundTypeRanked[roundType]) {
+            int arena = g_Ranking[winner];
+            int roundType = g_roundTypes[arena];
+            if (HasRoundTypeSpecificRating(roundType)) {
                 delta = Multi1v1_ELORatingDelta(g_RoundTypeRating[winner][roundType], g_RoundTypeRating[loser][roundType], K_FACTOR);
                 g_RoundTypeRating[winner][roundType] += delta;
                 g_RoundTypeRating[loser][roundType] -= delta;
