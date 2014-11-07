@@ -12,7 +12,7 @@
  * @param rankingQueue empty adt array to be used for arena placement
  * @noreturn
  */
-forward Multi1v1_OnPreArenaRankingsSet(Handle rankingQueue);
+forward void Multi1v1_OnPreArenaRankingsSet(Handle rankingQueue);
 
 /**
  * Called after the plugin is done putting players into the ranking queue.
@@ -20,7 +20,7 @@ forward Multi1v1_OnPreArenaRankingsSet(Handle rankingQueue);
  * @param rankingQueue adt array of the players in order of their arena placement
  * @noreturn
  */
-forward Multi1v1_OnPostArenaRankingsSet(Handle rankingQueue);
+forward void Multi1v1_OnPostArenaRankingsSet(Handle rankingQueue);
 
 /**
  * Called when all players have been placed into their arena.
@@ -28,7 +28,7 @@ forward Multi1v1_OnPostArenaRankingsSet(Handle rankingQueue);
  *
  * @noreturn
  */
-forward Multi1v1_OnArenasReady();
+forward void Multi1v1_OnArenasReady();
 
 /**
  * Called after a player's spawn setup (e.g. giving weapons) is processed.
@@ -36,7 +36,7 @@ forward Multi1v1_OnArenasReady();
  * @param client Player's index.
  * @noreturn
  */
-forward Multi1v1_AfterPlayerSpawn(int client);
+forward void Multi1v1_AfterPlayerSpawn(int client);
 
 /**
  * Called after core player setup functions (teleporting, printing their opponent to chat)
@@ -45,7 +45,7 @@ forward Multi1v1_AfterPlayerSpawn(int client);
  * @param client Player's index.
  * @noreturn
  */
-forward Multi1v1_AfterPlayerSetup(int client);
+forward void Multi1v1_AfterPlayerSetup(int client);
 
 /**
  * Called when an arena finishes it's fighting.
@@ -55,7 +55,7 @@ forward Multi1v1_AfterPlayerSetup(int client);
  * @param forceLoss Whether it was a "force loss" for both payers (e.g. time ran out)
  * @noreturn
  */
-forward Multi1v1_OnRoundWon(int winner, int loser, bool forceLoss);
+forward void Multi1v1_OnRoundWon(int winner, int loser, bool forceLoss);
 
 /**
  * Called when a client's stats have been fetched successfully.
@@ -63,7 +63,7 @@ forward Multi1v1_OnRoundWon(int winner, int loser, bool forceLoss);
  * @param client Player's index.
  * @noreturn
  */
-forward Multi1v1_OnStatsCached(int client);
+forward void Multi1v1_OnStatsCached(int client);
 
 /**
  * Called after a player finishes going through the weapons menu.
@@ -71,14 +71,14 @@ forward Multi1v1_OnStatsCached(int client);
  * @param client Player's index.
  * @noreturn
  */
-forward Multi1v1_OnGunsMenuDone(int client);
+forward void Multi1v1_OnGunsMenuDone(int client);
 
 /**
  * Called each map start after the standard round types have been added.
  *
  * @noreturn
  */
-forward Multi1v1_OnRoundTypesAdded();
+forward void Multi1v1_OnRoundTypesAdded();
 
 /**
  * Returns if a player is actively in an arena.

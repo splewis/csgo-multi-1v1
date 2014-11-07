@@ -11,7 +11,7 @@ public Plugin:myinfo = {
     url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
-public Multi1v1_OnRoundTypesAdded() {
+public void Multi1v1_OnRoundTypesAdded() {
     Multi1v1_AddRoundType("Knife", "knife", KnifeHandler, Multi1v1_NullChoiceMenu, true, true, "");
 }
 

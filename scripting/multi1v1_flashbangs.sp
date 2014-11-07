@@ -22,7 +22,7 @@ public OnClientConnected(int client) {
     g_GiveFlash[client] = false;
 }
 
-public Multi1v1_OnGunsMenuDone(int client) {
+public void Multi1v1_OnGunsMenuDone(int client) {
     Handle menu = CreateMenu(MenuHandler_FlashChoice);
     SetMenuExitButton(menu, true);
     SetMenuTitle(menu, "Give players flashbangs?");
@@ -42,7 +42,7 @@ public MenuHandler_FlashChoice(Handle menu, MenuAction action, param1, param2) {
     }
 }
 
-public Multi1v1_AfterPlayerSpawn(int client) {
+public void Multi1v1_AfterPlayerSpawn(int client) {
     if (!IsActivePlayer(client)) {
         return;
     }
