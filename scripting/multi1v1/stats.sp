@@ -197,8 +197,9 @@ public void DB_WriteRatings(int client) {
         int serverID = GetConVarInt(g_hDatabaseServerId);
 
         char roundTypeRatings[1024] = "";
+
         for (int i = 0; i < g_numRoundTypes; i++) {
-            if (HasRoundTypeSpecificRating(i))
+            if (!HasRoundTypeSpecificRating(i))
                 continue;
 
             char buffer[128];

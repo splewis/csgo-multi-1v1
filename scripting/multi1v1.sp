@@ -735,7 +735,7 @@ public Action Command_TeamJoin(int client, const char command[], argc) {
 /**
  * Hook for player chat actions, gives player the guns menu.
  */
-public Action OnClientSayCommand(client, const char command[], const char sArgs[]) {
+public Action OnClientSayCommand(int client, const char command[], const char sArgs[]) {
     // To avoid cluttering up chat, these commands are hidden
     char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns", "gnus" };
     bool block = (GetConVarInt(g_hHideGunsChatCommands) != 0);
@@ -751,7 +751,7 @@ public Action OnClientSayCommand(client, const char command[], const char sArgs[
 }
 
 /** sm_guns command **/
-public Action Command_Guns(client, args) {
+public Action Command_Guns(int client, args) {
     GiveWeaponMenu(client);
 }
 
