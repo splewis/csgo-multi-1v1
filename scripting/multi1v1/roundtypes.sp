@@ -46,7 +46,7 @@ static AddRounds_CheckAllowed(ArrayList types, int client1, int client2, int rou
 
 public int AddRoundType(Handle pluginSource, const char[] displayName, const char[] internalName,
                         RoundTypeWeaponHandler weaponHandler, RoundTypeMenuHandler menuHandler,
-                        bool optional, bool ranked, const char ratingFieldName[]) {
+                        bool optional, bool ranked, const char[] ratingFieldName) {
     g_RoundTypeSourcePlugin[g_numRoundTypes] = pluginSource;
     strcopy(g_RoundTypeDisplayNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, displayName);
     String_ToLower(internalName, g_RoundTypeNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH);
@@ -121,7 +121,7 @@ public MenuHandler_AllowRoundType(Handle menu, MenuAction action, param1, param2
 }
 
 
-static void GetRoundCookieName(int roundType, char buffer[], int length) {
+static void GetRoundCookieName(int roundType, char[] buffer, int length) {
     Format(buffer, length, "multi1v1_allow%s", g_RoundTypeNames[roundType]);
 }
 

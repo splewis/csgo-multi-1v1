@@ -91,7 +91,7 @@ static void LoadBackupConfig() {
     g_numPistols = 2;
 }
 
-static TeamStringToTeam(char teamString[]) {
+static TeamStringToTeam(const char[] teamString) {
     if (StrEqual(teamString, "CT", false))
         return CS_TEAM_CT;
     else if (StrEqual(teamString, "T", false))
@@ -104,7 +104,7 @@ static TeamStringToTeam(char teamString[]) {
  * Returns the cstrike team a weapon is intended for, or -1 if any can use the weapon.
  * This is only valid for weapons in the server's weapons config file.
  */
-public int GetWeaponTeam(const char weapon[]) {
+public int GetWeaponTeam(const char[] weapon) {
     for (new i = 0; i < g_numRifles; i++) {
         if (StrEqual(weapon[0], g_Rifles[i][0])) {
             return TeamStringToTeam(g_Rifles[i][2][0]);
@@ -270,7 +270,7 @@ public UpdatePreferencesOnCookies(int client) {
 /**
  * Gives a player a weapon, taking care of getting them the appropriate skin.
  */
-public GiveWeapon(int client, const char weapon[]) {
+public GiveWeapon(int client, const char[] weapon) {
     int playerteam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     int weaponteam = GetWeaponTeam(weapon);
     if (weaponteam > 0)
@@ -282,7 +282,7 @@ public GiveWeapon(int client, const char weapon[]) {
 /**
  * Returns if the given weapon is a default starting pistol.
  */
-public bool IsDefaultPistol(const char weapon[]) {
+public bool IsDefaultPistol(const char[] weapon) {
     char defaultPistols[][] = {
         "weapon_glock",
         "weapon_hkp2000",
@@ -296,7 +296,7 @@ public bool IsDefaultPistol(const char weapon[]) {
     return false;
 }
 
-static bool IsAllowedRifle(char weapon[]) {
+static bool IsAllowedRifle(const char[] weapon) {
     for (int i = 0; i < g_numRifles; i++) {
         if (StrEqual(g_Rifles[i][0], weapon, false)) {
             return true;
@@ -305,7 +305,7 @@ static bool IsAllowedRifle(char weapon[]) {
     return false;
 }
 
-static bool IsAllowedPistol(char weapon[]) {
+static bool IsAllowedPistol(const char[] weapon) {
     for (int i = 0; i < g_numPistols; i++) {
         if (StrEqual(g_Pistols[i][0], weapon, false)) {
             return true;

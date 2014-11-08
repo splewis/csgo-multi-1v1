@@ -95,14 +95,14 @@ native bool Multi1v1_IsInArena(int client);
  * @param format Format string
  * @error Client not connected.
  */
-native void Multi1v1_Message(int client, const char format[], any:...);
+native void Multi1v1_Message(int client, const char[] format, any:...);
 
 /**
  * Prints a plugin-formatted message to all clients.
  *
  * @param format Format string
  */
-native void Multi1v1_MessageToAll(const char format[], any:...);
+native void Multi1v1_MessageToAll(const char[] format, any:...);
 
 /**
  * Returns the maximum number of areans the map allows.
@@ -327,13 +327,13 @@ typedef RoundTypeMenuHandler = function void (int client);
  * @error If the number of round types registered exceeds the max allowed round types.
  * @return the unique int identifier for the round type (an index into an internal array)
  */
-native int Multi1v1_AddRoundType(const char displayName[],
-                                 const char internalName[],
+native int Multi1v1_AddRoundType(const char[] displayName,
+                                 const char[] internalName,
                                  RoundTypeWeaponHandler weaponsHandler,
                                  RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
                                  bool optional=true,
                                  bool ranked=false,
-                                 const char ratingFieldName[]="");
+                                 const char[] ratingFieldName="");
 /**
  * Clears all registered round types.
  *
@@ -351,7 +351,7 @@ native void Multi1v1_AddStandardRounds();
 /**
  * Returns the unique identifier (the index) of a round type given its internal name.
  */
-native int Multi1v1_GetRoundTypeIndex(const char internalName[]);
+native int Multi1v1_GetRoundTypeIndex(const char[] internalName);
 
 /**
  * Returns menu control to the menu controller.

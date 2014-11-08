@@ -50,7 +50,7 @@ public void DB_Connect() {
 /**
  * Generic SQL threaded query error callback.
  */
-public SQLErrorCheckCallback(Handle owner, Handle hndl, const char error[], data) {
+public SQLErrorCheckCallback(Handle owner, Handle hndl, const char[] error, data) {
     if (!StrEqual("", error)) {
         LogError("Last Connect SQL Error: %s", error);
     }
@@ -91,7 +91,7 @@ public void DB_AddPlayer(int client) {
     }
 }
 
-public Callback_Insert(Handle owner, Handle hndl, const char error[], int serial) {
+public Callback_Insert(Handle owner, Handle hndl, const char[] error, int serial) {
     if (!StrEqual("", error)) {
         LogError("Last Connect SQL Error: %s", error);
     } else {
@@ -159,7 +159,7 @@ public void DB_FetchRatings(int client) {
     }
 }
 
-public Callback_FetchRating(Handle owner, Handle hndl, const char error[], int serial) {
+public Callback_FetchRating(Handle owner, Handle hndl, const char[] error, int serial) {
     int client = GetClientFromSerial(serial);
     if (!IsConnected(client) || g_FetchedPlayerInfo[client])
         return;
@@ -247,7 +247,7 @@ public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
 /**
  * Increments a named field in the database.
  */
-public void Increment(int client, const char field[]) {
+public void Increment(int client, const char[] field) {
     if (db != INVALID_HANDLE && IsPlayer(client)) {
         int id = GetSteamAccountID(client);
         if (id >= 1) {

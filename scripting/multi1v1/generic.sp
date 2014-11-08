@@ -60,7 +60,7 @@ stock bool IsActivePlayer(int client) {
 /**
  * Adds an integer to a menu as a string choice.
  */
-stock void AddMenuInt(Handle menu, int value, const char display[]) {
+stock void AddMenuInt(Handle menu, int value, const char[] display) {
     char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     AddMenuItem(menu, buffer, display);
@@ -78,7 +78,7 @@ stock int GetMenuInt(Handle menu, any:param2) {
 /**
  * Adds a boolean to a menu as a string choice.
  */
-stock void AddMenuBool(Handle menu, bool value, const char display[]) {
+stock void AddMenuBool(Handle menu, bool value, const char[] display) {
     int convertedInt = value ? 1 : 0;
     AddMenuInt(menu, convertedInt, display);
 }
@@ -93,7 +93,7 @@ stock bool GetMenuBool(Handle menu, any:param2) {
 /**
  * Returns a handle to a cookie with the given name, creating it if it doesn't exist.
  */
-stock Handle FindNamedCookie(const char cookieName[]) {
+stock Handle FindNamedCookie(const char[] cookieName) {
     Handle cookie = FindClientCookie(cookieName);
     if (cookie == INVALID_HANDLE) {
         cookie = RegClientCookie(cookieName, "multi1v1 cookie", CookieAccess_Protected);
@@ -104,7 +104,7 @@ stock Handle FindNamedCookie(const char cookieName[]) {
 /**
  * Sets the value of a client cookie given the cookie name.
  */
-stock void SetCookieStringByName(int client, const char cookieName[], const char value[]) {
+stock void SetCookieStringByName(int client, const char[] cookieName, const char[] value) {
     Handle cookie = FindNamedCookie(cookieName);
     SetClientCookie(client, cookie, value);
     CloseHandle(cookie);
@@ -113,7 +113,7 @@ stock void SetCookieStringByName(int client, const char cookieName[], const char
 /**
  * Gets the value of a client cookie given the cookie name.
  */
-stock void GetCookieStringByName(int client, const char cookieName[], char buffer[], int length) {
+stock void GetCookieStringByName(int client, const char[] cookieName, char[] buffer, int length) {
     Handle cookie = FindNamedCookie(cookieName);
     GetClientCookie(client, cookie, buffer, length);
     CloseHandle(cookie);
@@ -122,7 +122,7 @@ stock void GetCookieStringByName(int client, const char cookieName[], char buffe
 /**
  * Sets a cookie to an integer value by converting it to a string.
  */
-stock void SetCookieIntByName(int client, const char cookieName[], int value) {
+stock void SetCookieIntByName(int client, const char[] cookieName, int value) {
     char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     SetCookieStringByName(client, cookieName, buffer);
@@ -131,7 +131,7 @@ stock void SetCookieIntByName(int client, const char cookieName[], int value) {
 /**
  * Fetches the value of a cookie that is an integer.
  */
-stock int GetCookieIntByName(int client, const char cookieName[]) {
+stock int GetCookieIntByName(int client, const char[] cookieName) {
     char buffer[INTEGER_STRING_LENGTH];
     GetCookieStringByName(client, cookieName, buffer, sizeof(buffer));
     return StringToInt(buffer);
@@ -140,7 +140,7 @@ stock int GetCookieIntByName(int client, const char cookieName[]) {
 /**
  * Sets a cookie to a boolean value.
  */
-stock void SetCookieBoolByName(int client, const char cookieName[], bool value) {
+stock void SetCookieBoolByName(int client, const char[] cookieName, bool value) {
     int convertedInt = value ? 1 : 0;
     SetCookieIntByName(client, cookieName, convertedInt);
 }
@@ -148,7 +148,7 @@ stock void SetCookieBoolByName(int client, const char cookieName[], bool value) 
 /**
  * Gets a cookie that represents a boolean.
  */
-stock bool GetCookieBoolByName(int client, const char cookieName[]) {
+stock bool GetCookieBoolByName(int client, const char[] cookieName) {
     return GetCookieIntByName(client, cookieName) != 0;
 }
 
@@ -237,7 +237,7 @@ stock void CloseHandleArray(Handle array) {
 /**
  * Creates a table given an array of table arguments.
  */
-stock void SQL_CreateTable(Handle db_connection, const char table_name[], const char fields[][], int num_fields) {
+stock void SQL_CreateTable(Handle db_connection, const char[] table_name, const char[][] fields, int num_fields) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
     for (int i = 0; i < num_fields; i++) {
@@ -257,7 +257,7 @@ stock void SQL_CreateTable(Handle db_connection, const char table_name[], const 
 /**
  * Adds a new field to a table.
  */
-stock void SQL_AddColumn(Handle db_connection, const char table_name[], const char column_info[]) {
+stock void SQL_AddColumn(Handle db_connection, const char[] table_name, const char[] column_info) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "ALTER TABLE %s ADD COLUMN %s", table_name, column_info);
     if (!SQL_FastQuery(db_connection, buffer)) {
@@ -272,7 +272,7 @@ stock void SQL_AddColumn(Handle db_connection, const char table_name[], const ch
 /**
  * Sets the primary key for a table.
  */
-stock void SQL_UpdatePrimaryKey(Handle db_connection, const char table_name[], const char primary_key[]) {
+stock void SQL_UpdatePrimaryKey(Handle db_connection, const char[] table_name, const char[] primary_key) {
     char buffer[1024];
     Format(buffer, sizeof(buffer), "ALTER TABLE %s DROP PRIMARY KEY, ADD PRIMARY KEY (%s)", table_name, primary_key);
     if (!SQL_FastQuery(db_connection, buffer)) {
@@ -285,7 +285,7 @@ stock void SQL_UpdatePrimaryKey(Handle db_connection, const char table_name[], c
 /**
  * Applies colorized characters across a string to replace color tags.
  */
-stock void Colorize(char msg[], int size) {
+stock void Colorize(char[] msg, int size) {
     for (new i = 0; i < sizeof(g_ColorNames); i ++) {
         ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
     }
@@ -295,7 +295,7 @@ stock void Colorize(char msg[], int size) {
 /**
  * Splits a string to the right at the first occurance of a substring.
  */
-stock bool SplitStringRight(const char source[], const char split[], char part[], int partLen) {
+stock bool SplitStringRight(const char[] source, const char[] split, char[] part, int partLen) {
     int index = StrContains(source, split);
     if (index == -1)
         return false;

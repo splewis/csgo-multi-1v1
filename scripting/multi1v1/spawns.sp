@@ -48,7 +48,9 @@ public Spawns_MapStart() {
     int t = GetArraySize(g_hTSpawns);
     g_maxArenas = (ct < t) ? ct : t;
 
-    bool takenTSpawns[g_maxArenas];
+    // TODO: this syntax should be updated (possible compiler bug)
+    // bool[] takenTSpawns = new bool[g_maxArenas];
+    new bool:takenTSpawns[g_maxArenas];
     for (int i = 0; i < g_maxArenas; i++)
         takenTSpawns[i] = false;
 

@@ -213,7 +213,7 @@ public OnPluginStart() {
     }
 }
 
-public OnLibraryAdded(const char name[]) {
+public OnLibraryAdded(const char[] name) {
     if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
@@ -256,7 +256,7 @@ public OnMapEnd() {
     Spawns_MapEnd();
 }
 
-public void OnClientAuthorized(int client, const char auth[]) {
+public void OnClientAuthorized(int client, const char[] auth) {
     if (!StrEqual(auth, "BOT") && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
@@ -296,7 +296,7 @@ public OnClientCookiesCached(int client) {
  * if a player does not select a team but leaves their mouse over one, they are
  * put on that team and spawned, so we can't allow that.
  */
-public Event_OnFullConnect(Handle event, const char name[], bool dontBroadcast) {
+public Event_OnFullConnect(Handle event, const char[] name, bool dontBroadcast) {
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
 }
@@ -304,7 +304,7 @@ public Event_OnFullConnect(Handle event, const char name[], bool dontBroadcast) 
 /**
  * Silences team join/switch events.
  */
-public Action Event_OnPlayerTeam(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroadcast) {
     dontBroadcast = true;
     return Plugin_Changed;
 }
@@ -312,7 +312,7 @@ public Action Event_OnPlayerTeam(Handle event, const char name[], bool dontBroad
 /**
  * Round pre-start, sets up who goes in which arena for this round.
  */
-public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast) {
+public Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast) {
     g_roundStartTime = GetTime();
 
     // Here we add each player to the queue in their new ranking
@@ -458,7 +458,7 @@ public void AddPlayer(int client, Handle rankingQueue) {
 /**
  * Round poststart - puts players in their arena and gives them weapons.
  */
-public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcast) {
+public Event_OnRoundPostStart(Handle event, const char[] name, bool dontBroadcast) {
     g_roundFinished = false;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
         g_ArenaWinners[arena] = -1;
@@ -561,7 +561,7 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
  *  - throws all the players into a queue according to their standing from this round
  *  - updates globals g_Ranking, g_ArenaPlayer1, g_ArenaPlayer2 for the next round setup
  */
-public Event_OnRoundEnd(Handle event, const char name[], bool dontBroadcast) {
+public Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast) {
     g_totalRounds++;
     g_roundFinished = true;
 
@@ -603,7 +603,7 @@ public Event_OnRoundEnd(Handle event, const char name[], bool dontBroadcast) {
 /**
  * Player death event, updates g_arenaWinners/g_arenaLosers for the arena that was just decided.
  */
-public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) {
+public Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
     int victim = GetClientOfUserId(GetEventInt(event, "userid"));
     int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     int arena = g_Ranking[victim];
@@ -656,7 +656,7 @@ public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) 
  * Player spawn event - gives the appropriate weapons to a player for his arena.
  * Warning: do NOT assume this is called before or after the round start event!
  */
-public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) {
+public Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsActivePlayer(client))
         return;
@@ -674,7 +674,7 @@ public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) 
 }
 
 
-public Event_MatchOver(Handle event, const char name[], bool dontBroadcast) {
+public Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
     int maxClient = -1;
     int maxScore = -1;
     for (int i = 1; i <= MaxClients; i++) {
@@ -701,7 +701,7 @@ public Event_MatchOver(Handle event, const char name[], bool dontBroadcast) {
 /**
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
-public Action Command_TeamJoin(int client, const char command[], argc) {
+public Action Command_TeamJoin(int client, const char[] command, argc) {
     if (!IsValidClient(client))
         return Plugin_Handled;
 
@@ -735,7 +735,7 @@ public Action Command_TeamJoin(int client, const char command[], argc) {
 /**
  * Hook for player chat actions, gives player the guns menu.
  */
-public Action OnClientSayCommand(int client, const char command[], const char sArgs[]) {
+public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
     // To avoid cluttering up chat, these commands are hidden
     char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns", "gnus" };
     bool block = (GetConVarInt(g_hHideGunsChatCommands) != 0);

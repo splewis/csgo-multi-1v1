@@ -14,7 +14,7 @@ public void AddRadioCommandListeners() {
         AddCommandListener(Command_Radio, g_radioCommands[i]);
 }
 
-public Action Command_Radio(int client, const char command[], int argc) {
+public Action Command_Radio(int client, const char[] command, int argc) {
     if (GetConVarInt(g_hBlockRadio) != 0) {
         return Plugin_Handled;
     } else {
