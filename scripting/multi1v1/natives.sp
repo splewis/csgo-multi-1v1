@@ -348,6 +348,11 @@ public Native_AddRoundType(Handle plugin, numParams) {
     bool optional = GetNativeCell(5);
     bool ranked = GetNativeCell(6);
     GetNativeString(7, ratingFieldName, sizeof(ratingFieldName));
+
+    if (!ranked && !StrEqual(ratingFieldName, "")) {
+        LogError("Warning: marked round type \"%s\" as unranked but passed rating field name \"%s\"", internalName, ratingFieldName);
+    }
+
     return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName);
 }
 
