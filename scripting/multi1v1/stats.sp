@@ -294,6 +294,9 @@ static void UpdateRatings(int winner, int loser, bool forceLoss) {
             RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
 
             int arena = g_Ranking[winner];
+            if (arena < 1)
+                LogError("got bad arena number (%d) for player winner=%L, where loser=%L", arena, winner, loser);
+
             int roundType = g_roundTypes[arena];
             if (HasRoundTypeSpecificRating(roundType)) {
                 delta = Multi1v1_ELORatingDelta(g_RoundTypeRating[winner][roundType], g_RoundTypeRating[loser][roundType], K_FACTOR);
