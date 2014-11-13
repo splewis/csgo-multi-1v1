@@ -323,12 +323,15 @@ static void ForceLoss(int winner, int loser) {
 static void RatingMessage(int winner, int loser, float winner_rating, float loser_rating, float delta) {
     int winner_int = RoundToNearest(winner_rating);
     int loser_int = RoundToNearest(loser_rating);
-    Multi1v1_Message(winner, "%t", "WonMessage", winner_int, delta, loser, loser_int, delta);
-    Multi1v1_Message(loser, "%t", "LossMessage", loser_int, delta, winner, winner_int, delta);
+    if (!g_HideStats[winner])
+        Multi1v1_Message(winner, "%t", "WonMessage", winner_int, delta, loser, loser_int, delta);
+    if (!g_HideStats[loser])
+        Multi1v1_Message(loser, "%t", "LossMessage", loser_int, delta, winner, winner_int, delta);
 }
 
 static void ForceLossMessage(int client, float rating, float delta) {
-    Multi1v1_Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
+    if (!g_HideStats[client])
+        Multi1v1_Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
 }
 
 static bool HasRoundTypeSpecificRating(int roundType) {

@@ -64,6 +64,7 @@ bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done 
 bool g_AllowAWP[MAXPLAYERS+1];
 bool g_AllowPistol[MAXPLAYERS+1];
 bool g_GunsSelected[MAXPLAYERS+1];
+bool g_HideStats[MAXPLAYERS+1];
 
 bool g_WaitingOnRoundAllow[MAXPLAYERS+1];
 int g_CurrentRoundTypeMenuIndex[MAXPLAYERS+1];
@@ -191,6 +192,7 @@ public OnPluginStart() {
     AddCommandListener(Command_TeamJoin, "jointeam");
     AddRadioCommandListeners();
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
+    RegConsoleCmd("sm_hidestats", Command_Hidestats, "Hides player stats/ratings");
 
     /** Fowards **/
     g_hAfterPlayerSetup = CreateGlobalForward("Multi1v1_AfterPlayerSetup", ET_Ignore, Param_Cell);
@@ -755,6 +757,10 @@ public Action Command_Guns(int client, args) {
     GiveWeaponMenu(client);
 }
 
+public Action Command_Hidestats(int client, args) {
+    g_HideStats[client] = !g_HideStats[client];
+}
+
 
 
 /*************************
@@ -881,6 +887,7 @@ public void ResetClientVariables(int client) {
     g_Preference[client] = 0;
     g_PrimaryWeapon[client] = "weapon_ak47";
     g_SecondaryWeapon[client] = "weapon_glock";
+    g_HideStats[client] = false;
 }
 
 /**
