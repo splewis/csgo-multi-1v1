@@ -724,7 +724,6 @@ public Action Command_TeamJoin(int client, const char[] command, argc) {
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         CS_SetClientClanTag(client, "");
         int arena = g_Ranking[client];
-        g_Ranking[client] = -1;
         UpdateArena(arena);
     } else {
         // Player first joining the game, mark them as waiting to join
