@@ -185,13 +185,17 @@ public void FinishGunsMenu(int client) {
  * Primary weapon choice menu.
  */
 public RifleChoiceMenu(int client) {
-    Handle menu = CreateMenu(MenuHandler_RifleChoice);
-    SetMenuTitle(menu, "Choose your favorite rifle:");
-    SetMenuExitButton(menu, true);
-    for (int i = 0; i < g_numRifles; i++)
-        AddMenuItem(menu, g_Rifles[i][0], g_Rifles[i][1]);
+    if (GetConVarInt(g_hRifleMenu) == 0) {
+        PistolChoiceMenu(client);
+    } else {
+        Handle menu = CreateMenu(MenuHandler_RifleChoice);
+        SetMenuTitle(menu, "Choose your favorite rifle:");
+        SetMenuExitButton(menu, true);
+        for (int i = 0; i < g_numRifles; i++)
+            AddMenuItem(menu, g_Rifles[i][0], g_Rifles[i][1]);
 
-    DisplayMenu(menu, client, MENU_TIME_LENGTH);
+        DisplayMenu(menu, client, MENU_TIME_LENGTH);
+    }
 }
 
 /**
@@ -214,13 +218,17 @@ public MenuHandler_RifleChoice(Handle menu, MenuAction action, param1, param2) {
  * Displays pistol menu to a player
  */
 public PistolChoiceMenu(int client) {
-    Handle menu = CreateMenu(MenuHandler_PistolChoice);
-    SetMenuExitButton(menu, true);
-    SetMenuTitle(menu, "Choose your favorite pistol:");
-    for (int i = 0; i < g_numPistols; i++)
-        AddMenuItem(menu, g_Pistols[i][0], g_Pistols[i][1]);
+    if (GetConVarInt(g_hPistolMenu) == 0) {
+        ReturnMenuControl(client);
+    } else {
+        Handle menu = CreateMenu(MenuHandler_PistolChoice);
+        SetMenuExitButton(menu, true);
+        SetMenuTitle(menu, "Choose your favorite pistol:");
+        for (int i = 0; i < g_numPistols; i++)
+            AddMenuItem(menu, g_Pistols[i][0], g_Pistols[i][1]);
 
-    DisplayMenu(menu, client, MENU_TIME_LENGTH);
+        DisplayMenu(menu, client, MENU_TIME_LENGTH);
+    }
 }
 
 /**

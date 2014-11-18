@@ -38,6 +38,8 @@ Handle g_hExecDefaultConfig = INVALID_HANDLE;
 Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
 Handle g_hHideGunsChatCommands = INVALID_HANDLE;
 Handle g_hPistolBehavior = INVALID_HANDLE;
+Handle g_hPistolMenu = INVALID_HANDLE;
+Handle g_hRifleMenu = INVALID_HANDLE;
 Handle g_hRoundTime = INVALID_HANDLE;
 Handle g_hUseDatabase = INVALID_HANDLE;
 Handle g_hVerboseSpawnModes = INVALID_HANDLE;
@@ -167,6 +169,8 @@ public OnPluginStart() {
     g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically on their first connect");
     g_hHideGunsChatCommands = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
     g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
+    g_hPistolMenu = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
+    g_hRifleMenu = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
@@ -274,7 +278,7 @@ public OnClientDisconnect(int client) {
 
     Queue_Drop(g_waitingQueue, client);
     int arena = g_Ranking[client];
-    UpdateArena(arena);
+    UpdateArena(arena, client);
     ResetClientVariables(client);
 }
 
@@ -724,7 +728,7 @@ public Action Command_TeamJoin(int client, const char[] command, argc) {
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         CS_SetClientClanTag(client, "");
         int arena = g_Ranking[client];
-        UpdateArena(arena);
+        UpdateArena(arena, client);
     } else {
         // Player first joining the game, mark them as waiting to join
         Queue_Enqueue(g_waitingQueue, client);
@@ -893,27 +897,28 @@ public void ResetClientVariables(int client) {
  * Updates an arena in case a player disconnects or leaves.
  * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
-public void UpdateArena(int arena) {
+public void UpdateArena(int arena, int disconnected) {
     if (arena != -1) {
         int p1 = g_ArenaPlayer1[arena];
         int p2 = g_ArenaPlayer2[arena];
-        bool hasp1 = IsActivePlayer(p1);
-        bool hasp2 = IsActivePlayer(p2);
+        bool hasp1 = IsActivePlayer(p1) && p1 != disconnected;
+        bool hasp2 = IsActivePlayer(p2) && p2 != disconnected;
 
         if (hasp1 && !hasp2) {
-            g_ArenaWinners[arena] = p1;
-            if (!g_ArenaStatsUpdated[arena])
-                DB_RoundUpdate(p1, p2, false);
-            g_ArenaLosers[arena] = -1;
-            g_ArenaPlayer2[arena] = -1;
-            g_ArenaStatsUpdated[arena] = true;
+            PlayerLeft(arena, p1, p2);
         } else if (hasp2 && !hasp1) {
-            g_ArenaWinners[arena] = p2;
-            if (!g_ArenaStatsUpdated[arena])
-                DB_RoundUpdate(p2, p1, false);
-            g_ArenaLosers[arena] = -1;
-            g_ArenaPlayer1[arena] = -1;
-            g_ArenaStatsUpdated[arena] = true;
+            PlayerLeft(arena, p2, p1);
         }
     }
+}
+
+static void PlayerLeft(int arena, int player, int left) {
+    g_ArenaWinners[arena] = player;
+    if (!g_ArenaStatsUpdated[arena]) {
+        Multi1v1_Message(player, "%t", "OpponentLeft");
+        DB_RoundUpdate(player, left, false);
+    }
+    g_ArenaLosers[arena] = -1;
+    g_ArenaPlayer2[arena] = -1;
+    g_ArenaStatsUpdated[arena] = true;
 }

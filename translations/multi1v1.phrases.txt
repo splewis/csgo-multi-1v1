@@ -39,4 +39,8 @@
 		"#format"	"{1:N},{2:d}"
 		"en"		"{GREEN}{1} {NORMAL}had the most wins {PURPLE}({2}) {NORMAL}in arena 1 this map."
 	}
+	"OpponentLeft"
+	{
+		"en"		"{GREEN}Your opponent left."
+	}
 }
