@@ -728,6 +728,7 @@ public Action Command_TeamJoin(int client, const char[] command, argc) {
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         CS_SetClientClanTag(client, "");
         int arena = g_Ranking[client];
+        g_Ranking[client] = -1;
         UpdateArena(arena, client);
     } else {
         // Player first joining the game, mark them as waiting to join
@@ -915,7 +916,6 @@ public void UpdateArena(int arena, int disconnected) {
 static void PlayerLeft(int arena, int player, int left) {
     g_ArenaWinners[arena] = player;
     if (!g_ArenaStatsUpdated[arena]) {
-        Multi1v1_Message(player, "%t", "OpponentLeft");
         DB_RoundUpdate(player, left, false);
     }
     g_ArenaLosers[arena] = -1;
