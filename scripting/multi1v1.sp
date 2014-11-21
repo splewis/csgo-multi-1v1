@@ -484,7 +484,7 @@ public Event_OnRoundPostStart(Handle event, const char[] name, bool dontBroadcas
         }
     }
 
-    for (int i = 1; i <= MAXPLAYERS; i++) {
+    for (int i = 1; i <= MaxClients; i++) {
         g_ArenaStatsUpdated[i] = false;
         g_LetTimeExpire[i] = false;
     }
@@ -728,7 +728,6 @@ public Action Command_TeamJoin(int client, const char[] command, argc) {
         CS_SetClientClanTag(client, "");
         int arena = g_Ranking[client];
         UpdateArena(arena, client);
-        g_Ranking[client] = -1;
     } else {
         // Player first joining the game, mark them as waiting to join
         Queue_Enqueue(g_waitingQueue, client);
@@ -913,11 +912,15 @@ public void UpdateArena(int arena, int disconnected) {
 }
 
 static void PlayerLeft(int arena, int player, int left) {
-    g_ArenaWinners[arena] = player;
     if (!g_ArenaStatsUpdated[arena]) {
         DB_RoundUpdate(player, left, false);
     }
+    g_ArenaWinners[arena] = player;
     g_ArenaLosers[arena] = -1;
-    g_ArenaPlayer2[arena] = -1;
     g_ArenaStatsUpdated[arena] = true;
+    if (left == g_ArenaPlayer1[arena])
+        g_ArenaPlayer1[arena] = -1;
+    if (left == g_ArenaPlayer2[arena])
+        g_ArenaPlayer2[arena] = -1;
+    g_Ranking[left] = -1;
 }
