@@ -234,7 +234,6 @@ public OnMapStart() {
     Call_StartForward(g_hOnRoundTypesAdded);
     Call_Finish();
 
-
     Queue_Clear(g_waitingQueue);
 
     g_arenaOffsetValue = 0;
@@ -728,8 +727,8 @@ public Action Command_TeamJoin(int client, const char[] command, argc) {
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         CS_SetClientClanTag(client, "");
         int arena = g_Ranking[client];
-        g_Ranking[client] = -1;
         UpdateArena(arena, client);
+        g_Ranking[client] = -1;
     } else {
         // Player first joining the game, mark them as waiting to join
         Queue_Enqueue(g_waitingQueue, client);
