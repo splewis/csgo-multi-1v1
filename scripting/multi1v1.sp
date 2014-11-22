@@ -64,8 +64,6 @@ Handle db = INVALID_HANDLE;
 int g_Ranking[MAXPLAYERS+1]; // which arena each player is in
 bool g_LetTimeExpire[MAXPLAYERS+1];
 bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
-bool g_AllowAWP[MAXPLAYERS+1];
-bool g_AllowPistol[MAXPLAYERS+1];
 bool g_GunsSelected[MAXPLAYERS+1];
 bool g_HideStats[MAXPLAYERS+1];
 
@@ -886,8 +884,6 @@ public void ResetClientVariables(int client) {
     g_Rating[client] = 0.0;
     g_Ranking[client] = -1;
     g_LetTimeExpire[client] = false;
-    g_AllowAWP[client] = false;
-    g_AllowPistol[client] = false;
     g_Preference[client] = 0;
     g_PrimaryWeapon[client] = "weapon_ak47";
     g_SecondaryWeapon[client] = "weapon_glock";
