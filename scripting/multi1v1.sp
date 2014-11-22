@@ -41,6 +41,7 @@ Handle g_hPistolBehavior = INVALID_HANDLE;
 Handle g_hPistolMenu = INVALID_HANDLE;
 Handle g_hRifleMenu = INVALID_HANDLE;
 Handle g_hRoundTime = INVALID_HANDLE;
+Handle g_hUseChatPrefix = INVALID_HANDLE;
 Handle g_hUseDatabase = INVALID_HANDLE;
 Handle g_hVerboseSpawnModes = INVALID_HANDLE;
 Handle g_hVersion = INVALID_HANDLE;
@@ -172,6 +173,7 @@ public OnPluginStart() {
     g_hPistolMenu = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
     g_hRifleMenu = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
+    g_hUseChatPrefix = CreateConVar("sm_multi1v1_use_chat_prefix", "1", "Whether to use a [Multi1v1] tag in chat messages");
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
 

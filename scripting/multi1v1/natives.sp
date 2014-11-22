@@ -194,11 +194,14 @@ public Native_Multi1v1Message(Handle plugin, numParams) {
 
     SetGlobalTransTarget(client);
     FormatNativeString(0, 2, 3, sizeof(buffer), bytesWritten, buffer);
-
     char finalMsg[1024];
-    Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
-    Colorize(finalMsg, sizeof(finalMsg));
 
+    if (GetConVarInt(g_hUseChatPrefix) == 0)
+        Format(finalMsg, sizeof(finalMsg), " %s", buffer);
+    else
+        Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
+
+    Colorize(finalMsg, sizeof(finalMsg));
     PrintToChat(client, finalMsg);
 }
 
@@ -209,11 +212,14 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
         if (IsPlayer(i)) {
             SetGlobalTransTarget(i);
             FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
-
             char finalMsg[1024];
-            Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
-            Colorize(finalMsg, sizeof(finalMsg));
 
+            if (GetConVarInt(g_hUseChatPrefix) == 0)
+                Format(finalMsg, sizeof(finalMsg), " %s", buffer);
+            else
+                Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
+
+            Colorize(finalMsg, sizeof(finalMsg));
             PrintToChat(i, finalMsg);
         }
     }
