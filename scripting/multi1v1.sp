@@ -37,7 +37,7 @@ Handle g_hDatabaseName = INVALID_HANDLE;
 Handle g_hDatabaseServerId = INVALID_HANDLE;
 Handle g_hDefaultPistol = INVALID_HANDLE;
 Handle g_hExecDefaultConfig = INVALID_HANDLE;
-Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
+Handle g_hGunsMenuOnFirstConnect = INVALID_HANDLE;
 Handle g_hHideGunsChatCommands = INVALID_HANDLE;
 Handle g_hPistolBehavior = INVALID_HANDLE;
 Handle g_hPistolMenu = INVALID_HANDLE;
@@ -166,7 +166,7 @@ public OnPluginStart() {
     g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server( 0 off)");
     g_hDefaultPistol = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
-    g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically on their first connect");
+    g_hGunsMenuOnFirstConnect = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically on their first connect");
     g_hHideGunsChatCommands = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
     g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
     g_hPistolMenu = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
@@ -455,7 +455,7 @@ public void AddPlayer(int client, Handle rankingQueue) {
         Queue_Enqueue(rankingQueue, client);
     }
 
-    if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && !g_GunsSelected[client]) {
+    if (GetConVarInt(g_hGunsMenuOnFirstConnect) != 0 && !g_GunsSelected[client]) {
         g_GunsSelected[client] = true;
         GiveWeaponMenu(client);
     }

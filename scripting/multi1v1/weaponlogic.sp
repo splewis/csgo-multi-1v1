@@ -251,8 +251,6 @@ public MenuHandler_PistolChoice(Handle menu, MenuAction action, param1, param2) 
  * Sets all the weapon choices based on the client's cookies.
  */
 public UpdatePreferencesOnCookies(int client) {
-    g_GunsSelected[client] = true;
-
     for (int i = 0; i < g_numRoundTypes; i++) {
         char cookieName[128];
         Format(cookieName, sizeof(cookieName), "multi1v1_allow%s", g_RoundTypeNames[i]);
@@ -271,8 +269,11 @@ public UpdatePreferencesOnCookies(int client) {
     GetCookieStringByName(client, "multi1v1_preference", cookieValue, sizeof(cookieValue));
     g_Preference[client] = Multi1v1_GetRoundTypeIndex(cookieValue);
 
-    if (StrEqual(cookieValue, "") && GetConVarInt(g_hGunsMenuOnFirstConnct) != 0)
-        GiveWeaponMenu(client);
+    // This checks if the player has a preference set
+    // By not having one set, we can conclude the client has never selected anything in the guns menu
+    if (!StrEqual(cookieValue, "")) {
+        g_GunsSelected[client] = true;
+    }
 }
 
 /**
