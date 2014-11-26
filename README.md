@@ -193,3 +193,4 @@ Guidelines
 - Submit a pull request when you're happy with the new feature/enhancement/bugfix
 - Favor readability and correctness over all else
 - For a moderately advanced feature, it may be simpler to write it as a plugin that uses the multi1v1 natives from [multi1v1.inc](scripting/include/multi1v1.inc)
+- **Keep it simple, stupid**
