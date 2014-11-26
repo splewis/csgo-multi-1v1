@@ -455,7 +455,7 @@ public void AddPlayer(int client, Handle rankingQueue) {
         Queue_Enqueue(rankingQueue, client);
     }
 
-    if (GetConVarInt(g_hGunsMenuOnFirstConnect) != 0 && !g_GunsSelected[client]) {
+    if (GetConVarInt(g_hGunsMenuOnFirstConnect) != 0 && !g_GunsSelected[client] && AreClientCookiesCached(client)) {
         g_GunsSelected[client] = true;
         GiveWeaponMenu(client);
     }

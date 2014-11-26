@@ -148,6 +148,7 @@ public GivePreferenceMenu(int client) {
     if (count >= 2) {
         DisplayMenu(menu, client, MENU_TIME_LENGTH);
     } else {
+        SetCookieStringByName(client, "multi1v1_preference", "none");
         CloseHandle(menu);
         FinishGunsMenu(client);
     }
@@ -251,6 +252,7 @@ public MenuHandler_PistolChoice(Handle menu, MenuAction action, param1, param2) 
  * Sets all the weapon choices based on the client's cookies.
  */
 public UpdatePreferencesOnCookies(int client) {
+
     for (int i = 0; i < g_numRoundTypes; i++) {
         char cookieName[128];
         Format(cookieName, sizeof(cookieName), "multi1v1_allow%s", g_RoundTypeNames[i]);
@@ -273,6 +275,8 @@ public UpdatePreferencesOnCookies(int client) {
     // By not having one set, we can conclude the client has never selected anything in the guns menu
     if (!StrEqual(cookieValue, "")) {
         g_GunsSelected[client] = true;
+    } else {
+        g_GunsSelected[client] = false;
     }
 }
 
