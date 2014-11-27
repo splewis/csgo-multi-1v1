@@ -15,6 +15,8 @@ dev:
  - one table change is the addition of ``serverID``, a tag on each player record in the ``multi1v1_stats`` table, set by ``sm_multi1v1_database_server_id``
  - the ``sm_stats`` command is not in the base plugin anymore, but in the ``multi1v1_online_stats_viewer`` plugin
  - the format for ``sm_multi1v1_stats_url`` has changed, use {USER} and {SERVER} directly in your cvar, and they will get replaced with the appropriate values (remember this cvar is part of ``multi1v1_online_stats_viewer`` rather than the base ``multi1v1`` plugin now)
+ - new client command: ``sm_hidestats`` will hide any stats-related messages from being printed into chat to a player (it toggles on/off)
+ - round types can be determined and changed at runtime, see [multi1v1.inc](scripting/include/multi1v1.inc) include
 
 
 0.5.2:
