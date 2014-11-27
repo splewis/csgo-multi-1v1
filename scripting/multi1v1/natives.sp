@@ -45,6 +45,9 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("Multi1v1_ReturnMenuControl", Native_ReturnMenuControl);
     CreateNative("Multi1v1_AddStandardRounds", Native_AddStandardRounds);
     CreateNative("Multi1v1_GetCurrentRoundType", Native_GetCurrentRoundType);
+    CreateNative("Multi1v1_GetNumRoundTypes", Native_GetNumRoundTypes);
+    CreateNative("Multi1v1_PlayerAllowsRoundType", Native_PlayerAllowsRoundType);
+    CreateNative("Multi1v1_PlayerPreference", Native_PlayerPreference);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -287,6 +290,8 @@ public Native_ELORatingDelta(Handle plugin, numParams) {
 
 public Native_GetNumSpawnsInArena(Handle plugin, numParams) {
     int arena = GetNativeCell(1);
+    CHECK_ARENA(arena);
+
     Handle ct = Handle:GetArrayCell(g_hCTSpawns, arena);
     Handle t = Handle:GetArrayCell(g_hTSpawns, arena);
     return Math_Min(GetArraySize(ct), GetArraySize(t));
@@ -386,5 +391,26 @@ public Native_AddStandardRounds(Handle plugin, numParams) {
 
 public Native_GetCurrentRoundType(Handle plugin, numParams) {
     int arena = GetNativeCell(1);
+    CHECK_ARENA(arena);
     return g_roundTypes[arena];
+}
+
+public Native_GetNumRoundTypes(Handle plugin, numParams) {
+    return g_numRoundTypes;
+}
+
+public Native_PlayerAllowsRoundType(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
+
+    int roundType = GetNativeCell(2);
+    CHECK_ROUNDTYPE(roundType);
+
+    return g_RoundTypeOptional[roundType] || g_AllowedRoundTypes[client][roundType];
+}
+
+public Native_PlayerPreference(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
+    return g_Preference[client];
 }

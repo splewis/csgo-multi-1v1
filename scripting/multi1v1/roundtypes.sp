@@ -2,6 +2,12 @@
  * Roundtype runtime registration/selection code.
  */
 
+
+/**
+ * Returns a round type appropriate for a given pair of players.
+ * This function is *NOT* pure since it uses randomness
+ * to select a round type in some situations.
+ */
 public int GetRoundType(int client1, int client2) {
     if (g_numRoundTypes == 0) {
         ThrowError("No round types are registered");
@@ -27,6 +33,13 @@ public int GetRoundType(int client1, int client2) {
         choice = GetArrayCell(types, index);
     }
     CloseHandle(types);
+
+    Call_StartForward(g_hOnRoundTypeDecided);
+    Call_PushCell(client1);
+    Call_PushCell(client2);
+    Call_PushCellRef(choice);
+    Call_Finish();
+
     return choice;
 }
 

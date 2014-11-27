@@ -123,6 +123,7 @@ Handle g_hOnArenasReady = INVALID_HANDLE;
 Handle g_hOnGunsMenuDone = INVALID_HANDLE;
 Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
 Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
+Handle g_hOnRoundTypeDecided = INVALID_HANDLE;
 Handle g_hOnRoundTypesAdded = INVALID_HANDLE;
 Handle g_hOnRoundWon = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
@@ -206,8 +207,9 @@ public OnPluginStart() {
     g_hOnGunsMenuDone = CreateGlobalForward("Multi1v1_OnGunsMenuDone", ET_Ignore, Param_Cell);
     g_hOnPostArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnPreArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnRoundTypeDecided = CreateGlobalForward("Multi1v1_OnRoundTypeDecided", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
     g_hOnRoundTypesAdded = CreateGlobalForward("Multi1v1_OnRoundTypesAdded", ET_Ignore);
-    g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+    g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_CellByRef);
     g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
 
     /** Compute any constant offsets **/
@@ -392,6 +394,7 @@ public Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast
         g_ArenaPlayer1[arena] = p1;
         g_ArenaPlayer2[arena] = p2;
         g_roundTypes[arena] = GetRoundType(p1, p2);
+
 
         bool realp1 = IsValidClient(p1);
         bool realp2 = IsValidClient(p2);

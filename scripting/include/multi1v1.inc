@@ -1,7 +1,7 @@
-#if defined __MULTI1V1_INCLUDE__
+#if defined _multi1v1_included
   #endinput
 #endif
-#define __MULTI1V1_INCLUDE__
+#define _multi1v1_included
 
 #define WEAPON_NAME_LENGTH 32
 
@@ -79,6 +79,16 @@ forward void Multi1v1_OnGunsMenuDone(int client);
  * @noreturn
  */
 forward void Multi1v1_OnRoundTypesAdded();
+
+/**
+ * Called after a round type for an arena has been decided.
+ *
+ * @param player1 Player 1's index.
+ * @param player2 Player 2's index.
+ * @param roundtype Round type index
+ * @noreturn
+ */
+forward void Multi1v1_OnRoundTypeDecided(int player1, int player2, int& roundType);
 
 /**
  * Returns if a player is actively in an arena.
@@ -375,6 +385,26 @@ public void Multi1v1_NullChoiceMenu(int client) {
  */
 native int Multi1v1_GetCurrentRoundType(int arena);
 
+/**
+ * Returns the number of active round types.
+ */
+native int Multi1v1_GetNumRoundTypes();
+
+/**
+ * Returns if a player allows a given round type.
+ *
+ * @error Client not connected.
+ */
+native bool Multi1v1_PlayerAllowsRoundType(int client, int roundType);
+
+/**
+ * Returns the round type a player marked as his preference.
+ * A return of -1 indicates no preference.
+ *
+ * @error Client not connected.
+ */
+native int Multi1v1_PlayerPreference(int client);
+
 public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",
     file = "multi1v1.smx",
@@ -425,5 +455,8 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_GetRoundTypeIndex");
     MarkNativeAsOptional("Multi1v1_AddStandardRounds");
     MarkNativeAsOptional("Multi1v1_GetCurrentRoundType");
+    MarkNativeAsOptional("Multi1v1_GetNumRoundTypes");
+    MarkNativeAsOptional("Multi1v1_PlayerAllowsRoundType");
+    MarkNativeAsOptional("Multi1v1_PlayerPreference");
 }
 #endif
