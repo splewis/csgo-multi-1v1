@@ -228,6 +228,11 @@ public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
             return;
         }
 
+        int arena = g_Ranking[winner];
+        int roundType = g_roundTypes[arena];
+        if (!g_RoundTypeRanked[roundType])
+            return;
+
         g_Losses[loser]++;
         Increment(loser, "losses");
 
@@ -241,7 +246,7 @@ public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
 
         Increment(winner, "recentRounds");
         Increment(loser, "recentRounds");
-        UpdateRatings(winner, loser, forceLoss);
+        UpdateRatings(winner, loser, forceLoss, roundType);
     }
 }
 
@@ -265,7 +270,7 @@ public void Increment(int client, const char[] field) {
 /**
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
-static void UpdateRatings(int winner, int loser, bool forceLoss) {
+static void UpdateRatings(int winner, int loser, bool forceLoss, int roundType) {
     if (db != INVALID_HANDLE) {
         // go fetch the ratings if needed
         if (!g_FetchedPlayerInfo[winner]) {
@@ -294,11 +299,6 @@ static void UpdateRatings(int winner, int loser, bool forceLoss) {
             g_Rating[loser] -= delta;
             RatingMessage(winner, loser, g_Rating[winner], g_Rating[loser], delta);
 
-            int arena = g_Ranking[winner];
-            if (arena < 1)
-                LogError("got bad arena number (%d) for player winner=%L, where loser=%L", arena, winner, loser);
-
-            int roundType = g_roundTypes[arena];
             if (HasRoundTypeSpecificRating(roundType)) {
                 delta = Multi1v1_ELORatingDelta(g_RoundTypeRating[winner][roundType], g_RoundTypeRating[loser][roundType], K_FACTOR);
                 g_RoundTypeRating[winner][roundType] += delta;
