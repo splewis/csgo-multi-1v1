@@ -44,11 +44,15 @@ public int GetRoundType(int client1, int client2) {
 }
 
 static AddRounds(ArrayList types, int client1, int client2, int roundType) {
-    types.Push(roundType);
+    int weight = 1;
+
+    int prefWeight = GetConVarInt(g_hPreferenceWeight);
     if (g_Preference[client1] == roundType)
-        types.Push(roundType);
+        weight += prefWeight;
     if (g_Preference[client2] == roundType)
-        types.Push(roundType);
+        weight += prefWeight;
+
+    PushArrayCellReplicated(types, roundType, weight);
 }
 
 static AddRounds_CheckAllowed(ArrayList types, int client1, int client2, int roundType) {
