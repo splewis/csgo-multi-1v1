@@ -673,7 +673,9 @@ public Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) 
         return;
 
     int arena = g_Ranking[client];
-    assert_msg(arena != -1, "player had arena -1 on spawn")
+    if (arena < 1) {
+        LogError("%L had arena %d on player spawn event", client, arena);
+    }
 
     int roundType = (arena == -1) ? 0 : g_roundTypes[arena];
     Multi1v1_GivePlayerArenaWeapons(client, roundType);
