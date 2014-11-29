@@ -46,6 +46,8 @@ Handle g_hRifleMenu = INVALID_HANDLE;
 Handle g_hRoundTime = INVALID_HANDLE;
 Handle g_hUseChatPrefix = INVALID_HANDLE;
 Handle g_hUseDatabase = INVALID_HANDLE;
+Handle g_hUseMVPStars = INVALID_HANDLE;
+Handle g_hUseTeamTags = INVALID_HANDLE;
 Handle g_hVerboseSpawnModes = INVALID_HANDLE;
 Handle g_hVersion = INVALID_HANDLE;
 
@@ -177,6 +179,8 @@ public OnPluginStart() {
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_hUseChatPrefix = CreateConVar("sm_multi1v1_use_chat_prefix", "1", "Whether to use a [Multi1v1] tag in chat messages");
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
+    g_hUseMVPStars = CreateConVar("sm_multi1v1_use_mvp_stars", "1", "Whether MVP stars are updated to reflect a player's number of rounds in arena 1");
+    g_hUseTeamTags = CreateConVar("sm_multi1v1_use_team_tags", "1", "Whether the team (or clan) tag is updated to reflect a player's arena numbers");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin");
 
     /** Config file **/
@@ -557,8 +561,12 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
     // Set clan tags to the arena number
     char buffer[32];
     Format(buffer, sizeof(buffer), "Arena %d", arena - g_arenaOffsetValue);
-    CS_SetClientClanTag(client, buffer);
-    CS_SetMVPCount(client, g_RoundsLeader[client]);
+
+    if (GetConVarInt(g_hUseTeamTags) != 0)
+        CS_SetClientClanTag(client, buffer);
+
+    if (GetConVarInt(g_hUseMVPStars) != 0)
+        CS_SetMVPCount(client, g_RoundsLeader[client]);
 
     Call_StartForward(g_hAfterPlayerSetup);
     Call_PushCell(client);
