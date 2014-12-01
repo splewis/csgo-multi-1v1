@@ -18,7 +18,7 @@ public int GetRoundType(int client1, int client2) {
         return 0;
     }
 
-    ArrayList types = ArrayList();
+    ArrayList types = new ArrayList();
     for (int roundType = 0; roundType < g_numRoundTypes; roundType++) {
         if (!g_RoundTypeOptional[roundType]) {
             AddRounds(types, client1, client2, roundType);
