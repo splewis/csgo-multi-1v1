@@ -64,6 +64,12 @@ static AddRounds_CheckAllowed(ArrayList types, int client1, int client2, int rou
 public int AddRoundType(Handle pluginSource, const char[] displayName, const char[] internalName,
                         RoundTypeWeaponHandler weaponHandler, RoundTypeMenuHandler menuHandler,
                         bool optional, bool ranked, const char[] ratingFieldName) {
+
+    if (g_numRoundTypes >= MAX_ROUND_TYPES) {
+        LogError("Tried to add new round when %d round types already added", MAX_ROUND_TYPES);
+        return -1;
+    }
+
     g_RoundTypeSourcePlugin[g_numRoundTypes] = pluginSource;
     strcopy(g_RoundTypeDisplayNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, displayName);
     String_ToLower(internalName, g_RoundTypeNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH);
