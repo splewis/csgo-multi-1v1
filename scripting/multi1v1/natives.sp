@@ -354,6 +354,20 @@ public Native_AddRoundType(Handle plugin, numParams) {
 
     GetNativeString(1, displayName, sizeof(displayName));
     GetNativeString(2, internalName, sizeof(internalName));
+
+    if (StrEqual(internalName, "")) {
+        ThrowNativeError(SP_ERROR_PARAM, "You may not use the empty string as an internal name for round types");
+        return -1;
+    }
+
+    // Check for duplicate internal names
+    for (int i = 0; i < g_numRoundTypes; i++) {
+        if (StrEqual(g_RoundTypeNames[i], internalName, false)) {
+            ThrowNativeError(SP_ERROR_PARAM, "Tried to add duplicate round type internal name = \"%s\"", internalName);
+            return -1;
+        }
+    }
+
     RoundTypeWeaponHandler weaponHandler = RoundTypeWeaponHandler:GetNativeFunction(3);
     RoundTypeMenuHandler menuHandler = RoundTypeMenuHandler:GetNativeFunction(4);
     bool optional = GetNativeCell(5);
