@@ -194,3 +194,5 @@ Guidelines
 - Favor readability and correctness over all else
 - For a moderately advanced feature, it may be simpler to write it as a plugin that uses the multi1v1 natives from [multi1v1.inc](scripting/include/multi1v1.inc)
 - **Keep it simple, stupid**
+
+For adding translations, you can either use git and follow the instructions above, or use the [SourceMod translator](http://translator.mitchdempsey.com/sourcemod_plugins/150). I'd prefer you use git & GitHub, but using the sourcmeod translator is probably easier for most people.
