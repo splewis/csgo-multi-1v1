@@ -165,7 +165,7 @@ public void AddStandardRounds() {
 public void RifleHandler(int client) {
     Client_RemoveAllWeapons(client, "", true);
     GiveWeapon(client, g_PrimaryWeapon[client]);
-    SetEntData(client, g_iPlayers_HelmetOffset, 1);
+    Client_SetHelmet(client, true);
     Client_SetArmor(client, 100);
 
     int pistolBehavior = GetConVarInt(g_hPistolBehavior);
@@ -178,7 +178,7 @@ public void RifleHandler(int client) {
 public void PistolHandler(int client) {
     Client_RemoveAllWeapons(client, "", true);
     GiveWeapon(client, g_SecondaryWeapon[client]);
-    SetEntData(client, g_iPlayers_HelmetOffset, 0);
+    Client_SetHelmet(client, false);
     bool giveKevlar = IsDefaultPistol(g_SecondaryWeapon[client]);
     if (giveKevlar) {
         Client_SetArmor(client, 100);
@@ -191,7 +191,7 @@ public void PistolHandler(int client) {
 public void AwpHandler(int client) {
     Client_RemoveAllWeapons(client, "", true);
     GiveWeapon(client, "weapon_awp");
-    SetEntData(client, g_iPlayers_HelmetOffset, 1);
+    Client_SetHelmet(client, true);
 
     int pistolBehavior = GetConVarInt(g_hPistolBehavior);
     if (pistolBehavior == 0) {

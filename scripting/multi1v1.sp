@@ -131,9 +131,6 @@ Handle g_hOnRoundTypesAdded = INVALID_HANDLE;
 Handle g_hOnRoundWon = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
 
-/** Constant offsets values **/
-int g_iPlayers_HelmetOffset;
-
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
 #include "multi1v1/natives.sp"
@@ -217,9 +214,6 @@ public OnPluginStart() {
     g_hOnRoundTypesAdded = CreateGlobalForward("Multi1v1_OnRoundTypesAdded", ET_Ignore);
     g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
     g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
-
-    /** Compute any constant offsets **/
-    g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
 
     g_waitingQueue = Queue_Init();
 
