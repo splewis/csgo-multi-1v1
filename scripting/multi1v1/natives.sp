@@ -212,7 +212,7 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
     char buffer[1024];
     int bytesWritten = 0;
     for (int i = 1; i <= MaxClients; i++) {
-        if (IsPlayer(i)) {
+        if (IsClientConnected(i)) {
             SetGlobalTransTarget(i);
             FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
             char finalMsg[1024];
