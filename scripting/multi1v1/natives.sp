@@ -48,6 +48,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     CreateNative("Multi1v1_GetNumRoundTypes", Native_GetNumRoundTypes);
     CreateNative("Multi1v1_PlayerAllowsRoundType", Native_PlayerAllowsRoundType);
     CreateNative("Multi1v1_PlayerPreference", Native_PlayerPreference);
+    CreateNative("Multi1v1_IsHidingStats", Native_IsHidingStates);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -427,4 +428,10 @@ public Native_PlayerPreference(Handle plugin, numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_Preference[client];
+}
+
+public Native_IsHidingStates(Handle plugin, numParams) {
+    int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
+    return g_HideStats[client];
 }

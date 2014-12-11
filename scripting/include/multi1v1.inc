@@ -406,6 +406,14 @@ native bool Multi1v1_PlayerAllowsRoundType(int client, int roundType);
  */
 native int Multi1v1_PlayerPreference(int client);
 
+/**
+ * Returns if a player is currently hiding stats from being displayed.
+ *
+ * @error Client not connected.
+ */
+native bool Multi1v1_IsHidingStats(int client);
+
+
 public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",
     file = "multi1v1.smx",
@@ -459,5 +467,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_GetNumRoundTypes");
     MarkNativeAsOptional("Multi1v1_PlayerAllowsRoundType");
     MarkNativeAsOptional("Multi1v1_PlayerPreference");
+    MarkNativeAsOptional("Multi1v1_IsHidingStats");
 }
 #endif

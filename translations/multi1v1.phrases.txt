@@ -43,4 +43,12 @@
 	{
 		"en"		"{GREEN}Your opponent left."
 	}
+	"HideStats"
+	{
+		"en"		"Player stats are now being hidden."
+	}
+	"ShowStats"
+	{
+		"en"		"Player stats are now being displayed."
+	}
 }
