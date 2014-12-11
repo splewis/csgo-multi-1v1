@@ -8,7 +8,7 @@
  * This function is *NOT* pure since it uses randomness
  * to select a round type in some situations.
  */
-public int GetRoundType(int client1, int client2) {
+public int GetRoundType(int arena, int client1, int client2) {
     if (g_numRoundTypes == 0) {
         ThrowError("No round types are registered");
         return -1;
@@ -35,6 +35,7 @@ public int GetRoundType(int client1, int client2) {
     CloseHandle(types);
 
     Call_StartForward(g_hOnRoundTypeDecided);
+    Call_PushCell(arena);
     Call_PushCell(client1);
     Call_PushCell(client2);
     Call_PushCellRef(choice);

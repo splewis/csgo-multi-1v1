@@ -83,12 +83,13 @@ forward void Multi1v1_OnRoundTypesAdded();
 /**
  * Called after a round type for an arena has been decided.
  *
+ * @param arena The arena number.
  * @param player1 Player 1's index.
  * @param player2 Player 2's index.
  * @param roundtype Round type index
  * @noreturn
  */
-forward void Multi1v1_OnRoundTypeDecided(int player1, int player2, int& roundType);
+forward void Multi1v1_OnRoundTypeDecided(int arena, int player1, int player2, int& roundType);
 
 /**
  * Returns if a player is actively in an arena.
