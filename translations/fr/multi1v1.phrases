@@ -1,0 +1,37 @@
+"Phrases"
+{
+	"NoOpponent"
+	{
+		"#format"	"{1:i}"
+		"en"			"Tu es dans l'arène {GREEN}{1} {NORMAL}sans {DARK_RED}adversaire."
+	}
+	"FacingOff"
+	{
+		"#format"	"{1:i},{2:N}"
+		"en"			"Tu es dans l'arène {GREEN}{1}{NORMAL} contre {PURPLE}{2}."
+	}
+	"ArenasFull"
+	{
+		"en"			"Toutes les arènes sont {PURPLE}pleines."
+	}
+	"QueuePosition"
+	{
+		"#format"	"{1:i}"
+		"en"			"Tu es en position {GREEN}{1} {NORMAL}dans la file d'attente."
+	}
+	"WonMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"en"			"{GREEN}Tu {NORMAL}({GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL} points) as battu {PURPLE}{3} {NORMAL}({RED}{4}, {DARK_RED}-{5}{NORMAL} points)."
+	}
+	"LossMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"en"			"{GREEN}Tu {NORMAL}({GREEN}{1}, {LIGHT_RED}-{2}{NORMAL} points) {NORMAL}à perdu contre {PURPLE}{3} {NORMAL}({RED}{4}, {LIGHT_GREEN}+{5}{NORMAL} points)."
+	}
+	"TimeRanOut"
+	{
+		"#format"	"{1:i},{2:.1f}"
+		"en"			"{GREEN}Tu {NORMAL}({GREEN}{1}, {LIGHT_RED}-{2}{NORMAL} points) laisser le temps s'écouler."
+	}
+}
