@@ -3,36 +3,36 @@
 	"NoOpponent"
 	{
 		"#format"	"{1:i}"
-		"en"			"You are in arena {GREEN}{1} {NORMAL}with {DARK_RED}no opponent."
+		"en"		"You are in arena {GREEN}{1} {NORMAL}with {DARK_RED}no opponent."
 	}
 	"FacingOff"
 	{
 		"#format"	"{1:i},{2:N}"
-		"en"			"You are in arena {GREEN}{1}{NORMAL}, facing off against {PURPLE}{2}{NORMAL}."
+		"en"		"You are in arena {GREEN}{1}{NORMAL}, facing off against {PURPLE}{2}{NORMAL}."
 	}
 	"ArenasFull"
 	{
-		"en"			"Sorry, all the arenas are currently {PURPLE}full."
+		"en"		"Sorry, all the arenas are currently {PURPLE}full."
 	}
 	"QueuePosition"
 	{
 		"#format"	"{1:i}"
-		"en"			"You are in position {GREEN}{1} {NORMAL}in the waiting queue."
+		"en"		"You are in position {GREEN}{1} {NORMAL}in the waiting queue."
 	}
 	"WonMessage"
 	{
 		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
-		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) beat {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+		"en"		"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) beat {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 	}
 	"LossMessage"
 	{
 		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
-		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}lost to {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+		"en"		"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}lost to {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
 	"TimeRanOut"
 	{
 		"#format"	"{1:i},{2:.1f}"
-		"en"			"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) let time run out."
+		"en"		"{GREEN}You {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) let time run out."
 	}
 	"MostWins"
 	{
@@ -50,5 +50,10 @@
 	"ShowStats"
 	{
 		"en"		"Player stats are now being displayed."
+	}
+	"ArenaClanTag"
+	{
+		"#format"	"{1:d}"
+		"en"		"Arena {1}"
 	}
 }

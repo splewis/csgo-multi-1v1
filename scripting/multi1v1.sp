@@ -554,7 +554,7 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
 
     // Set clan tags to the arena number
     char buffer[32];
-    Format(buffer, sizeof(buffer), "Arena %d", arena - g_arenaOffsetValue);
+    Format(buffer, sizeof(buffer), "%T", "ArenaClanTag", LANG_SERVER, arena - g_arenaOffsetValue);
 
     if (GetConVarInt(g_hUseTeamTags) != 0)
         CS_SetClientClanTag(client, buffer);
