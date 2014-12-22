@@ -12,7 +12,7 @@
 #include "include/multi1v1.inc"
 
 #undef REQUIRE_PLUGIN
-#include <updater>
+#tryinclude <updater>
 
 
 
@@ -217,15 +217,23 @@ public OnPluginStart() {
 
     g_waitingQueue = Queue_Init();
 
-    if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
-        Updater_AddPlugin(UPDATE_URL);
+    if (GetConVarInt(g_hAutoUpdate) != 0) {
+        AddUpdater();
     }
 }
 
 public OnLibraryAdded(const char[] name) {
-    if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
+    if (GetConVarInt(g_hAutoUpdate) != 0) {
+        AddUpdater();
+    }
+}
+
+static void AddUpdater() {
+    #if defined _updater_included
+    if (LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
+    #endif
 }
 
 public OnMapStart() {

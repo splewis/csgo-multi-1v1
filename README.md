@@ -81,8 +81,8 @@ There is a work-in-progress open-source web interface being developed under the 
 The build process is managed by my [smbuilder](https://github.com/splewis/sm-builder) project. You can still compile multi1v1.sp without it, however.
 
 To compile, you will need:
-- [SMLib](https://github.com/bcserv/smlib)
-- [Updater](https://forums.alliedmods.net/showthread.php?t=169095)
+- [SMLib](https://github.com/bcserv/smlib) (required)
+- [Updater](https://forums.alliedmods.net/showthread.php?t=169095) (optional)
 
 You should make sure you have a relatively recent version of smlib - some changes were made to accommodate sourcemod 1.7 changes.
 
