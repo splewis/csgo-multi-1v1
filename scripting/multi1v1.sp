@@ -773,17 +773,19 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 }
 
 /** sm_guns command **/
-public Action Command_Guns(int client, args) {
+public Action Command_Guns(int client, int args) {
     GiveWeaponMenu(client);
+    return Plugin_Handled;
 }
 
-public Action Command_Hidestats(int client, args) {
+public Action Command_Hidestats(int client, int args) {
     g_HideStats[client] = !g_HideStats[client];
     if (g_HideStats[client]) {
         Multi1v1_Message(client, "%t", "HideStats");
     } else {
         Multi1v1_Message(client, "%t", "ShowStats");
     }
+    return Plugin_Handled;
 }
 
 
