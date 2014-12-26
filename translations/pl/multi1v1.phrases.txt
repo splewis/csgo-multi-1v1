@@ -18,14 +18,34 @@
 	}
 	"WonMessage"
 	{
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+		"pl"			"{GREEN}Ty {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 	}
 	"LossMessage"
 	{
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+		"pl"			"{GREEN}Ty {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
 	"TimeRanOut"
 	{
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
+		"pl"			"{GREEN}Ty {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
+	}
+	"MostWins"
+	{
+		"pl"		"{GREEN}{1} {NORMAL}mial najwiecej wygranych {PURPLE}({2}) {NORMAL}na pierwszej arenie tej mapy."
+	}
+	"OpponentLeft"
+	{
+		"pl"		"{GREEN}Twoj przeciwnik opuscil gre."
+	}
+	"HideStats"
+	{
+		"pl"		"Statystyki graczy sa teraz ukryte."
+	}
+	"ShowStats"
+	{
+		"pl"		"Statystyki graczy sa teraz wyswietlane."
+	}
+	"ArenaClanTag"
+	{
+		"pl"		"Arena {1}"
 	}
 }
