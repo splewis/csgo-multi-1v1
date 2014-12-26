@@ -1,7 +1,8 @@
-#pragma semicolon 1
 #include <sourcemod>
 #include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
+
+#pragma semicolon 1
 
 Handle g_hStatsWebsite = INVALID_HANDLE;
 Handle g_hStatsTop = INVALID_HANDLE;
@@ -14,7 +15,7 @@ public Plugin:myinfo = {
     url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
-public OnPluginStart() {
+public void OnPluginStart() {
     LoadTranslations("common.phrases");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}.");
     g_hStatsTop = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL");
@@ -25,7 +26,7 @@ public OnPluginStart() {
     RegConsoleCmd("sm_top", Command_Top, "Displays top 15");
 }
 
-public Action Command_Stats(int client, args) {
+public Action Command_Stats(int client, int args) {
     char arg1[32];
     if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
         int target = FindTarget(client, arg1, true, false);
@@ -39,7 +40,7 @@ public Action Command_Stats(int client, args) {
     return Plugin_Handled;
 }
 
-public Action Command_Top(int client, args) {
+public Action Command_Top(int client, int args) {
     char url[255];
     GetConVarString(g_hStatsTop, url, sizeof(url));
     if (StrEqual(url, "")) {
@@ -52,7 +53,7 @@ public Action Command_Top(int client, args) {
     return Plugin_Handled;
 }
 
-public Action OnClientSayCommand(client, const char[] command, const char[] sArgs) {
+public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
     char chatTriggers[][] = { "rank", ".rank" };
     for (int i = 0; i < sizeof(chatTriggers); i++) {
         if (strcmp(sArgs[0], chatTriggers[i], false) == 0) {
@@ -62,7 +63,7 @@ public Action OnClientSayCommand(client, const char[] command, const char[] sArg
     return Plugin_Continue;
 }
 
-public void ShowStatsForPlayer(int client, target) {
+public void ShowStatsForPlayer(int client, int target) {
     char url[255];
     GetConVarString(g_hStatsWebsite, url, sizeof(url));
     if (StrEqual(url, "")) {

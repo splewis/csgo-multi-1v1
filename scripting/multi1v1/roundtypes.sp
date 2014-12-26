@@ -44,7 +44,7 @@ public int GetRoundType(int arena, int client1, int client2) {
     return choice;
 }
 
-static AddRounds(ArrayList types, int client1, int client2, int roundType) {
+static void AddRounds(ArrayList types, int client1, int client2, int roundType) {
     int weight = 1;
 
     int prefWeight = GetConVarInt(g_hPreferenceWeight);
@@ -56,7 +56,7 @@ static AddRounds(ArrayList types, int client1, int client2, int roundType) {
     PushArrayCellReplicated(types, roundType, weight);
 }
 
-static AddRounds_CheckAllowed(ArrayList types, int client1, int client2, int roundType) {
+static void AddRounds_CheckAllowed(ArrayList types, int client1, int client2, int roundType) {
     if (g_AllowedRoundTypes[client1][roundType] && g_AllowedRoundTypes[client2][roundType]) {
         AddRounds(types, client1, client2, roundType);
     }
@@ -129,7 +129,7 @@ public void GiveAllowMenu(int client, int roundType) {
     DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
-public MenuHandler_AllowRoundType(Handle menu, MenuAction action, param1, param2) {
+public int MenuHandler_AllowRoundType(Handle menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         bool choice = GetMenuBool(menu, param2);

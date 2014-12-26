@@ -91,7 +91,7 @@ static void LoadBackupConfig() {
     g_numPistols = 2;
 }
 
-static TeamStringToTeam(const char[] teamString) {
+static int TeamStringToTeam(const char[] teamString) {
     if (StrEqual(teamString, "CT", false))
         return CS_TEAM_CT;
     else if (StrEqual(teamString, "T", false))
@@ -105,12 +105,12 @@ static TeamStringToTeam(const char[] teamString) {
  * This is only valid for weapons in the server's weapons config file.
  */
 public int GetWeaponTeam(const char[] weapon) {
-    for (new i = 0; i < g_numRifles; i++) {
+    for (int i = 0; i < g_numRifles; i++) {
         if (StrEqual(weapon[0], g_Rifles[i][0])) {
             return TeamStringToTeam(g_Rifles[i][2][0]);
         }
     }
-    for (new i = 0; i < g_numPistols; i++) {
+    for (int i = 0; i < g_numPistols; i++) {
         if (StrEqual(weapon[0], g_Pistols[i][0])) {
             return TeamStringToTeam(g_Pistols[i][2][0]);
         }
@@ -121,7 +121,7 @@ public int GetWeaponTeam(const char[] weapon) {
 /**
  * Opens up the weapon menu for a client.
  */
-public GiveWeaponMenu(int client) {
+public void GiveWeaponMenu(int client) {
     g_CurrentRoundTypeMenuIndex[client] = -1;
     g_WaitingOnRoundAllow[client] = false;
     RifleChoiceMenu(client);
@@ -130,7 +130,7 @@ public GiveWeaponMenu(int client) {
 /**
  * Displays the round-type preference menu to a client.
  */
-public GivePreferenceMenu(int client) {
+public void GivePreferenceMenu(int client) {
     Handle menu = CreateMenu(MenuHandler_Preference);
     SetMenuTitle(menu, "Choose your preference:");
     AddMenuInt(menu, -1, "No Preference");
@@ -157,7 +157,7 @@ public GivePreferenceMenu(int client) {
 /**
  * Menu Handler for round-type preference menu.
  */
-public MenuHandler_Preference(Handle menu, MenuAction action, param1, param2) {
+public int MenuHandler_Preference(Handle menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         int choice = GetMenuInt(menu, param2);
@@ -185,7 +185,7 @@ public void FinishGunsMenu(int client) {
 /**
  * Primary weapon choice menu.
  */
-public RifleChoiceMenu(int client) {
+public void RifleChoiceMenu(int client) {
     if (GetConVarInt(g_hRifleMenu) == 0) {
         PistolChoiceMenu(client);
     } else {
@@ -202,7 +202,7 @@ public RifleChoiceMenu(int client) {
 /**
  * Rifle weapon handler - updates primaryWeapon.
  */
-public MenuHandler_RifleChoice(Handle menu, MenuAction action, param1, param2) {
+public int MenuHandler_RifleChoice(Handle menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         char info[WEAPON_LENGTH];
@@ -218,7 +218,7 @@ public MenuHandler_RifleChoice(Handle menu, MenuAction action, param1, param2) {
 /**
  * Displays pistol menu to a player
  */
-public PistolChoiceMenu(int client) {
+public void PistolChoiceMenu(int client) {
     if (GetConVarInt(g_hPistolMenu) == 0) {
         ReturnMenuControl(client);
     } else {
@@ -235,7 +235,7 @@ public PistolChoiceMenu(int client) {
 /**
  * Pistol choice handler - updates secondary weapon.
  */
-public MenuHandler_PistolChoice(Handle menu, MenuAction action, param1, param2) {
+public int MenuHandler_PistolChoice(Handle menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         char info[WEAPON_LENGTH];
@@ -251,7 +251,7 @@ public MenuHandler_PistolChoice(Handle menu, MenuAction action, param1, param2) 
 /**
  * Sets all the weapon choices based on the client's cookies.
  */
-public UpdatePreferencesOnCookies(int client) {
+public void UpdatePreferencesOnCookies(int client) {
 
     for (int i = 0; i < g_numRoundTypes; i++) {
         char cookieName[128];
@@ -283,7 +283,7 @@ public UpdatePreferencesOnCookies(int client) {
 /**
  * Gives a player a weapon, taking care of getting them the appropriate skin.
  */
-public GiveWeapon(int client, const char[] weapon) {
+public void GiveWeapon(int client, const char[] weapon) {
     int playerteam = GetEntProp(client, Prop_Data, "m_iTeamNum");
     int weaponteam = GetWeaponTeam(weapon);
     if (weaponteam > 0)

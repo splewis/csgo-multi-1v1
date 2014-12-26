@@ -51,9 +51,9 @@ public void DB_Connect() {
 /**
  * Generic SQL threaded query error callback.
  */
-public SQLErrorCheckCallback(Handle owner, Handle hndl, const char[] error, data) {
+public void SQLErrorCheckCallback(Handle owner, Handle hndl, const char[] error, int data) {
     if (!StrEqual("", error)) {
-        LogError("Last Connect SQL Error: %s", error);
+        LogError("Last SQL Error: %s", error);
     }
 }
 
@@ -92,7 +92,7 @@ public void DB_AddPlayer(int client) {
     }
 }
 
-public Callback_Insert(Handle owner, Handle hndl, const char[] error, int serial) {
+public void Callback_Insert(Handle owner, Handle hndl, const char[] error, int serial) {
     if (!StrEqual("", error)) {
         LogError("Last Connect SQL Error: %s", error);
     } else {
@@ -160,7 +160,7 @@ public void DB_FetchRatings(int client) {
     }
 }
 
-public Callback_FetchRating(Handle owner, Handle hndl, const char[] error, int serial) {
+public void Callback_FetchRating(Handle owner, Handle hndl, const char[] error, int serial) {
     int client = GetClientFromSerial(serial);
     if (!IsConnected(client) || g_FetchedPlayerInfo[client])
         return;

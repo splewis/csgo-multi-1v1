@@ -3,6 +3,8 @@
 #include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
 
+#pragma semicolon 1
+
 public Plugin:myinfo = {
     name = "CS:GO Multi1v1: knife round addon",
     author = "splewis",

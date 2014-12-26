@@ -1,5 +1,4 @@
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v1.x/csgo-multi-1v1.txt"
-#pragma semicolon 1
 
 #include <sourcemod>
 #include <sdkhooks>
@@ -13,6 +12,8 @@
 
 #undef REQUIRE_PLUGIN
 #tryinclude <updater>
+
+#pragma semicolon 1
 
 
 
@@ -156,7 +157,7 @@ public Plugin:myinfo = {
     url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
-public OnPluginStart() {
+public void OnPluginStart() {
     LoadTranslations("common.phrases");
     LoadTranslations("multi1v1.phrases");
 
@@ -222,7 +223,7 @@ public OnPluginStart() {
     }
 }
 
-public OnLibraryAdded(const char[] name) {
+public void OnLibraryAdded(const char[] name) {
     if (GetConVarInt(g_hAutoUpdate) != 0) {
         AddUpdater();
     }
@@ -236,7 +237,7 @@ static void AddUpdater() {
     #endif
 }
 
-public OnMapStart() {
+public void OnMapStart() {
     Spawns_MapStart();
     Weapons_MapStart();
 
@@ -268,7 +269,7 @@ public OnMapStart() {
     }
 }
 
-public OnMapEnd() {
+public void OnMapEnd() {
     Spawns_MapEnd();
 }
 
@@ -278,11 +279,11 @@ public void OnClientAuthorized(int client, const char[] auth) {
     }
 }
 
-public OnClientConnected(int client) {
+public void OnClientConnected(int client) {
     ResetClientVariables(client);
 }
 
-public OnClientDisconnect(int client) {
+public void OnClientDisconnect(int client) {
     if (GetConVarInt(g_hUseDatabase) != 0)
         DB_WriteRatings(client);
 
@@ -292,7 +293,7 @@ public OnClientDisconnect(int client) {
     ResetClientVariables(client);
 }
 
-public OnClientCookiesCached(int client) {
+public int OnClientCookiesCached(int client) {
     if (IsFakeClient(client))
         return;
     UpdatePreferencesOnCookies(client);
@@ -312,7 +313,7 @@ public OnClientCookiesCached(int client) {
  * if a player does not select a team but leaves their mouse over one, they are
  * put on that team and spawned, so we can't allow that.
  */
-public Event_OnFullConnect(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnFullConnect(Handle event, const char[] name, bool dontBroadcast) {
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
 }
@@ -328,7 +329,7 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
 /**
  * Round pre-start, sets up who goes in which arena for this round.
  */
-public Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast) {
     g_roundStartTime = GetTime();
 
     // Here we add each player to the queue in their new ranking
@@ -382,7 +383,7 @@ public Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast
     Call_Finish();
 
     int leader = -1;
-    for (new i = 0; i < GetArraySize(rankingQueue); i++) {
+    for (int i = 0; i < GetArraySize(rankingQueue); i++) {
         int client = GetArrayCell(rankingQueue, i);
         if (!g_BlockMVPStars[client]) {
             leader = client;
@@ -426,11 +427,11 @@ public Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast
     Call_Finish();
 }
 
-public int spectatorSortFunction(index1, index2, Handle array, Handle hndl) {
+public int spectatorSortFunction(int index1, int index2, Handle array, Handle hndl) {
     int client1 = GetArrayCell(array, index1);
     int client2 = GetArrayCell(array, index2);
     if (Multi1v1_HasStats(client1) && Multi1v1_HasStats(client2)) {
-        return RoundToNearest(Multi1v1_GetRating(client2) - RoundToNearest(Multi1v1_GetRating(client1)));
+        return RoundToNearest(Multi1v1_GetRating(client2) - Multi1v1_GetRating(client1));
     } else {
         return client1 - client2;
     }
@@ -475,7 +476,7 @@ public void AddPlayer(int client, Handle rankingQueue) {
 /**
  * Round poststart - puts players in their arena and gives them weapons.
  */
-public Event_OnRoundPostStart(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnRoundPostStart(Handle event, const char[] name, bool dontBroadcast) {
     g_roundFinished = false;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
         g_ArenaWinners[arena] = -1;
@@ -582,7 +583,7 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
  *  - throws all the players into a queue according to their standing from this round
  *  - updates globals g_Ranking, g_ArenaPlayer1, g_ArenaPlayer2 for the next round setup
  */
-public Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast) {
     g_totalRounds++;
     g_roundFinished = true;
 
@@ -624,7 +625,7 @@ public Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast) {
 /**
  * Player death event, updates g_arenaWinners/g_arenaLosers for the arena that was just decided.
  */
-public Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
     int victim = GetClientOfUserId(GetEventInt(event, "userid"));
     int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     int arena = g_Ranking[victim];
@@ -677,7 +678,7 @@ public Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast) 
  * Player spawn event - gives the appropriate weapons to a player for his arena.
  * Warning: do NOT assume this is called before or after the round start event!
  */
-public Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsActivePlayer(client))
         return;
@@ -697,7 +698,7 @@ public Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) 
 }
 
 
-public Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
     int maxClient = -1;
     int maxScore = -1;
     for (int i = 1; i <= MaxClients; i++) {
@@ -724,7 +725,7 @@ public Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
 /**
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
-public Action Command_TeamJoin(int client, const char[] command, argc) {
+public Action Command_TeamJoin(int client, const char[] command, int argc) {
     if (!IsValidClient(client))
         return Plugin_Handled;
 

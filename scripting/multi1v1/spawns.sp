@@ -3,7 +3,7 @@
 /**
  * Loads the spawn positions from the map and updates global spawn arrays.
  */
-public Spawns_MapStart() {
+public void Spawns_MapStart() {
     // Note: these are arrays of arrays!
     // Each index corresponds to the data for THAT arena.
     // Example: g_hTspawns[0] has a handle to another adt array - that array contains
@@ -110,7 +110,7 @@ public Spawns_MapStart() {
 
 }
 
-static AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleList) {
+static void AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleList) {
     for (int i = 0; i < GetArraySize(spawnList); i++) {
         Handle spawns = Handle:GetArrayCell(spawnList, i);
         Handle angles = Handle:GetArrayCell(angleList, i);
@@ -137,7 +137,7 @@ static AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleLi
     PushArrayCell(angleList, angles);
 }
 
-Spawns_MapEnd() {
+public void Spawns_MapEnd() {
     CloseHandleArray(g_hTSpawns);
     CloseHandleArray(g_hTAngles);
     CloseHandleArray(g_hCTSpawns);

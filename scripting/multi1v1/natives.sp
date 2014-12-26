@@ -4,7 +4,7 @@
 #define CHECK_ARENA(%1) if (%1 <= 0 || %1 > g_maxArenas) ThrowNativeError(SP_ERROR_PARAM, "Arena %d is not valid", %1)
 #define CHECK_ROUNDTYPE(%1) if (%1 < 0 || %1 >= g_numRoundTypes) ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not valid", %1)
 
-public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) {
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max) {
     CreateNative("Multi1v1_IsInArena", Native_IsInArena);
     CreateNative("Multi1v1_GetMaximumArenas", Native_GetMaximumArenas);
     CreateNative("Multi1v1_GetNumActiveArenas", Native_GetNumActiveArenas);
@@ -53,33 +53,33 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max) 
     return APLRes_Success;
 }
 
-public Native_IsInArena(Handle plugin, numParams) {
+public int Native_IsInArena(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_Ranking[client] > 0;
 }
 
-public Native_GetMaximumArenas(Handle plugin, numParams) {
+public int Native_GetMaximumArenas(Handle plugin, int numParams) {
     return g_maxArenas;
 }
 
-public Native_GetNumActiveArenas(Handle plugin, numParams) {
+public int Native_GetNumActiveArenas(Handle plugin, int numParams) {
     return g_arenas;
 }
 
-public Native_IsInWaitingQueue(Handle plugin, numParams) {
+public int Native_IsInWaitingQueue(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return Queue_Inside(g_waitingQueue, client);
 }
 
-public Native_HasStats(Handle plugin, numParams) {
+public int Native_HasStats(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return !IsFakeClient(client) && g_FetchedPlayerInfo[client];
 }
 
-public Native_GetRating(Handle plugin, numParams) {
+public int Native_GetRating(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     int roundType = GetNativeCell(2);
     CHECK_CONNECTED(client);
@@ -95,56 +95,56 @@ public Native_GetRating(Handle plugin, numParams) {
     }
 }
 
-public Native_SetRating(Handle plugin, numParams) {
+public int Native_SetRating(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     float rating = GetNativeCell(2);
     CHECK_CONNECTED(client);
     g_Rating[client] = rating;
 }
 
-public Native_GetRoundsPlayed(Handle plugin, numParams) {
+public int Native_GetRoundsPlayed(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_Wins[client] + g_Losses[client];
 }
 
-public Native_GetWins(Handle plugin, numParams) {
+public int Native_GetWins(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_Wins[client];
 }
 
-public Native_GetLosses(Handle plugin, numParams) {
+public int Native_GetLosses(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_Losses[client];
 }
 
-public Native_GetArenaNumber(Handle plugin, numParams) {
+public int Native_GetArenaNumber(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_Ranking[client];
 }
 
-public Native_GetRoundsAtArena1(Handle plugin, numParams) {
+public int Native_GetRoundsAtArena1(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_RoundsLeader[client];
 }
 
-public Native_GetArenaPlayer1(Handle plugin, numParams) {
+public int Native_GetArenaPlayer1(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     CHECK_ARENA(arena);
     return g_ArenaPlayer1[arena];
 }
 
-public Native_GetArenaPlayer2(Handle plugin, numParams) {
+public int Native_GetArenaPlayer2(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     CHECK_ARENA(arena);
     return g_ArenaPlayer2[arena];
 }
 
-public Native_GetOpponent(Handle plugin, numParams) {
+public int Native_GetOpponent(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     if (IsValidClient(client)) {
         int arena = g_Ranking[client];
@@ -159,11 +159,11 @@ public Native_GetOpponent(Handle plugin, numParams) {
     return -1;
 }
 
-public Native_HasDatabase(Handle plugin, numParams) {
+public int Native_HasDatabase(Handle plugin, int numParams) {
     return GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected && db != INVALID_HANDLE;
 }
 
-public Native_GetDatabase(Handle plugin, numParams) {
+public int Native_GetDatabase(Handle plugin, int numParams) {
     if (!Multi1v1_HasDatabase()) {
         ThrowNativeError(SP_ERROR_PARAM, "The multi1v1 database is not connected");
         return _:INVALID_HANDLE;
@@ -172,7 +172,7 @@ public Native_GetDatabase(Handle plugin, numParams) {
     }
 }
 
-public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
+public int Native_GivePlayerArenaWeapons(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     int roundType = GetNativeCell(2);
     CHECK_CONNECTED(client);
@@ -189,7 +189,7 @@ public Native_GivePlayerArenaWeapons(Handle plugin, numParams) {
     }
 }
 
-public Native_Multi1v1Message(Handle plugin, numParams) {
+public int Native_Multi1v1Message(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
 
@@ -209,7 +209,7 @@ public Native_Multi1v1Message(Handle plugin, numParams) {
     PrintToChat(client, finalMsg);
 }
 
-public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
+public int Native_Multi1v1MessageToAll(Handle plugin, int numParams) {
     char buffer[1024];
     int bytesWritten = 0;
     for (int i = 1; i <= MaxClients; i++) {
@@ -229,57 +229,57 @@ public Native_Multi1v1MessageToAll(Handle plugin, numParams) {
     }
 }
 
-public Native_BlockRatingChanges(Handle plugin, numParams) {
+public int Native_BlockRatingChanges(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     g_BlockStatChanges[client] = true;
 }
 
-public Native_UnblockRatingChanges(Handle plugin, numParams) {
+public int Native_UnblockRatingChanges(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     g_BlockStatChanges[client] = false;
 }
 
-public Native_BlockChatMessages(Handle plugin, numParams) {
+public int Native_BlockChatMessages(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     g_BlockChatMessages[client] = true;
 }
 
-public Native_UnblockChatMessages(Handle plugin, numParams) {
+public int Native_UnblockChatMessages(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     g_BlockChatMessages[client] = false;
 }
 
-public Native_BlockMVPStars(Handle plugin, numParams) {
+public int Native_BlockMVPStars(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     g_BlockMVPStars[client] = true;
 }
 
-public Native_UnblockMVPStars(Handle plugin, numParams) {
+public int Native_UnblockMVPStars(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     g_BlockMVPStars[client] = false;
 }
 
-public Native_BlockArenaDones(Handle plugin, numParams) {
+public int Native_BlockArenaDones(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     g_BlockArenaDones[arena] = true;
 }
 
-public Native_UnblockArenaDones(Handle plugin, numParams) {
+public int Native_UnblockArenaDones(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     g_BlockArenaDones[arena] = false;
 }
 
-public Native_SetArenaOffsetValue(Handle plugin, numParams) {
+public int Native_SetArenaOffsetValue(Handle plugin, int numParams) {
     g_arenaOffsetValue = GetNativeCell(1);
 }
 
-public Native_ELORatingDelta(Handle plugin, numParams) {
+public int Native_ELORatingDelta(Handle plugin, int numParams) {
     float winner_rating = GetNativeCell(1);
     float loser_rating = GetNativeCell(2);
     float K = GetNativeCell(3);
@@ -289,7 +289,7 @@ public Native_ELORatingDelta(Handle plugin, numParams) {
     return _:winner_delta;
 }
 
-public Native_GetNumSpawnsInArena(Handle plugin, numParams) {
+public int Native_GetNumSpawnsInArena(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     CHECK_ARENA(arena);
 
@@ -298,7 +298,7 @@ public Native_GetNumSpawnsInArena(Handle plugin, numParams) {
     return Math_Min(GetArraySize(ct), GetArraySize(t));
 }
 
-public Native_GetArenaSpawn(Handle plugin, numParams) {
+public int Native_GetArenaSpawn(Handle plugin, int numParams) {
     float origin[3];
     float angle[3];
     int arena = GetNativeCell(1);
@@ -327,23 +327,23 @@ public Native_GetArenaSpawn(Handle plugin, numParams) {
     SetNativeArray(4, angle, sizeof(angle));
 }
 
-public Native_GetRifleChoice(Handle plugin, numParams) {
+public int Native_GetRifleChoice(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     SetNativeString(2, g_PrimaryWeapon[client], WEAPON_NAME_LENGTH);
 }
 
-public Native_GetPistolChoice(Handle plugin, numParams) {
+public int Native_GetPistolChoice(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     SetNativeString(2, g_SecondaryWeapon[client], WEAPON_NAME_LENGTH);
 }
 
-public Native_ClearRoundTypes(Handle plugin, numParams) {
+public int Native_ClearRoundTypes(Handle plugin, int numParams) {
     g_numRoundTypes = 0;
 }
 
-public Native_AddRoundType(Handle plugin, numParams) {
+public int Native_AddRoundType(Handle plugin, int numParams) {
     if (g_numRoundTypes >= MAX_ROUND_TYPES) {
         ThrowNativeError(SP_ERROR_PARAM, "Tried to add new round when %d round types already added", MAX_ROUND_TYPES);
         return -1;
@@ -382,13 +382,13 @@ public Native_AddRoundType(Handle plugin, numParams) {
     return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName);
 }
 
-public Native_ReturnMenuControl(Handle plugin, numParams) {
+public int Native_ReturnMenuControl(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     ReturnMenuControl(client);
 }
 
-public Native_GetRoundTypeIndex(Handle plugin, numParams) {
+public int Native_GetRoundTypeIndex(Handle plugin, int numParams) {
     char buffer[ROUND_TYPE_NAME_LENGTH];
     GetNativeString(1, buffer, sizeof(buffer));
     for (int i = 0; i < g_numRoundTypes; i++) {
@@ -400,21 +400,21 @@ public Native_GetRoundTypeIndex(Handle plugin, numParams) {
     return -1;
 }
 
-public Native_AddStandardRounds(Handle plugin, numParams) {
+public int Native_AddStandardRounds(Handle plugin, int numParams) {
     AddStandardRounds();
 }
 
-public Native_GetCurrentRoundType(Handle plugin, numParams) {
+public int Native_GetCurrentRoundType(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     CHECK_ARENA(arena);
     return g_roundTypes[arena];
 }
 
-public Native_GetNumRoundTypes(Handle plugin, numParams) {
+public int Native_GetNumRoundTypes(Handle plugin, int numParams) {
     return g_numRoundTypes;
 }
 
-public Native_PlayerAllowsRoundType(Handle plugin, numParams) {
+public int Native_PlayerAllowsRoundType(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
 
@@ -424,13 +424,13 @@ public Native_PlayerAllowsRoundType(Handle plugin, numParams) {
     return g_RoundTypeOptional[roundType] || g_AllowedRoundTypes[client][roundType];
 }
 
-public Native_PlayerPreference(Handle plugin, numParams) {
+public int Native_PlayerPreference(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_Preference[client];
 }
 
-public Native_IsHidingStates(Handle plugin, numParams) {
+public int Native_IsHidingStates(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_HideStats[client];

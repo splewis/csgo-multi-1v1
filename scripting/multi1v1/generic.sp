@@ -61,7 +61,7 @@ stock void AddMenuInt(Handle menu, int value, const char[] display) {
 /**
  * Gets an integer to a menu from a string choice.
  */
-stock int GetMenuInt(Handle menu, any:param2) {
+stock int GetMenuInt(Handle menu, int param2) {
     char choice[INTEGER_STRING_LENGTH];
     GetMenuItem(menu, param2, choice, sizeof(choice));
     return StringToInt(choice);
@@ -78,7 +78,7 @@ stock void AddMenuBool(Handle menu, bool value, const char[] display) {
 /**
  * Gets a boolean to a menu from a string choice.
  */
-stock bool GetMenuBool(Handle menu, any:param2) {
+stock bool GetMenuBool(Handle menu, int param2) {
     return GetMenuInt(menu, param2) != 0;
 }
 
@@ -190,7 +190,7 @@ stock int GetArrayRandomIndex(Handle array) {
 /**
  * Pushes an element to an array multiple times.
  */
-stock void PushArrayCellReplicated(Handle array, any:value, int times) {
+stock void PushArrayCellReplicated(Handle array, int value, int times) {
     for (int i = 0; i < times; i++)
         PushArrayCell(array, value);
 }
@@ -278,7 +278,7 @@ stock void SQL_UpdatePrimaryKey(Handle db_connection, const char[] table_name, c
  * Applies colorized characters across a string to replace color tags.
  */
 stock void Colorize(char[] msg, int size) {
-    for (new i = 0; i < sizeof(g_ColorNames); i ++) {
+    for (int i = 0; i < sizeof(g_ColorNames); i ++) {
         ReplaceString(msg, size, g_ColorNames[i], g_ColorCodes[i]);
     }
 }

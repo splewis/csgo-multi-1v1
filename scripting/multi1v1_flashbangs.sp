@@ -3,6 +3,8 @@
 #include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
 
+#pragma semicolon 1
+
 bool g_GiveFlash[MAXPLAYERS+1];
 Handle g_hFlashCookie = INVALID_HANDLE;
 
