@@ -2,10 +2,12 @@
 {
 	"NoOpponent"
 	{
+		"#format"	"{1:i}"
 		"pl"			"Jestes na arenie {GREEN}{1} {DARK_RED}bez przeciwnika."
 	}
 	"FacingOff"
 	{
+		"#format"	"{1:i},{2:N}"
 		"pl"			"Walczysz na arenie {GREEN}{1}{NORMAL}, przeciwko {PURPLE}{2}."
 	}
 	"ArenasFull"
@@ -14,18 +16,45 @@
 	}
 	"QueuePosition"
 	{
+		"#format"	"{1:i}"
 		"pl"			"Jestes {GREEN}{1} {NORMAL}w kolejce."
 	}
 	"WonMessage"
 	{
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"pl"			"{GREEN}Ty {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) pokonales {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 	}
 	"LossMessage"
 	{
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"pl"			"{GREEN}Ty {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}przegrales z {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
 	"TimeRanOut"
 	{
-		"pl"			"{GREEN}Ty {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
+		"#format"	"{1:i},{2:.1f}"
+		"pl"			"{GREEN}Ty {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) pozwoliles zeby czas sie skonczyl."
+	}
+	"MostWins"
+	{
+		"#format"	"{1:N},{2:d}"
+		"pl"		"{GREEN}{1} {NORMAL}mial najwiecej wygranych {PURPLE}({2}) {NORMAL}na pierwszej arenie tej mapy."
+	}
+	"OpponentLeft"
+	{
+		"pl"		"{GREEN}Twoj przeciwnik opuscil gre."
+	}
+	"HideStats"
+	{
+		"pl"		"Statystyki graczy sa teraz ukryte."
+	}
+	"ShowStats"
+	{
+		"pl"		"Statystyki graczy sa teraz wyswietlane."
+	}
+	"ArenaClanTag"
+	{
+		"#format"	"{1:d}"
+		"pl"		"Arena {1}"
 	}
 }
+
