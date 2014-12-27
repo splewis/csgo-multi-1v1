@@ -1,3 +1,8 @@
+#if defined _queue_included
+  #endinput
+#endif
+#define _queue_included
+
 /**
  * This is a generic client FIFO-queue implentation.
  * It is just a wrapper on adt-arrays, so things like
