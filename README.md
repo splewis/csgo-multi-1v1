@@ -37,6 +37,7 @@ Stable releases are in the [GitHub Releases](https://github.com/splewis/csgo-mul
 I **strongly** recommend using the [Updater](https://forums.alliedmods.net/showthread.php?t=169095) plugin which can automatically update the plugin for bug fixes.
 Any changes made through an automatic update will be backwards compatible.
 
+You may also download the [latest development build](http://ci.splewis.net/job/csgo-multi-1v1/lastSuccessfulBuild/) if you wish. If you report any bugs from these, make sure to include the build number (when typing ``sm plugins list`` into the server console, the build number will be displayed with the plugin version).
 
 ## Installation
 
