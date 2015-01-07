@@ -9,6 +9,8 @@
 
 #include "include/queue.inc"
 #include "include/multi1v1.inc"
+
+#undef REQUIRE_PLUGIN
 #include "include/updater.inc"
 
 #pragma semicolon 1
