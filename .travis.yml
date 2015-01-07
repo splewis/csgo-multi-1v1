@@ -21,7 +21,6 @@ before_script:
     - cd include
     - git clone https://github.com/bcserv/smlib
     - cp -r smlib/scripting/include/* .
-    - wget https://bitbucket.org/GoD_Tony/updater/raw/94c43b6e49ac2e8f322b252bce52d6aef5c6a477/include/updater.inc
     - cd ../../../..
 
 script:

@@ -83,7 +83,6 @@ The build process is managed by my [smbuilder](https://github.com/splewis/sm-bui
 
 To compile, you will need:
 - [SMLib](https://github.com/bcserv/smlib) (required)
-- [Updater](https://forums.alliedmods.net/showthread.php?t=169095) (optional)
 
 You should make sure you have a relatively recent version of smlib - some changes were made to accommodate sourcemod 1.7 changes.
 

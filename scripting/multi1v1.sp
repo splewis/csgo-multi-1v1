@@ -9,9 +9,7 @@
 
 #include "include/queue.inc"
 #include "include/multi1v1.inc"
-
-#undef REQUIRE_PLUGIN
-#tryinclude <updater>
+#include "include/updater.inc"
 
 #pragma semicolon 1
 
@@ -230,11 +228,9 @@ public void OnLibraryAdded(const char[] name) {
 }
 
 static void AddUpdater() {
-    #if defined _updater_included
     if (LibraryExists("updater")) {
         Updater_AddPlugin(UPDATE_URL);
     }
-    #endif
 }
 
 public void OnMapStart() {
