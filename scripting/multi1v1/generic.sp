@@ -1,8 +1,3 @@
-#tryinclude "../include/multi1v1_version.inc"
-#if !defined PLUGIN_VERSION
-#define PLUGIN_VERSION "1.0.0-dev"
-#endif
-
 #define MESSAGE_PREFIX "[\x05Multi1v1\x01] "
 #define HIDE_RADAR_BIT 1<<12
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string

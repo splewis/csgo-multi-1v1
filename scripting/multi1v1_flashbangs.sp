@@ -1,7 +1,9 @@
 #include <sourcemod>
 #include <smlib>
+#include <clientprefs>
 #include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
+#include "multi1v1/version.sp"
 
 #pragma semicolon 1
 

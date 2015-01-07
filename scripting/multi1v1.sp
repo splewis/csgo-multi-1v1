@@ -140,6 +140,7 @@ Handle g_hOnStatsCached = INVALID_HANDLE;
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
 #include "multi1v1/weaponlogic.sp"
+#include "multi1v1/version.sp"
 
 
 
