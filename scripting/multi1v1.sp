@@ -32,13 +32,13 @@
 #define WEAPON_LENGTH 32
 
 /** ConVar handles **/
+Handle g_hAutoGunsMenuBehavior = INVALID_HANDLE;
 Handle g_hAutoUpdate = INVALID_HANDLE;
 Handle g_hBlockRadio = INVALID_HANDLE;
 Handle g_hDatabaseName = INVALID_HANDLE;
 Handle g_hDatabaseServerId = INVALID_HANDLE;
 Handle g_hDefaultPistol = INVALID_HANDLE;
 Handle g_hExecDefaultConfig = INVALID_HANDLE;
-Handle g_hGunsMenuOnFirstConnect = INVALID_HANDLE;
 Handle g_hHideGunsChatCommands = INVALID_HANDLE;
 Handle g_hPistolBehavior = INVALID_HANDLE;
 Handle g_hPistolMenu = INVALID_HANDLE;
@@ -70,7 +70,7 @@ Handle db = INVALID_HANDLE;
 int g_Ranking[MAXPLAYERS+1]; // which arena each player is in
 bool g_LetTimeExpire[MAXPLAYERS+1];
 bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
-bool g_GunsSelected[MAXPLAYERS+1];
+bool g_GivenGunsMenu[MAXPLAYERS+1];
 bool g_HideStats[MAXPLAYERS+1];
 
 bool g_WaitingOnRoundAllow[MAXPLAYERS+1];
@@ -163,13 +163,13 @@ public void OnPluginStart() {
     LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
+    g_hAutoGunsMenuBehavior = CreateConVar("sm_multi1v1_menu_open_behavior", "0", "Determines auto-open behavior of the guns menu. 0=never auto-open, 1=open if the client has no preference cookies saved, 2=always open on client connect");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to auto-update. Requies the \"Updater\" plugin");
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
     g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server. Most users don't need to change this.");
     g_hDefaultPistol = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
-    g_hGunsMenuOnFirstConnect = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Whether players see the guns menu automatically if a player doesn't have weapon preferences set from cookies (e.g. if this is the first time they've joined the server)");
     g_hHideGunsChatCommands = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
     g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
     g_hPistolMenu = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
@@ -465,11 +465,6 @@ public void AddPlayer(int client, Handle rankingQueue) {
     if (space && !alreadyin) {
         Queue_Enqueue(rankingQueue, client);
     }
-
-    if (GetConVarInt(g_hGunsMenuOnFirstConnect) != 0 && !g_GunsSelected[client] && AreClientCookiesCached(client)) {
-        g_GunsSelected[client] = true;
-        GiveWeaponMenu(client);
-    }
 }
 
 /**
@@ -728,6 +723,11 @@ public Action Command_TeamJoin(int client, const char[] command, int argc) {
     if (!IsValidClient(client))
         return Plugin_Handled;
 
+    // auto-give the guns menu if desired
+    if (GetConVarInt(g_hAutoGunsMenuBehavior) != 0 && !g_GivenGunsMenu[client]) {
+        GiveWeaponMenu(client);
+    }
+
     char arg[4];
     GetCmdArg(1, arg, sizeof(arg));
     int team_to = StringToInt(arg);
@@ -902,7 +902,7 @@ public void ResetClientVariables(int client) {
     g_BlockMVPStars[client] = false;
     g_BlockArenaDones[client] = false;
     g_FetchedPlayerInfo[client] = false;
-    g_GunsSelected[client] = false;
+    g_GivenGunsMenu[client] = false;
     g_RoundsLeader[client] = 0;
     g_Wins[client] = 0;
     g_Losses[client] = 0;

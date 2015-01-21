@@ -2,6 +2,7 @@ dev:
  - **move to sourcemod 1.7 transitional syntax and API**
  - weapon lists are now stored in configs/multi1v1_weapons.cfg rather than hardcoded into the plugin
  - new cvars: ``sm_multi1v1_exec_default_config``, ``sm_multi1v1_db_name``, ``sm_multi1v1_pistol_behavior``, ``sm_multi1v1_default_pistol``, ``sm_multi1v1_database_server_id`` (I **strongly** suggest deleting cfg/multi1v1/multi1v1.cfg and letting it be regenerated)
+ - ``sm_multi1v1_guns_menu_first_connect`` has been removed and replaced with ``sm_multi1v1_menu_open_behavior``, which adds a new behavior
  - separate ratings are calculated for each round type - the overall rating is unaffected and always changed
  - translation support (current languages: Swedish, Portuguese, German, Polish, Chinese)
  - external plugin API available now, see [multi1v1.inc](scripting/include/multi1v1.inc).

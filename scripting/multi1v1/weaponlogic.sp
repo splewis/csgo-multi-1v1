@@ -122,6 +122,7 @@ public int GetWeaponTeam(const char[] weapon) {
  * Opens up the weapon menu for a client.
  */
 public void GiveWeaponMenu(int client) {
+    g_GivenGunsMenu[client] = true;
     g_CurrentRoundTypeMenuIndex[client] = -1;
     g_WaitingOnRoundAllow[client] = false;
     RifleChoiceMenu(client);
@@ -176,7 +177,6 @@ public int MenuHandler_Preference(Handle menu, MenuAction action, int param1, in
 }
 
 public void FinishGunsMenu(int client) {
-    g_GunsSelected[client] = true;
     Call_StartForward(g_hOnGunsMenuDone);
     Call_PushCell(client);
     Call_Finish();
@@ -252,7 +252,6 @@ public int MenuHandler_PistolChoice(Handle menu, MenuAction action, int param1, 
  * Sets all the weapon choices based on the client's cookies.
  */
 public void UpdatePreferencesOnCookies(int client) {
-
     for (int i = 0; i < g_numRoundTypes; i++) {
         char cookieName[128];
         Format(cookieName, sizeof(cookieName), "multi1v1_allow%s", g_RoundTypeNames[i]);
@@ -273,10 +272,8 @@ public void UpdatePreferencesOnCookies(int client) {
 
     // This checks if the player has a preference set
     // By not having one set, we can conclude the client has never selected anything in the guns menu
-    if (!StrEqual(cookieValue, "")) {
-        g_GunsSelected[client] = true;
-    } else {
-        g_GunsSelected[client] = false;
+    if (!StrEqual(cookieValue, "") && GetConVarInt(g_hAutoGunsMenuBehavior) == 1) {
+        g_GivenGunsMenu[client] = true;
     }
 }
 

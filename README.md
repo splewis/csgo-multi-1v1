@@ -125,6 +125,8 @@ To create a MySQL user and database on the database server, you can run:
 
 Make sure to change the IP, the username, and the password. You should probably change the database as well, especially if you already have one set up you can use.
 
+If you don't already have a MySQL server setup, installing it on a $5 [Digital Ocean droplet](https://www.digitalocean.com/?refcode=e540e68a1c7d) is fairly cheap, easy, and gives you full control.
+
 Schema:
 
     mysql> describe multi1v1_stats;
