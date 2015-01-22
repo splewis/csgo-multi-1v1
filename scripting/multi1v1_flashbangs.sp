@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include <smlib>
+#include <sdktools>
 #include <clientprefs>
 #include "include/multi1v1.inc"
 #include "multi1v1/generic.sp"
