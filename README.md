@@ -7,7 +7,7 @@ This is home of my CS:GO [Sourcemod](sourcemod.net) multi-1v1 arena plugin. Simp
 
 Work toward a stable 1.0.0 is underway. Note that is readme reflects the 1.0.0 development version, rather than the [latest release's readme](https://github.com/splewis/csgo-multi-1v1/blob/0.5.2/README.md).
 
-Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php?t=241056).
+Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php?t=241056) and the [the wiki](https://github.com/splewis/csgo-multi-1v1/wiki) for more information.
 
 ## Features
 - Round types: there are 3 round types: rifle, pistol, and awp
