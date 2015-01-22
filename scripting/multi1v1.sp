@@ -945,5 +945,7 @@ static void PlayerLeft(int arena, int player, int left) {
         g_ArenaPlayer1[arena] = -1;
     if (left == g_ArenaPlayer2[arena])
         g_ArenaPlayer2[arena] = -1;
-    g_Ranking[left] = -1;
+
+    if (left > 0)
+        g_Ranking[left] = -1;
 }
