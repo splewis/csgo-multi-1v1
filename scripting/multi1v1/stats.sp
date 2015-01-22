@@ -94,7 +94,7 @@ public void DB_AddPlayer(int client) {
 
 public void Callback_Insert(Handle owner, Handle hndl, const char[] error, int serial) {
     if (!StrEqual("", error)) {
-        LogError("Last Connect SQL Error: %s", error);
+        LogError("Callback_Insert SQL Error: %s", error);
     } else {
         int client = GetClientFromSerial(serial);
         if (!IsConnected(client))
