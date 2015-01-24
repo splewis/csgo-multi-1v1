@@ -733,8 +733,7 @@ public Action Command_TeamJoin(int client, const char[] command, int argc) {
     int team_to = StringToInt(arg);
     int team_from = GetClientTeam(client);
 
-    // Note that if a player selects auto-select they will have team_to and team_from equal to CS_TEAM_NONE but will get auto-moved
-    if (IsFakeClient(client) || g_PluginTeamSwitch[client] || (team_from == team_to && team_from != CS_TEAM_NONE)) {
+    if (IsFakeClient(client) || g_PluginTeamSwitch[client]) {
         return Plugin_Continue;
     } else if ((team_from == CS_TEAM_CT && team_to == CS_TEAM_T )
             || (team_from == CS_TEAM_T  && team_to == CS_TEAM_CT)) {
