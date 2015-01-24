@@ -886,7 +886,17 @@ public Action Timer_CheckRoundComplete(Handle timer) {
 
     if (normalFinish || waitingPlayers || roundTimeExpired) {
         g_roundFinished = true;
-        CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
+
+        // find the delay value
+        float delay = 1.0;
+        Handle delayCvar = FindConVar("mp_round_restart_delay");
+        if (delayCvar == INVALID_HANDLE) {
+            LogError("Failed to find cvar mp_round_restart_delay");
+        } else {
+            delay = GetConVarFloat(delayCvar);
+        }
+
+        CS_TerminateRound(delay, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
     }
 
