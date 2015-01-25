@@ -146,7 +146,7 @@ Handle g_hOnStatsCached = INVALID_HANDLE;
 
 /***********************
  *                     *
- * Sourcemod functions *
+ * Sourcemod forwards  *
  *                     *
  ***********************/
 

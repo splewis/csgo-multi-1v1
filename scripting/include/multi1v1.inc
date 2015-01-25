@@ -328,7 +328,7 @@ typedef RoundTypeMenuHandler = function void (int client);
  * Registers a new round type within the plugin.
  *
  * @param displayName The name to be shown to clients on the weapons menu
- * @param internalName The unique name used for internal mechanisms (cookies, sql field name for the rating)
+ * @param internalName The unique name used for internal mechanisms (e.g. cookies)
  * @param weaponsHandler The function called on each client when that round type is chosen
  * @param menuHandler The function called for a client when they "allowed" the round type in the menu
  * @param optional Whether the round type is optional or not (i.e. if they get to chose to disallow it)
@@ -353,7 +353,7 @@ native int Multi1v1_AddRoundType(const char[] displayName,
 native void Multi1v1_ClearRoundTypes();
 
 /**
- * Adds the stock, standard rond types.
+ * Adds the stock, standard round types.
  *
  * @noreturn
  */
