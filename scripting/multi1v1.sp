@@ -92,6 +92,7 @@ RoundTypeWeaponHandler g_RoundTypeWeaponHandlers[MAX_ROUND_TYPES];
 RoundTypeMenuHandler g_RoundTypeMenuHandlers[MAX_ROUND_TYPES];
 bool g_RoundTypeRanked[MAX_ROUND_TYPES];
 bool g_RoundTypeOptional[MAX_ROUND_TYPES];
+bool g_RoundTypeEnabled[MAX_ROUND_TYPES];
 char g_RoundTypeFieldNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
 Handle g_RoundTypeSourcePlugin[MAX_ROUND_TYPES];
 bool g_AllowedRoundTypes[MAXPLAYERS+1][MAX_ROUND_TYPES];
