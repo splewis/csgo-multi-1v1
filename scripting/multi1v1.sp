@@ -736,21 +736,26 @@ public Action Command_TeamJoin(int client, const char[] command, int argc) {
 
     if (IsFakeClient(client) || g_PluginTeamSwitch[client]) {
         return Plugin_Continue;
+
     } else if ((team_from == CS_TEAM_CT && team_to == CS_TEAM_T )
             || (team_from == CS_TEAM_T  && team_to == CS_TEAM_CT)) {
         // ignore changes between T/CT
         return Plugin_Handled;
+
     } else if (team_to == CS_TEAM_SPECTATOR) {
         // player voluntarily joining spec
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
-        CS_SetClientClanTag(client, "");
         int arena = g_Ranking[client];
         UpdateArena(arena, client);
+        if (GetConVarInt(g_hUseTeamTags) != 0)
+            CS_SetClientClanTag(client, "");
+
     } else {
         // Player first joining the game, mark them as waiting to join
         Queue_Enqueue(g_waitingQueue, client);
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
     }
+
     return Plugin_Handled;
 }
 
