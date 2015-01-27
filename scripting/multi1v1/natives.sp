@@ -49,6 +49,9 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("Multi1v1_PlayerAllowsRoundType", Native_PlayerAllowsRoundType);
     CreateNative("Multi1v1_PlayerPreference", Native_PlayerPreference);
     CreateNative("Multi1v1_IsHidingStats", Native_IsHidingStates);
+    CreateNative("Multi1v1_IsRoundTypeEnabled", Native_IsRoundTypeEnabled);
+    CreateNative("Multi1v1_EnableRoundType", Native_EnableRoundType);
+    CreateNative("Multi1v1_DisableRoundType", Native_DisableRoundType);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -375,11 +378,17 @@ public int Native_AddRoundType(Handle plugin, int numParams) {
     bool ranked = GetNativeCell(6);
     GetNativeString(7, ratingFieldName, sizeof(ratingFieldName));
 
+    // enabled may not be passed, default to true for backwards compatilibilty
+    bool enabled = true;
+    if (numParams >= 8) {
+        enabled = GetNativeCell(8);
+    }
+
     if (!ranked && !StrEqual(ratingFieldName, "")) {
         LogError("Warning: marked round type \"%s\" as unranked but passed rating field name \"%s\"", internalName, ratingFieldName);
     }
 
-    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName);
+    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName, enabled);
 }
 
 public int Native_ReturnMenuControl(Handle plugin, int numParams) {
@@ -434,4 +443,22 @@ public int Native_IsHidingStates(Handle plugin, int numParams) {
     int client = GetNativeCell(1);
     CHECK_CONNECTED(client);
     return g_HideStats[client];
+}
+
+public int Native_IsRoundTypeEnabled(Handle plugin, int numParams) {
+    int roundType = GetNativeCell(1);
+    CHECK_ROUNDTYPE(roundType);
+    return g_RoundTypeEnabled[roundType];
+}
+
+public int Native_EnableRoundType(Handle plugin, int numParams) {
+    int roundType = GetNativeCell(1);
+    CHECK_ROUNDTYPE(roundType);
+    g_RoundTypeEnabled[roundType] = true;
+}
+
+public int Native_DisableRoundType(Handle plugin, int numParams) {
+    int roundType = GetNativeCell(1);
+    CHECK_ROUNDTYPE(roundType);
+    g_RoundTypeEnabled[roundType] = false;
 }

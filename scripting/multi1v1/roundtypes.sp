@@ -20,6 +20,9 @@ public int GetRoundType(int arena, int client1, int client2) {
 
     ArrayList types = new ArrayList();
     for (int roundType = 0; roundType < g_numRoundTypes; roundType++) {
+        if (!g_RoundTypeEnabled[roundType])
+            continue;
+
         if (!g_RoundTypeOptional[roundType]) {
             AddRounds(types, client1, client2, roundType);
         } else {
@@ -64,7 +67,7 @@ static void AddRounds_CheckAllowed(ArrayList types, int client1, int client2, in
 
 public int AddRoundType(Handle pluginSource, const char[] displayName, const char[] internalName,
                         RoundTypeWeaponHandler weaponHandler, RoundTypeMenuHandler menuHandler,
-                        bool optional, bool ranked, const char[] ratingFieldName) {
+                        bool optional, bool ranked, const char[] ratingFieldName, bool enabled) {
 
     if (g_numRoundTypes >= MAX_ROUND_TYPES) {
         LogError("Tried to add new round when %d round types already added", MAX_ROUND_TYPES);
@@ -79,6 +82,7 @@ public int AddRoundType(Handle pluginSource, const char[] displayName, const cha
     g_RoundTypeOptional[g_numRoundTypes] = optional;
     g_RoundTypeRanked[g_numRoundTypes] = ranked;
     strcopy(g_RoundTypeFieldNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, ratingFieldName);
+    g_RoundTypeEnabled[g_numRoundTypes] = enabled;
     g_numRoundTypes++;
     return g_numRoundTypes - 1;
 }
@@ -105,7 +109,8 @@ public void ReturnMenuControl(int client) {
         if (roundType < g_numRoundTypes) {
 
             // if optional: give the menu to choose it, otherwise: carry on back to the controller
-            if (g_RoundTypeOptional[roundType]) {
+            // if disabled: always carry back to the controller
+            if (g_RoundTypeOptional[roundType] && g_RoundTypeEnabled[roundType]) {
                 GiveAllowMenu(client, roundType);
                 g_WaitingOnRoundAllow[client] = true;
             } else {
@@ -144,7 +149,6 @@ public int MenuHandler_AllowRoundType(Handle menu, MenuAction action, int param1
     }
 }
 
-
 static void GetRoundCookieName(int roundType, char[] buffer, int length) {
     Format(buffer, length, "multi1v1_allow%s", g_RoundTypeNames[roundType]);
 }
@@ -158,9 +162,9 @@ static void GetRoundCookieName(int roundType, char[] buffer, int length) {
  *************************/
 
 public void AddStandardRounds() {
-    AddRoundType(INVALID_HANDLE, "Rifle", "rifle", RifleHandler, Multi1v1_NullChoiceMenu, false, true, "rifleRating");
-    AddRoundType(INVALID_HANDLE, "Pistol", "pistol", PistolHandler, Multi1v1_NullChoiceMenu, true, true, "pistolRating");
-    AddRoundType(INVALID_HANDLE, "AWP", "awp", AwpHandler, Multi1v1_NullChoiceMenu, true, true, "awpRating");
+    AddRoundType(INVALID_HANDLE, "Rifle", "rifle", RifleHandler, Multi1v1_NullChoiceMenu, false, true, "rifleRating", true);
+    AddRoundType(INVALID_HANDLE, "Pistol", "pistol", PistolHandler, Multi1v1_NullChoiceMenu, true, true, "pistolRating", true);
+    AddRoundType(INVALID_HANDLE, "AWP", "awp", AwpHandler, Multi1v1_NullChoiceMenu, true, true, "awpRating", true);
 }
 
 public void RifleHandler(int client) {

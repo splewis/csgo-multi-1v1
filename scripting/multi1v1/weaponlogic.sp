@@ -138,6 +138,10 @@ public void GivePreferenceMenu(int client) {
 
     int count = 0;
     for (int i = 0; i < g_numRoundTypes; i++) {
+        if (!g_RoundTypeEnabled[i]) {
+            continue;
+        }
+
         if (g_AllowedRoundTypes[client][i] || !g_RoundTypeOptional[i]) {
             count++;
             char buffer[128];

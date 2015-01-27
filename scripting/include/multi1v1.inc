@@ -335,6 +335,7 @@ typedef RoundTypeMenuHandler = function void (int client);
  * @param ranked Whether those rounds count toward player ratings
  * @param ratingFieldName Name of the field for round-type specific rating updates
  *                        leave as the empty string for no round-type specific rating
+ * @param enabled Whether the round type should be considered enabled or not.
  * @error If the number of round types registered exceeds the max allowed round types.
  * @return the unique int identifier for the round type (an index into an internal array)
  */
@@ -344,7 +345,8 @@ native int Multi1v1_AddRoundType(const char[] displayName,
                                  RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
                                  bool optional=true,
                                  bool ranked=false,
-                                 const char[] ratingFieldName="");
+                                 const char[] ratingFieldName="",
+                                 bool enabled=true);
 /**
  * Clears all registered round types.
  *
@@ -378,6 +380,10 @@ native void Multi1v1_ReturnMenuControl(int client);
 public void Multi1v1_NullChoiceMenu(int client) {
     Multi1v1_ReturnMenuControl(client);
 }
+
+native bool Multi1v1_IsRoundTypeEnabled(int roundType);
+native void Multi1v1_EnableRoundType(int roundType);
+native void Multi1v1_DisableRoundType(int roundType);
 
 /**
  * Returns the current round type in an arena.
@@ -468,5 +474,8 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_PlayerAllowsRoundType");
     MarkNativeAsOptional("Multi1v1_PlayerPreference");
     MarkNativeAsOptional("Multi1v1_IsHidingStats");
+    MarkNativeAsOptional("Multi1v1_IsRoundTypeEnabled");
+    MarkNativeAsOptional("Multi1v1_EnableRoundType");
+    MarkNativeAsOptional("Multi1v1_DisableRoundType");
 }
 #endif
