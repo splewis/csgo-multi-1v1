@@ -88,13 +88,13 @@ public int Native_GetRating(Handle plugin, int numParams) {
     CHECK_CONNECTED(client);
 
     if (roundType < 0) {
-        return _:g_Rating[client];
+        return view_as<int>(g_Rating[client]);
     } else {
         CHECK_ROUNDTYPE(roundType);
         if (g_RoundTypeRanked[roundType])
             ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not ranked", roundType);
 
-        return _:g_RoundTypeRating[client][roundType];
+        return view_as<int>(g_RoundTypeRating[client][roundType]);
     }
 }
 
@@ -169,9 +169,9 @@ public int Native_HasDatabase(Handle plugin, int numParams) {
 public int Native_GetDatabase(Handle plugin, int numParams) {
     if (!Multi1v1_HasDatabase()) {
         ThrowNativeError(SP_ERROR_PARAM, "The multi1v1 database is not connected");
-        return _:INVALID_HANDLE;
+        return view_as<int>(INVALID_HANDLE);
     } else {
-        return _:CloneHandle(db, plugin);
+        return view_as<int>(CloneHandle(db, plugin));
     }
 }
 
@@ -289,15 +289,15 @@ public int Native_ELORatingDelta(Handle plugin, int numParams) {
     float pWinner = 1.0 / (1.0 +  Pow(10.0, (loser_rating - winner_rating)  / DISTRIBUTION_SPREAD));
     float pLoser = 1.0 - pWinner;
     float winner_delta = K * pLoser;
-    return _:winner_delta;
+    return view_as<int>(winner_delta);
 }
 
 public int Native_GetNumSpawnsInArena(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     CHECK_ARENA(arena);
 
-    Handle ct = Handle:GetArrayCell(g_hCTSpawns, arena);
-    Handle t = Handle:GetArrayCell(g_hTSpawns, arena);
+    Handle ct = view_as<Handle>(GetArrayCell(g_hCTSpawns, arena));
+    Handle t = view_as<Handle>(GetArrayCell(g_hTSpawns, arena));
     return Math_Min(GetArraySize(ct), GetArraySize(t));
 }
 
@@ -314,11 +314,11 @@ public int Native_GetArenaSpawn(Handle plugin, int numParams) {
     Handle spawns;
     Handle angles;
     if (team == CS_TEAM_CT) {
-        spawns = Handle:GetArrayCell(g_hCTSpawns, arena - 1);
-        angles = Handle:GetArrayCell(g_hCTAngles, arena - 1);
+        spawns = view_as<Handle>(GetArrayCell(g_hCTSpawns, arena - 1));
+        angles = view_as<Handle>(GetArrayCell(g_hCTAngles, arena - 1));
     } else {
-        spawns = Handle:GetArrayCell(g_hTSpawns, arena - 1);
-        angles = Handle:GetArrayCell(g_hTAngles, arena - 1);
+        spawns = view_as<Handle>(GetArrayCell(g_hTSpawns, arena - 1));
+        angles = view_as<Handle>(GetArrayCell(g_hTAngles, arena - 1));
     }
 
     int count = GetArraySize(spawns);
@@ -372,8 +372,8 @@ public int Native_AddRoundType(Handle plugin, int numParams) {
         }
     }
 
-    RoundTypeWeaponHandler weaponHandler = RoundTypeWeaponHandler:GetNativeFunction(3);
-    RoundTypeMenuHandler menuHandler = RoundTypeMenuHandler:GetNativeFunction(4);
+    RoundTypeWeaponHandler weaponHandler = view_as<RoundTypeWeaponHandler>(GetNativeFunction(3));
+    RoundTypeMenuHandler menuHandler = view_as<RoundTypeMenuHandler>(GetNativeFunction(4));
     bool optional = GetNativeCell(5);
     bool ranked = GetNativeCell(6);
     GetNativeString(7, ratingFieldName, sizeof(ratingFieldName));

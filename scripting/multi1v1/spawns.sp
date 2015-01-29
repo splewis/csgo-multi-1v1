@@ -112,8 +112,8 @@ public void Spawns_MapStart() {
 
 static void AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleList) {
     for (int i = 0; i < GetArraySize(spawnList); i++) {
-        Handle spawns = Handle:GetArrayCell(spawnList, i);
-        Handle angles = Handle:GetArrayCell(angleList, i);
+        Handle spawns = view_as<Handle>(GetArrayCell(spawnList, i));
+        Handle angles = view_as<Handle>(GetArrayCell(angleList, i));
         int closestIndex = NearestNeighborIndex(spawn, spawns);
 
         if (closestIndex >= 0) {

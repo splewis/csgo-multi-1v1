@@ -14,7 +14,7 @@
 #include "include/updater.inc"
 
 #pragma semicolon 1
-
+#pragma newdecls required
 
 
 /***********************
@@ -151,7 +151,7 @@ Handle g_hOnStatsCached = INVALID_HANDLE;
  *                     *
  ***********************/
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "CS:GO Multi1v1",
     author = "splewis",
     description = "Multi-arena 1v1 laddering",
