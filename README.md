@@ -1,7 +1,7 @@
 csgo-multi-1v1
 =======================================
 
-[![Build Status](https://travis-ci.org/splewis/csgo-multi-1v1.svg)](https://travis-ci.org/splewis/csgo-multi-1v1)
+[![Build status](http://ci.splewis.net/job/csgo-multi-1v1/badge/icon)](http://ci.splewis.net/job/csgo-multi-1v1/)
 
 This is home of my CS:GO [Sourcemod](sourcemod.net) multi-1v1 arena plugin. Simply put: it sets up any number of players in 1v1-situations on specially made maps and they fight in a ladder-type system. The winners move up, the losers go down.
 
