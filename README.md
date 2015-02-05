@@ -45,7 +45,6 @@ You may also download the [latest development build](http://ci.splewis.net/job/c
 
 **Only Sourcemod 1.7 is supported.** Releases are compiled using the 1.7 compiler and will not work on a server using an older version.
 
-If you must use sourcemod 1.6, you will have to use [0.5.2](https://github.com/splewis/csgo-multi-1v1/releases/tag/0.5.2).
 
 #### Instructions
 Download the archive and extract the files to the game server. From the download, you should have installed the following (to the ``csgo`` directory):

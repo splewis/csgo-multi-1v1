@@ -1,4 +1,4 @@
 #tryinclude "../include/multi1v1_version.inc"
 #if !defined PLUGIN_VERSION
-#define PLUGIN_VERSION "1.0.0-dev"
+#define PLUGIN_VERSION "1.0.0"
 #endif

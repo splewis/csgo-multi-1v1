@@ -1,4 +1,4 @@
-dev:
+1.0.0:
  - **move to sourcemod 1.7 transitional syntax and API**
  - weapon lists are now stored in configs/multi1v1_weapons.cfg rather than hardcoded into the plugin
  - new cvars: ``sm_multi1v1_exec_default_config``, ``sm_multi1v1_db_name``, ``sm_multi1v1_pistol_behavior``, ``sm_multi1v1_default_pistol``, ``sm_multi1v1_database_server_id`` (I **strongly** suggest deleting cfg/multi1v1/multi1v1.cfg and letting it be regenerated)
@@ -18,7 +18,6 @@ dev:
  - the format for ``sm_multi1v1_stats_url`` has changed, use {USER} and {SERVER} directly in your cvar, and they will get replaced with the appropriate values (remember this cvar is part of ``multi1v1_online_stats_viewer`` rather than the base ``multi1v1`` plugin now)
  - new client command: ``sm_hidestats`` will hide any stats-related messages from being printed into chat to a player (it toggles on/off)
  - round types can be determined and changed at runtime, see [multi1v1.inc](scripting/include/multi1v1.inc) include
-
 
 0.5.2:
  - correct bug where spawn clustering were not being paired together correctly
