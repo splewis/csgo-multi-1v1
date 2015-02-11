@@ -18,9 +18,7 @@ Also see the [AlliedModders thread](https://forums.alliedmods.net/showthread.php
 - ELO ranking system: optionally, player statistics can be stored in a database, see below for details
 
 ## For plugin developers
-Work to make the plugin extensible is currently underway (and **not released**). For a preview, check [multi1v1.inc](scripting/include/multi1v1.inc).
-
-Though there may seem to a lot of natives, I've found some use from almost all of them. Most were added to meet a specific need.
+Check the [multi1v1.inc](scripting/include/multi1v1.inc) file to see what natives and forwards are avaliable to tweak the behavior of the plugin in more sophisticated ways.
 
 
 ## Extra plugins
