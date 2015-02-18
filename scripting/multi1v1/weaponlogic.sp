@@ -190,7 +190,7 @@ public void FinishGunsMenu(int client) {
  * Primary weapon choice menu.
  */
 public void RifleChoiceMenu(int client) {
-    if (GetConVarInt(g_hRifleMenu) == 0) {
+    if (g_hRifleMenu.IntValue == 0) {
         PistolChoiceMenu(client);
     } else {
         Handle menu = CreateMenu(MenuHandler_RifleChoice);
@@ -223,7 +223,7 @@ public int MenuHandler_RifleChoice(Handle menu, MenuAction action, int param1, i
  * Displays pistol menu to a player
  */
 public void PistolChoiceMenu(int client) {
-    if (GetConVarInt(g_hPistolMenu) == 0) {
+    if (g_hPistolMenu.IntValue == 0) {
         ReturnMenuControl(client);
     } else {
         Handle menu = CreateMenu(MenuHandler_PistolChoice);
@@ -276,7 +276,7 @@ public void UpdatePreferencesOnCookies(int client) {
 
     // This checks if the player has a preference set
     // By not having one set, we can conclude the client has never selected anything in the guns menu
-    if (!StrEqual(cookieValue, "") && GetConVarInt(g_hAutoGunsMenuBehavior) == 1) {
+    if (!StrEqual(cookieValue, "") && g_hAutoGunsMenuBehavior.IntValue == 1) {
         g_GivenGunsMenu[client] = true;
     }
 }

@@ -163,7 +163,7 @@ public int Native_GetOpponent(Handle plugin, int numParams) {
 }
 
 public int Native_HasDatabase(Handle plugin, int numParams) {
-    return GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected && db != INVALID_HANDLE;
+    return g_hUseDatabase.IntValue != 0 && g_dbConnected && db != INVALID_HANDLE;
 }
 
 public int Native_GetDatabase(Handle plugin, int numParams) {
@@ -203,7 +203,7 @@ public int Native_Multi1v1Message(Handle plugin, int numParams) {
     FormatNativeString(0, 2, 3, sizeof(buffer), bytesWritten, buffer);
     char finalMsg[1024];
 
-    if (GetConVarInt(g_hUseChatPrefix) == 0)
+    if (g_hUseChatPrefix.IntValue == 0)
         Format(finalMsg, sizeof(finalMsg), " %s", buffer);
     else
         Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
@@ -221,7 +221,7 @@ public int Native_Multi1v1MessageToAll(Handle plugin, int numParams) {
             FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
             char finalMsg[1024];
 
-            if (GetConVarInt(g_hUseChatPrefix) == 0)
+            if (g_hUseChatPrefix.IntValue == 0)
                 Format(finalMsg, sizeof(finalMsg), " %s", buffer);
             else
                 Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);

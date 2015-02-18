@@ -4,8 +4,9 @@
 #include "multi1v1/version.sp"
 
 #pragma semicolon 1
+#pragma newdecls required
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "CS:GO Multi1v1: knife round addon",
     author = "splewis",
     description = "Adds an unranked knife round-type",

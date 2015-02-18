@@ -50,7 +50,7 @@ public int GetRoundType(int arena, int client1, int client2) {
 static void AddRounds(ArrayList types, int client1, int client2, int roundType) {
     int weight = 1;
 
-    int prefWeight = GetConVarInt(g_hPreferenceWeight);
+    int prefWeight = g_hPreferenceWeight.IntValue;
     if (g_Preference[client1] == roundType)
         weight += prefWeight;
     if (g_Preference[client2] == roundType)
@@ -173,7 +173,7 @@ public void RifleHandler(int client) {
     Client_SetHelmet(client, true);
     Client_SetArmor(client, 100);
 
-    int pistolBehavior = GetConVarInt(g_hPistolBehavior);
+    int pistolBehavior = g_hPistolBehavior.IntValue;
     if (pistolBehavior != 1) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
     }
@@ -198,12 +198,12 @@ public void AwpHandler(int client) {
     GiveWeapon(client, "weapon_awp");
     Client_SetHelmet(client, true);
 
-    int pistolBehavior = GetConVarInt(g_hPistolBehavior);
+    int pistolBehavior = g_hPistolBehavior.IntValue;
     if (pistolBehavior == 0) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
     } else if (pistolBehavior == 2 || pistolBehavior == 3) {
         char defaultPistol[32];
-        GetConVarString(g_hDefaultPistol, defaultPistol, sizeof(defaultPistol));
+        g_hDefaultPistol.GetString(defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
     }
     GiveWeapon(client, "weapon_knife");

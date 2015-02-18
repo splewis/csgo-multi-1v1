@@ -18,7 +18,7 @@ char g_TableFormat[][] = {
 public void DB_Connect() {
     char error[255];
     char dbCfgName[255];
-    GetConVarString(g_hDatabaseName, dbCfgName, sizeof(dbCfgName));
+    g_hDatabaseName.GetString(dbCfgName, sizeof(dbCfgName));
     db = SQL_Connect(dbCfgName, true, error, sizeof(error));
     if (db == INVALID_HANDLE) {
         g_dbConnected = false;
@@ -81,7 +81,7 @@ public void DB_AddPlayer(int client) {
             return;
         }
 
-        int serverID = GetConVarInt(g_hDatabaseServerId);
+        int serverID = g_hDatabaseServerId.IntValue;
 
         // insert if not already in the table
         char query[1024];
@@ -118,7 +118,7 @@ public void Callback_Insert(Handle owner, Handle hndl, const char[] error, int s
             }
 
             // update the player name and last connect time
-            int serverID = GetConVarInt(g_hDatabaseServerId);
+            int serverID = g_hDatabaseServerId.IntValue;
             char query[1024];
             Format(query, sizeof(query),
                    "UPDATE %s SET name = '%s', lastTime = %d WHERE accountID = %d AND serverID = %d",
@@ -136,7 +136,7 @@ public void DB_FetchRatings(int client) {
     if (db != INVALID_HANDLE && IsConnected(client)) {
         int id = GetSteamAccountID(client);
         if (id != 0) {
-            int serverID = GetConVarInt(g_hDatabaseServerId);
+            int serverID = g_hDatabaseServerId.IntValue;
 
             char roundTypeRatings[1024] = "";
             int count = 0;
@@ -195,7 +195,7 @@ public void Callback_FetchRating(Handle owner, Handle hndl, const char[] error, 
  */
 public void DB_WriteRatings(int client) {
     if (g_FetchedPlayerInfo[client] && IsPlayer(client)) {
-        int serverID = GetConVarInt(g_hDatabaseServerId);
+        int serverID = g_hDatabaseServerId.IntValue;
 
         char roundTypeRatings[1024] = "";
 
@@ -221,7 +221,7 @@ public void DB_WriteRatings(int client) {
  * a winner/loser pair.
  */
 public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
-    if (IsPlayer(winner) && IsPlayer(loser) && GetConVarInt(g_hUseDatabase) != 0) {
+    if (IsPlayer(winner) && IsPlayer(loser) && g_hUseDatabase.IntValue != 0) {
         // TODO: this is a temporary band-aid for the first round ending
         //  too early sometimes and unfairly punishes early connectors
         if (forceLoss && g_totalRounds <= 3) {
@@ -257,7 +257,7 @@ public void Increment(int client, const char[] field) {
     if (db != INVALID_HANDLE && IsPlayer(client)) {
         int id = GetSteamAccountID(client);
         if (id >= 1) {
-            int serverid = GetConVarInt(g_hDatabaseServerId);
+            int serverid = g_hDatabaseServerId.IntValue;
             char query[1024];
             Format(query, sizeof(query),
                 "UPDATE %s SET %s = %s + 1 WHERE accountID = %d AND serverID = %d",

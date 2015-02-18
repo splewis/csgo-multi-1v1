@@ -3,11 +3,12 @@
 #include "multi1v1/version.sp"
 
 #pragma semicolon 1
+#pragma newdecls required
 
-Handle g_hStatsWebsite = INVALID_HANDLE;
-Handle g_hStatsTop = INVALID_HANDLE;
+ConVar g_hStatsWebsite;
+ConVar g_hStatsTop;
 
-public Plugin:myinfo = {
+public Plugin myinfo = {
     name = "CS:GO Multi1v1: online stats viewer",
     author = "splewis",
     description = "Opens up a motd-style panel for players to view their 1v1 stats",
@@ -42,7 +43,7 @@ public Action Command_Stats(int client, int args) {
 
 public Action Command_Top(int client, int args) {
     char url[255];
-    GetConVarString(g_hStatsTop, url, sizeof(url));
+    g_hStatsTop.GetString(url, sizeof(url));
     if (StrEqual(url, "")) {
         Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
         return Plugin_Handled;
@@ -65,7 +66,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void ShowStatsForPlayer(int client, int target) {
     char url[255];
-    GetConVarString(g_hStatsWebsite, url, sizeof(url));
+    g_hStatsWebsite.GetString(url, sizeof(url));
     if (StrEqual(url, "")) {
         Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
         return;

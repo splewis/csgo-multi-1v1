@@ -32,25 +32,25 @@
 #define WEAPON_LENGTH 32
 
 /** ConVar handles **/
-Handle g_hAutoGunsMenuBehavior = INVALID_HANDLE;
-Handle g_hAutoUpdate = INVALID_HANDLE;
-Handle g_hBlockRadio = INVALID_HANDLE;
-Handle g_hDatabaseName = INVALID_HANDLE;
-Handle g_hDatabaseServerId = INVALID_HANDLE;
-Handle g_hDefaultPistol = INVALID_HANDLE;
-Handle g_hExecDefaultConfig = INVALID_HANDLE;
-Handle g_hHideGunsChatCommands = INVALID_HANDLE;
-Handle g_hPistolBehavior = INVALID_HANDLE;
-Handle g_hPistolMenu = INVALID_HANDLE;
-Handle g_hPreferenceWeight = INVALID_HANDLE;
-Handle g_hRifleMenu = INVALID_HANDLE;
-Handle g_hRoundTime = INVALID_HANDLE;
-Handle g_hUseChatPrefix = INVALID_HANDLE;
-Handle g_hUseDatabase = INVALID_HANDLE;
-Handle g_hUseMVPStars = INVALID_HANDLE;
-Handle g_hUseTeamTags = INVALID_HANDLE;
-Handle g_hVerboseSpawnModes = INVALID_HANDLE;
-Handle g_hVersion = INVALID_HANDLE;
+ConVar g_hAutoGunsMenuBehavior;
+ConVar g_hAutoUpdate;
+ConVar g_hBlockRadio;
+ConVar g_hDatabaseName;
+ConVar g_hDatabaseServerId;
+ConVar g_hDefaultPistol;
+ConVar g_hExecDefaultConfig;
+ConVar g_hHideGunsChatCommands;
+ConVar g_hPistolBehavior;
+ConVar g_hPistolMenu;
+ConVar g_hPreferenceWeight;
+ConVar g_hRifleMenu;
+ConVar g_hRoundTime;
+ConVar g_hUseChatPrefix;
+ConVar g_hUseDatabase;
+ConVar g_hUseMVPStars;
+ConVar g_hUseTeamTags;
+ConVar g_hVerboseSpawnModes;
+ConVar g_hVersion;
 
 /** Saved data for database interaction - be careful when using these, they may not
  *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
@@ -220,13 +220,13 @@ public void OnPluginStart() {
 
     g_waitingQueue = Queue_Init();
 
-    if (GetConVarInt(g_hAutoUpdate) != 0) {
+    if (g_hAutoUpdate.IntValue != 0) {
         AddUpdater();
     }
 }
 
 public void OnLibraryAdded(const char[] name) {
-    if (GetConVarInt(g_hAutoUpdate) != 0) {
+    if (g_hAutoUpdate.IntValue != 0) {
         AddUpdater();
     }
 }
@@ -259,12 +259,12 @@ public void OnMapStart() {
         g_ArenaLosers[i] = -1;
     }
 
-    if (GetConVarInt(g_hExecDefaultConfig) != 0) {
+    if (g_hExecDefaultConfig.IntValue != 0) {
         ServerCommand("exec gamemode_competitive.cfg");
     }
     ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
 
-    if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
+    if (!g_dbConnected && g_hUseDatabase.IntValue != 0) {
         DB_Connect();
     }
 }
@@ -274,7 +274,7 @@ public void OnMapEnd() {
 }
 
 public void OnClientAuthorized(int client, const char[] auth) {
-    if (!StrEqual(auth, "BOT") && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
+    if (!StrEqual(auth, "BOT") && g_hUseDatabase.IntValue != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
 }
@@ -284,7 +284,7 @@ public void OnClientConnected(int client) {
 }
 
 public void OnClientDisconnect(int client) {
-    if (GetConVarInt(g_hUseDatabase) != 0)
+    if (g_hUseDatabase.IntValue != 0)
         DB_WriteRatings(client);
 
     Queue_Drop(g_waitingQueue, client);
@@ -498,11 +498,11 @@ public Action Event_OnRoundPostStart(Handle event, const char[] name, bool dontB
     }
 
     // round time is bu a special cvar since mp_roundtime has a lower bound of 1 minutes
-    GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTime), 4, 0, true);
+    GameRules_SetProp("m_iRoundTime", g_hRoundTime.IntValue, 4, 0, true);
 
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
-    if (GetConVarInt(g_hUseDatabase) != 0) {
+    if (g_hUseDatabase.IntValue != 0) {
         if (!g_dbConnected)
             DB_Connect();
         if (g_dbConnected) {
@@ -560,10 +560,10 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
     char buffer[32];
     Format(buffer, sizeof(buffer), "%T", "ArenaClanTag", LANG_SERVER, arena - g_arenaOffsetValue);
 
-    if (GetConVarInt(g_hUseTeamTags) != 0)
+    if (g_hUseTeamTags.IntValue != 0)
         CS_SetClientClanTag(client, buffer);
 
-    if (GetConVarInt(g_hUseMVPStars) != 0)
+    if (g_hUseMVPStars.IntValue != 0)
         CS_SetMVPCount(client, g_RoundsLeader[client]);
 
     Call_StartForward(g_hAfterPlayerSetup);
@@ -725,7 +725,7 @@ public Action Command_TeamJoin(int client, const char[] command, int argc) {
         return Plugin_Handled;
 
     // auto-give the guns menu if desired
-    if (GetConVarInt(g_hAutoGunsMenuBehavior) != 0 && !g_GivenGunsMenu[client]) {
+    if (g_hAutoGunsMenuBehavior.IntValue != 0 && !g_GivenGunsMenu[client]) {
         GiveWeaponMenu(client);
     }
 
@@ -747,7 +747,7 @@ public Action Command_TeamJoin(int client, const char[] command, int argc) {
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         int arena = g_Ranking[client];
         UpdateArena(arena, client);
-        if (GetConVarInt(g_hUseTeamTags) != 0)
+        if (g_hUseTeamTags.IntValue != 0)
             CS_SetClientClanTag(client, "");
 
     } else {
@@ -765,7 +765,7 @@ public Action Command_TeamJoin(int client, const char[] command, int argc) {
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
     // To avoid cluttering up chat, these commands are hidden
     char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns", "gnus" };
-    bool block = (GetConVarInt(g_hHideGunsChatCommands) != 0);
+    bool block = (g_hHideGunsChatCommands.IntValue != 0);
     Action ret = block ? Plugin_Handled : Plugin_Continue;
 
     for (int i = 0; i < sizeof(gunsChatCommands); i++) {
@@ -884,7 +884,7 @@ public Action Timer_CheckRoundComplete(Handle timer) {
         freezeTimeLength = GetConVarInt(freezeTimeVar);
     }
 
-    int maxRoundLength = GetConVarInt(g_hRoundTime) + freezeTimeLength;
+    int maxRoundLength = g_hRoundTime.IntValue + freezeTimeLength;
     int elapsedTime =  GetTime() - g_roundStartTime;
 
     bool roundTimeExpired = elapsedTime >= maxRoundLength && nPlayers >= 2;

@@ -13,7 +13,7 @@ public void Spawns_MapStart() {
     g_hCTSpawns = CreateArray();
     g_hCTAngles = CreateArray();
 
-    bool verbose = GetConVarInt(g_hVerboseSpawnModes) != 0;
+    bool verbose = g_hVerboseSpawnModes.IntValue != 0;
 
     int maxEnt = GetMaxEntities();
     char sClassName[64];
