@@ -341,7 +341,7 @@ typedef RoundTypeMenuHandler = function void (int client);
  */
 native int Multi1v1_AddRoundType(const char[] displayName,
                                  const char[] internalName,
-                                 RoundTypeWeaponHandler weaponsHandler,
+                                 RoundTypeWeaponHandler weaponsHandler=Multi1v1_NullWeaponHandler,
                                  RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
                                  bool optional=true,
                                  bool ranked=false,
@@ -376,7 +376,11 @@ native int Multi1v1_GetRoundTypeIndex(const char[] internalName);
  */
 native void Multi1v1_ReturnMenuControl(int client);
 
-// Helper function to ass as a mneuHandler when the client doesn't have any choices to make.
+// Helper null callback for round types that don't need to give players weapons on spawn.
+public void Multi1v1_NullWeaponHandler(int client) {
+}
+
+// Helper null callback for round types that don't need a special menu created.
 public void Multi1v1_NullChoiceMenu(int client) {
     Multi1v1_ReturnMenuControl(client);
 }
