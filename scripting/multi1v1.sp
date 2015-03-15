@@ -31,7 +31,10 @@
 #define TABLE_NAME "multi1v1_stats"
 #define WEAPON_LENGTH 32
 
-/** ConVar handles **/
+/** ConVars **/
+ConVar g_EnabledCvar;
+bool g_Enabled = true;
+
 ConVar g_hAutoGunsMenuBehavior;
 ConVar g_hAutoUpdate;
 ConVar g_hBlockRadio;
@@ -164,6 +167,7 @@ public void OnPluginStart() {
     LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
+    g_EnabledCvar = CreateConVar("sm_multi1v1_enabled", "1", "Whether the multi1v1 gamemode is enabled or not");
     g_hAutoGunsMenuBehavior = CreateConVar("sm_multi1v1_menu_open_behavior", "0", "Determines auto-open behavior of the guns menu. 0=never auto-open, 1=open if the client has no preference cookies saved, 2=always open on client connect");
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to auto-update. Requies the \"Updater\" plugin");
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
@@ -183,6 +187,8 @@ public void OnPluginStart() {
     g_hUseTeamTags = CreateConVar("sm_multi1v1_use_team_tags", "1", "Whether the team (or clan) tag is updated to reflect a player's arena numbers");
     g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin");
 
+    HookConVarChange(g_EnabledCvar, EnabledChanged);
+
     /** Config file **/
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
 
@@ -201,7 +207,7 @@ public void OnPluginStart() {
     HookEvent("cs_win_panel_match", Event_MatchOver);
 
     /** Commands **/
-    AddCommandListener(Command_TeamJoin, "jointeam");
+    AddCommandListener(Command_JoinTeam, "jointeam");
     AddRadioCommandListeners();
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
     RegConsoleCmd("sm_hidestats", Command_Hidestats, "Hides player stats/ratings");
@@ -222,6 +228,41 @@ public void OnPluginStart() {
 
     if (g_hAutoUpdate.IntValue != 0) {
         AddUpdater();
+    }
+}
+
+public int EnabledChanged(Handle cvar, const char[] oldValue, const char[] newValue) {
+    bool wasEnabled = !StrEqual(oldValue, "0");
+    g_Enabled = !StrEqual(newValue, "0");
+
+    if (wasEnabled && !g_Enabled) {
+        for (int i = 1; i <= MaxClients; i++) {
+            if (!IsPlayer(i))
+                continue;
+
+            if (g_hUseTeamTags.IntValue != 0)
+                CS_SetClientClanTag(i, "");
+
+            if (g_hUseMVPStars.IntValue != 0)
+                CS_SetMVPCount(i, 0);
+
+            CS_SetClientContributionScore(i, 0);
+        }
+
+
+    } else if (!wasEnabled && g_Enabled) {
+        Queue_Clear(g_waitingQueue);
+        ExecConfigs();
+        for (int i = 1; i <= MaxClients; i++)  {
+            if (IsClientConnected(i) && !IsFakeClient(i)) {
+                OnClientConnected(i);
+                if (IsActivePlayer(i)) {
+                    SwitchPlayerTeam(i, CS_TEAM_SPECTATOR);
+                    Queue_Enqueue(g_waitingQueue, i);
+                }
+
+            }
+        }
     }
 }
 
@@ -259,18 +300,23 @@ public void OnMapStart() {
         g_ArenaLosers[i] = -1;
     }
 
-    if (g_hExecDefaultConfig.IntValue != 0) {
-        ServerCommand("exec gamemode_competitive.cfg");
-    }
-    ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
-
     if (!g_dbConnected && g_hUseDatabase.IntValue != 0) {
         DB_Connect();
     }
+
+    if (g_Enabled)
+        ExecConfigs();
 }
 
 public void OnMapEnd() {
     Spawns_MapEnd();
+}
+
+public void ExecConfigs() {
+    if (g_hExecDefaultConfig.IntValue != 0) {
+        ServerCommand("exec gamemode_competitive.cfg");
+    }
+    ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
 }
 
 public void OnClientAuthorized(int client, const char[] auth) {
@@ -314,6 +360,9 @@ public int OnClientCookiesCached(int client) {
  * put on that team and spawned, so we can't allow that.
  */
 public Action Event_OnFullConnect(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
 }
@@ -322,6 +371,9 @@ public Action Event_OnFullConnect(Handle event, const char[] name, bool dontBroa
  * Silences team join/switch events.
  */
 public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
     dontBroadcast = true;
     return Plugin_Changed;
 }
@@ -330,6 +382,9 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
  * Round pre-start, sets up who goes in which arena for this round.
  */
 public Action Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     g_roundStartTime = GetTime();
 
     // Here we add each player to the queue in their new ranking
@@ -472,6 +527,9 @@ public void AddPlayer(int client, Handle rankingQueue) {
  * Round poststart - puts players in their arena and gives them weapons.
  */
 public Action Event_OnRoundPostStart(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     g_roundFinished = false;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
         g_ArenaWinners[arena] = -1;
@@ -579,6 +637,9 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
  *  - updates globals g_Ranking, g_ArenaPlayer1, g_ArenaPlayer2 for the next round setup
  */
 public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     g_totalRounds++;
     g_roundFinished = true;
 
@@ -621,6 +682,9 @@ public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadca
  * Player death event, updates g_arenaWinners/g_arenaLosers for the arena that was just decided.
  */
 public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     int victim = GetClientOfUserId(GetEventInt(event, "userid"));
     int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     int arena = g_Ranking[victim];
@@ -674,6 +738,9 @@ public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroa
  * Warning: do NOT assume this is called before or after the round start event!
  */
 public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     if (!IsActivePlayer(client))
         return;
@@ -698,6 +765,9 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 
 
 public Action Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     int maxClient = -1;
     int maxScore = -1;
     for (int i = 1; i <= MaxClients; i++) {
@@ -724,7 +794,10 @@ public Action Event_MatchOver(Handle event, const char[] name, bool dontBroadcas
 /**
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
-public Action Command_TeamJoin(int client, const char[] command, int argc) {
+public Action Command_JoinTeam(int client, const char[] command, int argc) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
     if (!IsValidClient(client))
         return Plugin_Handled;
 
@@ -767,6 +840,9 @@ public Action Command_TeamJoin(int client, const char[] command, int argc) {
  * Hook for player chat actions, gives player the guns menu.
  */
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
     // To avoid cluttering up chat, these commands are hidden
     char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns", "gnus" };
     bool block = (g_hHideGunsChatCommands.IntValue != 0);
@@ -783,11 +859,17 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 /** sm_guns command **/
 public Action Command_Guns(int client, int args) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
     GiveWeaponMenu(client);
     return Plugin_Handled;
 }
 
 public Action Command_Hidestats(int client, int args) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
     g_HideStats[client] = !g_HideStats[client];
     if (g_HideStats[client]) {
         Multi1v1_Message(client, "%t", "HideStats");
