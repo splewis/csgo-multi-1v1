@@ -1,6 +1,9 @@
 #include <sourcemod>
 #include "include/multi1v1.inc"
+#include "include/logdebug.inc"
+
 #include "multi1v1/version.sp"
+#include "multi1v1/generic.sp"
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -17,6 +20,7 @@ public Plugin myinfo = {
 };
 
 public void OnPluginStart() {
+    InitDebugLog(DEBUG_CVAR, "statsview");
     LoadTranslations("common.phrases");
     g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}.");
     g_hStatsTop = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL");
@@ -48,6 +52,8 @@ public Action Command_Top(int client, int args) {
         Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
         return Plugin_Handled;
     }
+
+    LogDebug("Giving top url %s to player %L", url, client);
     ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
     QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
 
@@ -88,6 +94,8 @@ public void ShowStatsForPlayer(int client, int target) {
         ReplaceString(url, sizeof(url), "{SID}", serverIDString, false);
         ReplaceString(url, sizeof(url), "{SERVER}", serverIDString, false);
         ReplaceString(url, sizeof(url), "{SERVERID}", serverIDString, false);
+        LogDebug("Giving stats url %s to player %L, target = %L", url, client, target);
+
         ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
         QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
     }

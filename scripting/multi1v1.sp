@@ -9,6 +9,7 @@
 
 #include "include/queue.inc"
 #include "include/multi1v1.inc"
+#include "include/logdebug.inc"
 
 #undef REQUIRE_PLUGIN
 #include "include/updater.inc"
@@ -163,6 +164,7 @@ public Plugin myinfo = {
 };
 
 public void OnPluginStart() {
+    InitDebugLog(DEBUG_CVAR, "multi1v1");
     LoadTranslations("common.phrases");
     LoadTranslations("multi1v1.phrases");
 
