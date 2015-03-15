@@ -680,7 +680,10 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 
     int arena = g_Ranking[client];
     if (arena < 1) {
-        LogError("%L had arena %d on player spawn event", client, arena);
+        LogError("%L had arena %d on player spawn event, switching to queue/spec", client, arena);
+        Queue_Enqueue(g_waitingQueue, client);
+        SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
+        return;
     }
 
     int roundType = (arena == -1) ? 0 : g_roundTypes[arena];
@@ -690,6 +693,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
     Call_StartForward(g_hAfterPlayerSpawn);
     Call_PushCell(client);
     Call_Finish();
+    return;
 }
 
 
