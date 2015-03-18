@@ -92,6 +92,22 @@ forward void Multi1v1_OnRoundTypesAdded();
 forward void Multi1v1_OnRoundTypeDecided(int arena, int player1, int player2, int& roundType);
 
 /**
+ * Called each map start after spawns have been read from the map and
+ * partitioned into arenas.
+ * @param cOrigins Counter-Terrorist spawn points
+ * @param ctOrigins Counter-Terrorist spawn angles
+ * @param tOrigins Terrorist spawn points
+ * @param tOrigins Terrorist spawn angles
+ *
+ * @note Each of the ArrayList parameters is an ArrayList of ArrayLists of 3-vectors, where each internal
+ *       list is representing the spawns for an arena. To put it another way,
+ *       they have type ArrayList<ArrayList<float[3]>>
+ *
+ * @noreturn
+*/
+forward void Multi1v1_OnSpawnsFound(ArrayList ctOrigins, ArrayList ctAngles, ArrayList tOrigins, ArrayList tAngles);
+
+/**
  * Returns if a player is actively in an arena.
  *
  * @param client Player's index.

@@ -82,6 +82,13 @@ public void Spawns_MapStart() {
         takenTSpawns[i] = true;
     }
 
+    Call_StartForward(g_hOnSpawnsFound);
+    Call_PushCell(g_hCTSpawns);
+    Call_PushCell(g_hCTAngles);
+    Call_PushCell(g_hTSpawns);
+    Call_PushCell(g_hTAngles);
+    Call_Finish();
+
     // More Helpful logging for map developers
     if (verbose) {
         for (int i = 0; i < g_maxArenas; i++) {
