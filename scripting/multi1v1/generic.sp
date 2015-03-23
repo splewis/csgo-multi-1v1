@@ -1,6 +1,6 @@
 #define MESSAGE_PREFIX "[\x05Multi1v1\x01] "
 #define HIDE_RADAR_BIT 1<<12
-#define DEBUG_CVAR "sm_pugsetup_debug"
+#define DEBUG_CVAR "sm_multi1v1_debug"
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
                                  // this is for converting ints to strings when setting menu values/cookies
 
