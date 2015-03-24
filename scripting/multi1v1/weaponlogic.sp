@@ -123,7 +123,6 @@ public int GetWeaponTeam(const char[] weapon) {
  */
 public void GiveWeaponMenu(int client) {
     g_GivenGunsMenu[client] = true;
-    g_GivenGunsMenu[client] = true;
     g_CurrentRoundTypeMenuIndex[client] = -1;
     g_WaitingOnRoundAllow[client] = false;
     RifleChoiceMenu(client);
