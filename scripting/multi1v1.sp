@@ -806,8 +806,12 @@ public Action Command_JoinTeam(int client, const char[] command, int argc) {
         return Plugin_Handled;
 
     // auto-give the guns menu if desired
-    if (g_hAutoGunsMenuBehavior.IntValue != 0 && !g_GivenGunsMenu[client]) {
-        GiveWeaponMenu(client);
+    if (!g_GivenGunsMenu[client]) {
+        if (g_hAutoGunsMenuBehavior.IntValue == 1 && AreClientCookiesCached(client)) {
+            GiveWeaponMenu(client);
+        } else if (g_hAutoGunsMenuBehavior.IntValue == 2) {
+            GiveWeaponMenu(client);
+        }
     }
 
     char arg[4];
