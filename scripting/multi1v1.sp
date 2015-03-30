@@ -10,6 +10,7 @@
 #include "include/queue.inc"
 #include "include/multi1v1.inc"
 #include "include/logdebug.inc"
+#include "include/restorecvars.inc"
 
 #undef REQUIRE_PLUGIN
 #include "include/updater.inc"
@@ -76,6 +77,8 @@ bool g_LetTimeExpire[MAXPLAYERS+1];
 bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
 bool g_GivenGunsMenu[MAXPLAYERS+1];
 bool g_HideStats[MAXPLAYERS+1];
+
+Handle g_SavedCvars = INVALID_HANDLE;
 
 bool g_WaitingOnRoundAllow[MAXPLAYERS+1];
 int g_CurrentRoundTypeMenuIndex[MAXPLAYERS+1];
@@ -240,6 +243,9 @@ public int EnabledChanged(Handle cvar, const char[] oldValue, const char[] newVa
     g_Enabled = !StrEqual(newValue, "0");
 
     if (wasEnabled && !g_Enabled) {
+        if (g_SavedCvars != INVALID_HANDLE)
+            RestoreCvars(g_SavedCvars, true);
+
         for (int i = 1; i <= MaxClients; i++) {
             if (!IsPlayer(i))
                 continue;
@@ -320,7 +326,12 @@ public void ExecConfigs() {
     if (g_hExecDefaultConfig.IntValue != 0) {
         ServerCommand("exec gamemode_competitive.cfg");
     }
-    ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
+
+    if (g_SavedCvars != INVALID_HANDLE) {
+        CloseCvarStorage(g_SavedCvars);
+    }
+
+    g_SavedCvars = ExecuteAndSaveCvars("sourcemod/multi1v1/game_cvars.cfg");
 }
 
 public void OnClientAuthorized(int client, const char[] auth) {
