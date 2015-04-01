@@ -340,6 +340,13 @@ public void OnClientAuthorized(int client, const char[] auth) {
     }
 }
 
+public void OnClientPutInServer(int client) {
+    if (IsBotPlayer(client)) {
+        ChangeClientTeam(client, CS_TEAM_SPECTATOR);
+        Queue_Enqueue(g_waitingQueue, client);
+    }
+}
+
 public void OnClientConnected(int client) {
     ResetClientVariables(client);
 }
@@ -777,7 +784,6 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
     Call_Finish();
     return;
 }
-
 
 public Action Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)

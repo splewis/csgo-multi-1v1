@@ -21,22 +21,28 @@ public Action RemoveRadar(Handle timer, int client) {
     return Plugin_Continue;
 }
 
-/**
- * Function to identify if a client is valid and in game.
- */
-stock bool IsValidClient(int client) {
-    return client > 0 && client <= MaxClients && IsClientConnected(client) && IsClientInGame(client);
-}
-
 stock bool IsConnected(int client) {
-    return client > 0 && client <= MaxClients && IsClientConnected(client) && !IsFakeClient(client);
+    return client > 0 && client <= MaxClients && IsClientConnected(client);
 }
 
-/**
- * Returns if a player is on an active/player team.
- */
+stock bool IsHumanConnected(int client) {
+    return IsConnected(client) && !IsFakeClient(client);
+}
+
+stock bool IsValidClient(int client) {
+    return IsConnected(client) && IsClientInGame(client);
+}
+
 stock bool IsPlayer(int client) {
-    return IsValidClient(client) && !IsFakeClient(client);
+    return IsValidClient(client) && !IsClientSourceTV(client);
+}
+
+stock bool IsBotPlayer(int client) {
+    return IsPlayer(client) && IsFakeClient(client);
+}
+
+stock bool IsHumanPlayer(int client) {
+    return IsPlayer(client) && !IsFakeClient(client);
 }
 
 /**
