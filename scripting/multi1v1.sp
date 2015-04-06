@@ -412,8 +412,8 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
     if (!g_Enabled)
         return Plugin_Continue;
 
-    dontBroadcast = true;
-    return Plugin_Changed;
+    SetEventBroadcast(event, true);
+    return Plugin_Continue;
 }
 
 /**
