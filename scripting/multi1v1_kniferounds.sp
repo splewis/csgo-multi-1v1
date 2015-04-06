@@ -15,11 +15,9 @@ public Plugin myinfo = {
 };
 
 public void Multi1v1_OnRoundTypesAdded() {
-    Multi1v1_AddRoundType("Knife", "knife", KnifeHandler, Multi1v1_NullChoiceMenu, true, false);
+    Multi1v1_AddRoundType("Knife", "knife", KnifeHandler, Multi1v1_NullChoiceMenu, true, false, "", true, true);
 }
 
 public void KnifeHandler(int client) {
-    Client_RemoveAllWeapons(client, "", true);
     Client_SetArmor(client, 100);
-    GivePlayerItem(client, "weapon_knife");
 }

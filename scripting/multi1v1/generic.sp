@@ -301,3 +301,36 @@ stock void Client_SetHelmet(int client, bool helmet) {
     int offset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
     SetEntData(client, offset, helmet);
 }
+
+// Modified version of smlib's Client_RemoveAllWeapons with weapon substring matching
+stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude, bool clearAmmo=false) {
+    int offset = Client_GetWeaponsOffset(client) - 4;
+
+    int numWeaponsRemoved = 0;
+    for (int i=0; i < MAX_WEAPONS; i++) {
+        offset += 4;
+
+        int weapon = GetEntDataEnt2(client, offset);
+
+        if (!Weapon_IsValid(weapon)) {
+            continue;
+        }
+
+        if (exclude[0] != '\0' && Entity_ClassNameMatches(weapon, exclude, true)) {
+            Client_SetActiveWeapon(client, weapon);
+            continue;
+        }
+
+        if (clearAmmo) {
+            Client_SetWeaponPlayerAmmoEx(client, weapon, 0, 0);
+        }
+
+        if (RemovePlayerItem(client, weapon)) {
+            Entity_Kill(weapon);
+        }
+
+        numWeaponsRemoved++;
+    }
+
+    return numWeaponsRemoved;
+}

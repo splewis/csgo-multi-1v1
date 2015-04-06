@@ -67,7 +67,7 @@ static void AddRounds_CheckAllowed(ArrayList types, int client1, int client2, in
 
 public int AddRoundType(Handle pluginSource, const char[] displayName, const char[] internalName,
                         RoundTypeWeaponHandler weaponHandler, RoundTypeMenuHandler menuHandler,
-                        bool optional, bool ranked, const char[] ratingFieldName, bool enabled) {
+                        bool optional, bool ranked, const char[] ratingFieldName, bool enabled, bool autoGiveKnife) {
 
     if (g_numRoundTypes >= MAX_ROUND_TYPES) {
         LogError("Tried to add new round when %d round types already added", MAX_ROUND_TYPES);
@@ -83,6 +83,7 @@ public int AddRoundType(Handle pluginSource, const char[] displayName, const cha
     g_RoundTypeRanked[g_numRoundTypes] = ranked;
     strcopy(g_RoundTypeFieldNames[g_numRoundTypes], ROUND_TYPE_NAME_LENGTH, ratingFieldName);
     g_RoundTypeEnabled[g_numRoundTypes] = enabled;
+    g_RoundTypeGiveKnife[g_numRoundTypes] = autoGiveKnife;
     g_numRoundTypes++;
     return g_numRoundTypes - 1;
 }
@@ -162,13 +163,12 @@ static void GetRoundCookieName(int roundType, char[] buffer, int length) {
  *************************/
 
 public void AddStandardRounds() {
-    AddRoundType(INVALID_HANDLE, "Rifle", "rifle", RifleHandler, Multi1v1_NullChoiceMenu, false, true, "rifleRating", true);
-    AddRoundType(INVALID_HANDLE, "Pistol", "pistol", PistolHandler, Multi1v1_NullChoiceMenu, true, true, "pistolRating", true);
-    AddRoundType(INVALID_HANDLE, "AWP", "awp", AwpHandler, Multi1v1_NullChoiceMenu, true, true, "awpRating", true);
+    AddRoundType(INVALID_HANDLE, "Rifle", "rifle", RifleHandler, Multi1v1_NullChoiceMenu, false, true, "rifleRating", true, true);
+    AddRoundType(INVALID_HANDLE, "Pistol", "pistol", PistolHandler, Multi1v1_NullChoiceMenu, true, true, "pistolRating", true, true);
+    AddRoundType(INVALID_HANDLE, "AWP", "awp", AwpHandler, Multi1v1_NullChoiceMenu, true, true, "awpRating", true, true);
 }
 
 public void RifleHandler(int client) {
-    Client_RemoveAllWeapons(client, "", true);
     GiveWeapon(client, g_PrimaryWeapon[client]);
     Client_SetHelmet(client, true);
     Client_SetArmor(client, 100);
@@ -177,11 +177,9 @@ public void RifleHandler(int client) {
     if (pistolBehavior != 1) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
     }
-    GiveWeapon(client, "weapon_knife");
 }
 
 public void PistolHandler(int client) {
-    Client_RemoveAllWeapons(client, "", true);
     GiveWeapon(client, g_SecondaryWeapon[client]);
     Client_SetHelmet(client, false);
     bool giveKevlar = IsDefaultPistol(g_SecondaryWeapon[client]);
@@ -190,11 +188,9 @@ public void PistolHandler(int client) {
     } else {
         Client_SetArmor(client, 0);
     }
-    GiveWeapon(client, "weapon_knife");
 }
 
 public void AwpHandler(int client) {
-    Client_RemoveAllWeapons(client, "", true);
     GiveWeapon(client, "weapon_awp");
     Client_SetHelmet(client, true);
 
@@ -206,5 +202,4 @@ public void AwpHandler(int client) {
         g_hDefaultPistol.GetString(defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
     }
-    GiveWeapon(client, "weapon_knife");
 }
