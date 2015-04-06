@@ -15,7 +15,7 @@ public Plugin myinfo = {
 };
 
 public void Multi1v1_OnRoundTypesAdded() {
-    Multi1v1_AddRoundType("Knife", "knife", KnifeHandler, Multi1v1_NullChoiceMenu, true, false, "", true, true);
+    Multi1v1_AddRoundType("Knife", "knife", KnifeHandler, Multi1v1_NullChoiceMenu, true, false, "", true);
 }
 
 public void KnifeHandler(int client) {

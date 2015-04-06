@@ -362,8 +362,8 @@ native int Multi1v1_AddRoundType(const char[] displayName,
                                  bool optional=true,
                                  bool ranked=false,
                                  const char[] ratingFieldName="",
-                                 bool enabled=true,
-                                 bool autoGiveKnife=false);
+                                 bool enabled=true);
+
 /**
  * Clears all registered round types.
  *

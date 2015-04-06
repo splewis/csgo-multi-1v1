@@ -186,13 +186,7 @@ public int Native_GivePlayerArenaWeapons(Handle plugin, int numParams) {
     } else {
         Handle pluginSource = g_RoundTypeSourcePlugin[roundType];
         RoundTypeWeaponHandler weaponHandler = g_RoundTypeWeaponHandlers[roundType];
-
-        if (g_RoundTypeGiveKnife[roundType]) {
-            Client_RemoveAllMatchingWeapons(client, "weapon_knife", true);
-        } else {
-            Client_RemoveAllWeapons(client, "", true);
-        }
-
+        Client_RemoveAllMatchingWeapons(client, "weapon_knife", true);
         Call_StartFunction(pluginSource, weaponHandler);
         Call_PushCell(client);
         Call_Finish();
@@ -395,12 +389,7 @@ public int Native_AddRoundType(Handle plugin, int numParams) {
         LogError("Warning: marked round type \"%s\" as unranked but passed rating field name \"%s\"", internalName, ratingFieldName);
     }
 
-    bool autoGiveKnife = false;
-    if (numParams >= 9) {
-        autoGiveKnife = GetNativeCell(9);
-    }
-
-    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName, enabled, autoGiveKnife);
+    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName, enabled);
 }
 
 public int Native_ReturnMenuControl(Handle plugin, int numParams) {
