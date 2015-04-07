@@ -53,7 +53,7 @@
 			// TODO: Fix serverid. Combine user's stats if the serverid is not set.
 			
 			$totalplayers = mysqli_num_rows(mysqli_query($connect, "SELECT * FROM $mysql_table WHERE serverID=$server_id"));
-			$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating WHERE $server_limit)+1 AS rank FROM $mysql_table AS s1 WHERE accountID=".(int)$_GET['id']." $server_limit";
+			$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating $server_limit)+1 AS rank FROM $mysql_table AS s1 WHERE accountID=".(int)$_GET['id']." $server_limit";
 			$query = mysqli_query($connect, $run_query);
 
 			if (mysqli_num_rows($query) > 0){
