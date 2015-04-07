@@ -1,5 +1,4 @@
 #define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v1.x/csgo-multi-1v1.txt"
-#pragma semicolon 1
 
 #include <sourcemod>
 #include <sdkhooks>
@@ -7,11 +6,17 @@
 #include <cstrike>
 #include <clientprefs>
 #include <smlib>
+
+#include "include/queue.inc"
 #include "include/multi1v1.inc"
+#include "include/logdebug.inc"
+#include "include/restorecvars.inc"
 
 #undef REQUIRE_PLUGIN
-#include <updater>
+#include "include/updater.inc"
 
+#pragma semicolon 1
+#pragma newdecls required
 
 
 /***********************
@@ -20,20 +25,38 @@
  *                     *
  ***********************/
 
-#define WEAPON_LENGTH 32
-#define K_FACTOR 8.0
 #define DISTRIBUTION_SPREAD 1000.0
+#define K_FACTOR 8.0
+#define MAX_ROUND_TYPES 16
+#define MENU_TIME_LENGTH 15
+#define ROUND_TYPE_NAME_LENGTH 64
 #define TABLE_NAME "multi1v1_stats"
+#define WEAPON_LENGTH 32
 
-/** ConVar handles **/
-Handle g_hAutoUpdate = INVALID_HANDLE;
-Handle g_hBlockRadio = INVALID_HANDLE;
-Handle g_hDatabaseName = INVALID_HANDLE;
-Handle g_hGunsMenuOnFirstConnct = INVALID_HANDLE;
-Handle g_hRoundTime = INVALID_HANDLE;
-Handle g_hUseDatabase = INVALID_HANDLE;
-Handle g_hVerboseSpawnModes = INVALID_HANDLE;
-Handle g_hVersion = INVALID_HANDLE;
+/** ConVars **/
+ConVar g_EnabledCvar;
+bool g_Enabled = true;
+
+ConVar g_hAutoGunsMenuBehavior;
+ConVar g_hAutoUpdate;
+ConVar g_hBlockRadio;
+ConVar g_hDatabaseName;
+ConVar g_hDatabaseServerId;
+ConVar g_hDefaultPistol;
+ConVar g_hExecDefaultConfig;
+ConVar g_hHideGunsChatCommands;
+ConVar g_hPistolBehavior;
+ConVar g_hPistolMenu;
+ConVar g_hPreferenceWeight;
+ConVar g_hRifleMenu;
+ConVar g_hRoundTime;
+ConVar g_hSupport3rdPartyKnife;
+ConVar g_hUseChatPrefix;
+ConVar g_hUseDatabase;
+ConVar g_hUseMVPStars;
+ConVar g_hUseTeamTags;
+ConVar g_hVerboseSpawnModes;
+ConVar g_hVersion;
 
 /** Saved data for database interaction - be careful when using these, they may not
  *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
@@ -43,9 +66,7 @@ bool g_FetchedPlayerInfo[MAXPLAYERS+1];
 int g_Wins[MAXPLAYERS+1];
 int g_Losses[MAXPLAYERS+1];
 float g_Rating[MAXPLAYERS+1];
-float g_RifleRating[MAXPLAYERS+1];
-float g_AwpRating[MAXPLAYERS+1];
-float g_PistolRating[MAXPLAYERS+1];
+float g_RoundTypeRating[MAXPLAYERS+1][MAX_ROUND_TYPES];
 
 /** Database interactions **/
 bool g_dbConnected = false;
@@ -53,25 +74,44 @@ Handle db = INVALID_HANDLE;
 
 /** Client arrays **/
 int g_Ranking[MAXPLAYERS+1]; // which arena each player is in
+bool g_LetTimeExpire[MAXPLAYERS+1];
 bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
-bool g_AllowAWP[MAXPLAYERS+1];
-bool g_AllowPistol[MAXPLAYERS+1];
-bool g_GiveFlash[MAXPLAYERS+1];
-bool g_GunsSelected[MAXPLAYERS+1];
-RoundType g_Preference[MAXPLAYERS+1];
+bool g_GivenGunsMenu[MAXPLAYERS+1];
+bool g_HideStats[MAXPLAYERS+1];
+
+Handle g_SavedCvars = INVALID_HANDLE;
+
+bool g_WaitingOnRoundAllow[MAXPLAYERS+1];
+int g_CurrentRoundTypeMenuIndex[MAXPLAYERS+1];
+
+int g_Preference[MAXPLAYERS+1];
 char g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 char g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 bool g_BlockStatChanges[MAXPLAYERS+1];
 bool g_BlockChatMessages[MAXPLAYERS+1];
+bool g_BlockMVPStars[MAXPLAYERS+1];
+bool g_BlockArenaDones[MAXPLAYERS+1];
+
+/** Round-type data **/
+int g_numRoundTypes = 0;
+char g_RoundTypeNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
+char g_RoundTypeDisplayNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
+RoundTypeWeaponHandler g_RoundTypeWeaponHandlers[MAX_ROUND_TYPES];
+RoundTypeMenuHandler g_RoundTypeMenuHandlers[MAX_ROUND_TYPES];
+bool g_RoundTypeRanked[MAX_ROUND_TYPES];
+bool g_RoundTypeOptional[MAX_ROUND_TYPES];
+bool g_RoundTypeEnabled[MAX_ROUND_TYPES];
+char g_RoundTypeFieldNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
+Handle g_RoundTypeSourcePlugin[MAX_ROUND_TYPES];
+bool g_AllowedRoundTypes[MAXPLAYERS+1][MAX_ROUND_TYPES];
 
 /** Arena arrays **/
-bool g_ArenaStatsUpdated[MAXPLAYERS+1] = false;
+bool g_ArenaStatsUpdated[MAXPLAYERS+1];
 int g_ArenaPlayer1[MAXPLAYERS+1] = -1;  // who is player 1 in each arena
 int g_ArenaPlayer2[MAXPLAYERS+1] = -1;  // who is player 2 in each arena
 int g_ArenaWinners[MAXPLAYERS+1] = -1;  // who won each arena
 int g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
-RoundType g_roundTypes[MAXPLAYERS+1];
-bool g_LetTimeExpire[MAXPLAYERS+1] = false;
+int g_roundTypes[MAXPLAYERS+1];         // the round type being used in the arena
 int g_RoundsLeader[MAXPLAYERS+1] = 0;
 
 /** Overall global variables **/
@@ -81,7 +121,6 @@ int g_maxArenas = 0; // maximum number of arenas the map can support
 int g_arenas = 1; // number of active arenas
 int g_totalRounds = 0; // rounds played on this map so far
 bool g_roundFinished = false;
-Handle g_rankingQueue = INVALID_HANDLE;
 Handle g_waitingQueue = INVALID_HANDLE;
 
 /** Handles to arrays of vectors of spawns/angles **/
@@ -90,65 +129,74 @@ Handle g_hTAngles = INVALID_HANDLE;
 Handle g_hCTSpawns = INVALID_HANDLE;
 Handle g_hCTAngles = INVALID_HANDLE;
 
-/** Weapon menu choice cookies **/
-Handle g_hAllowPistolCookie = INVALID_HANDLE;
-Handle g_hAllowAWPCookie = INVALID_HANDLE;
-Handle g_hPreferenceCookie = INVALID_HANDLE;
-Handle g_hRifleCookie = INVALID_HANDLE;
-Handle g_hPistolCookie = INVALID_HANDLE;
-Handle g_hFlashCookie = INVALID_HANDLE;
-Handle g_hSetCookies = INVALID_HANDLE;
-
 /** Forwards **/
-Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
-Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
-Handle g_hOnArenasReady = INVALID_HANDLE;
-Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
 Handle g_hAfterPlayerSetup = INVALID_HANDLE;
+Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
+Handle g_hOnArenasReady = INVALID_HANDLE;
+Handle g_hOnGunsMenuDone = INVALID_HANDLE;
+Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
+Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
+Handle g_hOnRoundTypeDecided = INVALID_HANDLE;
+Handle g_hOnRoundTypesAdded = INVALID_HANDLE;
 Handle g_hOnRoundWon = INVALID_HANDLE;
+Handle g_hOnSpawnsFound = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
-
-/** Constant offsets values **/
-int g_iPlayers_HelmetOffset;
 
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
 #include "multi1v1/natives.sp"
-#include "multi1v1/queue.sp"
 #include "multi1v1/radiocommands.sp"
+#include "multi1v1/roundtypes.sp"
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
-#include "multi1v1/weaponmenu.sp"
-
+#include "multi1v1/weaponlogic.sp"
+#include "multi1v1/version.sp"
 
 
 
 /***********************
  *                     *
- * Sourcemod functions *
+ * Sourcemod forwards  *
  *                     *
  ***********************/
 
-public Plugin:myinfo = {
-    name = "[Multi1v1] Base plugin",
+public Plugin myinfo = {
+    name = "CS:GO Multi1v1",
     author = "splewis",
     description = "Multi-arena 1v1 laddering",
     version = PLUGIN_VERSION,
     url = "https://github.com/splewis/csgo-multi-1v1"
 };
 
-public OnPluginStart() {
+public void OnPluginStart() {
+    InitDebugLog(DEBUG_CVAR, "multi1v1");
     LoadTranslations("common.phrases");
     LoadTranslations("multi1v1.phrases");
 
     /** ConVars **/
-    g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
-    g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin.");
-    g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
+    g_EnabledCvar = CreateConVar("sm_multi1v1_enabled", "1", "Whether the multi1v1 gamemode is enabled or not");
+
+    g_hAutoGunsMenuBehavior = CreateConVar("sm_multi1v1_menu_open_behavior", "0", "Determines auto-open behavior of the guns menu. 0=never auto-open, 1=open if the client has no preference cookies saved, 2=always open on client connect");
+    g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to auto-update. Requies the \"Updater\" plugin");
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
-    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Should we use a database to store stats and preferences");
-    g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Should the plugin attempt to use the auto-update plugin?");
-    g_hGunsMenuOnFirstConnct = CreateConVar("sm_multi1v1_guns_menu_first_connect", "0", "Should players see the guns menu automatically on their first connect?");
+    g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
+    g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server. Most users don't need to change this.");
+    g_hDefaultPistol = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
+    g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
+    g_hHideGunsChatCommands = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
+    g_hPistolBehavior = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
+    g_hPistolMenu = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
+    g_hPreferenceWeight = CreateConVar("sm_multi1v1_preference_weight", "1", "How much weight are given to preferences when round types are being selected. Use a higher number for a preference to be more likely, or 0 to make the preference have no effect");
+    g_hRifleMenu = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
+    g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
+    g_hSupport3rdPartyKnife = CreateConVar("sm_multi1v1_support_3rdparty", "Should the plugin support 3rd party knives");
+    g_hUseChatPrefix = CreateConVar("sm_multi1v1_use_chat_prefix", "1", "Whether to use a [Multi1v1] tag in chat messages");
+    g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
+    g_hUseMVPStars = CreateConVar("sm_multi1v1_use_mvp_stars", "1", "Whether MVP stars are updated to reflect a player's number of rounds in arena 1");
+    g_hUseTeamTags = CreateConVar("sm_multi1v1_use_team_tags", "1", "Whether the team (or clan) tag is updated to reflect a player's arena numbers");
+    g_hVerboseSpawnModes = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin");
+
+    HookConVarChange(g_EnabledCvar, EnabledChanged);
 
     /** Config file **/
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
@@ -156,15 +204,6 @@ public OnPluginStart() {
     /** Version cvar **/
     g_hVersion = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     SetConVarString(g_hVersion, PLUGIN_VERSION);
-
-    /** Cookies **/
-    g_hAllowPistolCookie = RegClientCookie("multi1v1_allowpistol", "Multi-1v1 allow pistol rounds", CookieAccess_Protected);
-    g_hAllowAWPCookie = RegClientCookie("multi1v1_allowawp", "Multi-1v1 allow AWP rounds", CookieAccess_Protected);
-    g_hPreferenceCookie = RegClientCookie("multi1v1_preference", "Multi-1v1 round-type preference", CookieAccess_Protected);
-    g_hRifleCookie = RegClientCookie("multi1v1_rifle", "Multi-1v1 rifle choice", CookieAccess_Protected);
-    g_hPistolCookie = RegClientCookie("multi1v1_pistol", "Multi-1v1 pistol choice", CookieAccess_Protected);
-    g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 allow flashbangs in rounds", CookieAccess_Protected);
-    g_hSetCookies = RegClientCookie("multi1v1_setprefs", "Multi-1v1 if prefs are saved", CookieAccess_Protected);
 
     /** Hooks **/
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
@@ -174,44 +213,113 @@ public OnPluginStart() {
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
+    HookEvent("cs_win_panel_match", Event_MatchOver);
 
     /** Commands **/
-    AddCommandListener(Command_Say, "say");
-    AddCommandListener(Command_Say, "say2");
-    AddCommandListener(Command_Say, "say_team");
-    AddCommandListener(Command_TeamJoin, "jointeam");
+    AddCommandListener(Command_JoinTeam, "jointeam");
     AddRadioCommandListeners();
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
+    RegConsoleCmd("sm_hidestats", Command_Hidestats, "Hides player stats/ratings");
 
     /** Fowards **/
-    g_hOnPreArenaRankingsSet = CreateGlobalForward("OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
-    g_hOnPostArenaRankingsSet = CreateGlobalForward("OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
-    g_hOnArenasReady = CreateGlobalForward("OnAreanasReady", ET_Ignore);
-    g_hAfterPlayerSpawn = CreateGlobalForward("AfterPlayerSpawn", ET_Ignore, Param_Cell);
-    g_hAfterPlayerSetup = CreateGlobalForward("AfterPlayerSetup", ET_Ignore, Param_Cell);
-    g_hOnRoundWon = CreateGlobalForward("OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
-    g_hOnStatsCached = CreateGlobalForward("OnStatsCached", ET_Ignore, Param_Cell);
+    g_hAfterPlayerSetup = CreateGlobalForward("Multi1v1_AfterPlayerSetup", ET_Ignore, Param_Cell);
+    g_hAfterPlayerSpawn = CreateGlobalForward("Multi1v1_AfterPlayerSpawn", ET_Ignore, Param_Cell);
+    g_hOnArenasReady = CreateGlobalForward("Multi1v1_OnArenasReady", ET_Ignore);
+    g_hOnGunsMenuDone = CreateGlobalForward("Multi1v1_OnGunsMenuDone", ET_Ignore, Param_Cell);
+    g_hOnPostArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnPreArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
+    g_hOnRoundTypeDecided = CreateGlobalForward("Multi1v1_OnRoundTypeDecided", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_CellByRef);
+    g_hOnRoundTypesAdded = CreateGlobalForward("Multi1v1_OnRoundTypesAdded", ET_Ignore);
+    g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+    g_hOnSpawnsFound = CreateGlobalForward("Multi1v1_OnSpawnsFound", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
+    g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
 
-    /** Compute any constant offsets **/
-    g_iPlayers_HelmetOffset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
-
-    if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
-        Updater_AddPlugin(UPDATE_URL);
-    }
-}
-
-public OnLibraryAdded(const char name[]) {
-    if (GetConVarInt(g_hAutoUpdate) != 0 && LibraryExists("updater")) {
-        Updater_AddPlugin(UPDATE_URL);
-    }
-}
-
-public OnMapStart() {
-    Spawns_MapStart();
     g_waitingQueue = Queue_Init();
-    if (!g_dbConnected && GetConVarInt(g_hUseDatabase) != 0) {
-        DB_Connect();
+
+    if (g_hAutoUpdate.IntValue != 0) {
+        AddUpdater();
     }
+}
+
+public int EnabledChanged(Handle cvar, const char[] oldValue, const char[] newValue) {
+    bool wasEnabled = !StrEqual(oldValue, "0");
+    g_Enabled = !StrEqual(newValue, "0");
+
+    if (wasEnabled && !g_Enabled) {
+        if (g_SavedCvars != INVALID_HANDLE)
+            RestoreCvars(g_SavedCvars, true);
+
+        for (int i = 1; i <= MaxClients; i++) {
+            if (!IsPlayer(i))
+                continue;
+
+            if (g_hUseTeamTags.IntValue != 0)
+                CS_SetClientClanTag(i, "");
+
+            if (g_hUseMVPStars.IntValue != 0)
+                CS_SetMVPCount(i, 0);
+
+            CS_SetClientContributionScore(i, 0);
+        }
+
+
+    } else if (!wasEnabled && g_Enabled) {
+        Queue_Clear(g_waitingQueue);
+        ExecConfigs();
+        for (int i = 1; i <= MaxClients; i++)  {
+            if (IsClientConnected(i) && !IsFakeClient(i)) {
+                OnClientConnected(i);
+                if (IsActivePlayer(i)) {
+                    SwitchPlayerTeam(i, CS_TEAM_SPECTATOR);
+                    Queue_Enqueue(g_waitingQueue, i);
+                }
+
+            }
+        }
+    }
+}
+
+public void OnLibraryAdded(const char[] name) {
+    if (g_hAutoUpdate.IntValue != 0) {
+        AddUpdater();
+    }
+}
+
+static void AddUpdater() {
+    if (LibraryExists("updater")) {
+        Updater_AddPlugin(UPDATE_URL);
+    }
+}
+
+// Patch support for klexen's sm_knifeugrade plugin
+public void ForceKnifeSupportVars() {
+    Handle sm_knifeupgrade_goldknife_crash = FindConVar("sm_knifeupgrade_goldknife_crash");
+    if (sm_knifeupgrade_goldknife_crash != INVALID_HANDLE && GetConVarBool(sm_knifeupgrade_goldknife_crash))
+        SetConVarBool(sm_knifeupgrade_goldknife_crash, false);
+
+    Handle sm_knifeupgrade_round_crash = FindConVar("sm_knifeupgrade_round_crash");
+    if (sm_knifeupgrade_round_crash != INVALID_HANDLE && GetConVarBool(sm_knifeupgrade_round_crash))
+        SetConVarBool(sm_knifeupgrade_round_crash, false);
+}
+
+public void OnConfigsExecuted() {
+    if (g_hSupport3rdPartyKnife.IntValue != 0)
+        ForceKnifeSupportVars();
+}
+
+public void OnMapStart() {
+    if (g_hSupport3rdPartyKnife.IntValue != 0)
+        ForceKnifeSupportVars();
+
+    Spawns_MapStart();
+    Weapons_MapStart();
+
+    Multi1v1_ClearRoundTypes();
+    Multi1v1_AddStandardRounds();
+    Call_StartForward(g_hOnRoundTypesAdded);
+    Call_Finish();
+
+    Queue_Clear(g_waitingQueue);
 
     g_arenaOffsetValue = 0;
     g_arenas = 1;
@@ -223,19 +331,55 @@ public OnMapStart() {
         g_ArenaWinners[i] = -1;
         g_ArenaLosers[i] = -1;
     }
-    ServerCommand("exec gamemode_competitive.cfg");
-    ServerCommand("exec sourcemod/multi1v1/game_cvars.cfg");
+
+    if (!g_dbConnected && g_hUseDatabase.IntValue != 0) {
+        DB_Connect();
+    }
+
+    if (g_Enabled)
+        ExecConfigs();
 }
 
-public OnMapEnd() {
-    Queue_Destroy(g_waitingQueue);
+public void OnMapEnd() {
     Spawns_MapEnd();
 }
 
-public OnClientPostAdminCheck(client) {
-    if (IsPlayer(client) && GetConVarInt(g_hUseDatabase) != 0 && g_dbConnected) {
+public void ExecConfigs() {
+    if (g_hExecDefaultConfig.IntValue != 0) {
+        ServerCommand("exec gamemode_competitive.cfg");
+    }
+
+    if (g_SavedCvars != INVALID_HANDLE) {
+        CloseCvarStorage(g_SavedCvars);
+    }
+
+    g_SavedCvars = ExecuteAndSaveCvars("sourcemod/multi1v1/game_cvars.cfg");
+}
+
+public void OnClientAuthorized(int client, const char[] auth) {
+    if (!StrEqual(auth, "BOT") && g_hUseDatabase.IntValue != 0 && g_dbConnected) {
         DB_AddPlayer(client);
     }
+}
+
+public void OnClientConnected(int client) {
+    ResetClientVariables(client);
+}
+
+public void OnClientDisconnect(int client) {
+    if (g_hUseDatabase.IntValue != 0)
+        DB_WriteRatings(client);
+
+    Queue_Drop(g_waitingQueue, client);
+    int arena = g_Ranking[client];
+    UpdateArena(arena, client);
+    ResetClientVariables(client);
+}
+
+public int OnClientCookiesCached(int client) {
+    if (IsFakeClient(client))
+        return;
+    UpdatePreferencesOnCookies(client);
 }
 
 
@@ -252,7 +396,10 @@ public OnClientPostAdminCheck(client) {
  * if a player does not select a team but leaves their mouse over one, they are
  * put on that team and spawned, so we can't allow that.
  */
-public Event_OnFullConnect(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnFullConnect(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
 }
@@ -260,68 +407,95 @@ public Event_OnFullConnect(Handle event, const char name[], bool dontBroadcast) 
 /**
  * Silences team join/switch events.
  */
-public Action:Event_OnPlayerTeam(Handle event, const char name[], bool dontBroadcast) {
-    dontBroadcast = true;
-    return Plugin_Changed;
+public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
+    SetEventBroadcast(event, true);
+    return Plugin_Continue;
 }
 
 /**
  * Round pre-start, sets up who goes in which arena for this round.
  */
-public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     g_roundStartTime = GetTime();
 
     // Here we add each player to the queue in their new ranking
-    g_rankingQueue = Queue_Init();
+    Handle rankingQueue = Queue_Init();
 
     Call_StartForward(g_hOnPreArenaRankingsSet);
-    Call_PushCell(g_rankingQueue);
+    Call_PushCell(rankingQueue);
     Call_Finish();
 
-    //  top arena
-    AddPlayer(g_ArenaWinners[1]);
-    AddPlayer(g_ArenaWinners[2]);
+    // top arena
+    AddPlayer_NoSpec(g_ArenaWinners[1], rankingQueue);
+    AddPlayer_NoSpec(g_ArenaWinners[2], rankingQueue);
 
     // middle arenas
     for (int i = 2; i <= g_arenas - 1; i++) {
-        AddPlayer(g_ArenaLosers[i - 1]);
-        AddPlayer(g_ArenaWinners[i + 1]);
+        AddPlayer_NoSpec(g_ArenaLosers[i - 1], rankingQueue);
+        AddPlayer_NoSpec(g_ArenaWinners[i + 1], rankingQueue);
     }
 
     // bottom arena
     if (g_arenas >= 1) {
-        AddPlayer(g_ArenaLosers[g_arenas - 1]);
-        AddPlayer(g_ArenaLosers[g_arenas]);
+        AddPlayer_NoSpec(g_ArenaLosers[g_arenas - 1], rankingQueue);
+        AddPlayer_NoSpec(g_ArenaLosers[g_arenas], rankingQueue);
     }
 
-    while (Queue_Length(g_rankingQueue) < 2*g_maxArenas && Queue_Length(g_waitingQueue) > 0) {
+    // pulls all the spectators out of the waiting queue that can we can add
+    Handle playersToAdd = Queue_Init();
+    while (Queue_Length(rankingQueue) + Queue_Length(playersToAdd) < 2*g_maxArenas && Queue_Length(g_waitingQueue) > 0) {
         int client = Queue_Dequeue(g_waitingQueue);
-        AddPlayer(client);
+        AddPlayer(client, playersToAdd);
+    }
+
+    // sorts the spectators to add by rating
+    SortADTArrayCustom(playersToAdd, spectatorSortFunction);
+
+    // finally adds the spectators to the ranking queue
+    while (Queue_Length(playersToAdd) > 0) {
+        int client = Queue_Dequeue(playersToAdd);
+        AddPlayer(client, rankingQueue);
     }
 
     int queueLength = Queue_Length(g_waitingQueue);
     for (int i = 0; i < queueLength; i++) {
         int client = GetArrayCell(g_waitingQueue, i);
-        Multi1v1Message(client, "%t", "ArenasFull");
-        Multi1v1Message(client, "%t", "QueuePosition", i + 1);
+        Multi1v1_Message(client, "%t", "ArenasFull");
+        Multi1v1_Message(client, "%t", "QueuePosition", i + 1);
     }
 
     Call_StartForward(g_hOnPostArenaRankingsSet);
-    Call_PushCell(g_rankingQueue);
+    Call_PushCell(rankingQueue);
     Call_Finish();
 
-    int leader = Queue_Peek(g_rankingQueue);
-    if (IsValidClient(leader) && Queue_Length(g_rankingQueue) >= 2)
+    int leader = -1;
+    for (int i = 0; i < GetArraySize(rankingQueue); i++) {
+        int client = GetArrayCell(rankingQueue, i);
+        if (!g_BlockMVPStars[client]) {
+            leader = client;
+            break;
+        }
+    }
+
+    if (IsValidClient(leader) && Queue_Length(rankingQueue) >= 2 && !g_LetTimeExpire[leader]) {
         g_RoundsLeader[leader]++;
+    }
 
     // Player placement logic for this round
     g_arenas = 0;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
-        int p1 = Queue_Dequeue(g_rankingQueue);
-        int p2 = Queue_Dequeue(g_rankingQueue);
+        int p1 = Queue_Dequeue(rankingQueue);
+        int p2 = Queue_Dequeue(rankingQueue);
         g_ArenaPlayer1[arena] = p1;
         g_ArenaPlayer2[arena] = p2;
-        g_roundTypes[arena] = GetRoundType  (p1, p2);
+        g_roundTypes[arena] = GetRoundType(arena, p1, p2);
+
 
         bool realp1 = IsValidClient(p1);
         bool realp2 = IsValidClient(p2);
@@ -339,32 +513,60 @@ public Event_OnRoundPreStart(Handle event, const char name[], bool dontBroadcast
         }
     }
 
-    Queue_Destroy(g_rankingQueue);
+    Queue_Destroy(rankingQueue);
 
     Call_StartForward(g_hOnArenasReady);
     Call_Finish();
 }
 
+public int spectatorSortFunction(int index1, int index2, Handle array, Handle hndl) {
+    int client1 = GetArrayCell(array, index1);
+    int client2 = GetArrayCell(array, index2);
+    if (Multi1v1_HasStats(client1) && Multi1v1_HasStats(client2)) {
+        return RoundToNearest(Multi1v1_GetRating(client2) - Multi1v1_GetRating(client1));
+    } else {
+        return client1 - client2;
+    }
+}
+
+/**
+ * Wrapper on the geneic AddPlayer function that doesn't allow spectators not in
+ * the waiting queue to join. This is meant to deal with players being moved to spectator
+ * by another plugin (e.g. afk managers).
+ */
+public void AddPlayer_NoSpec(int client, Handle rankingQueue) {
+    if (!IsPlayer(client)) {
+        return;
+    }
+
+    if (GetClientTeam(client) != CS_TEAM_SPECTATOR || Multi1v1_IsInWaitingQueue(client)) {
+        AddPlayer(client, rankingQueue);
+    }
+}
+
 /**
  * Function to add a player to the ranking queue with some validity checks.
  */
-public AddPlayer(int client) {
-    bool player = IsPlayer(client);
-    bool space = Queue_Length(g_rankingQueue) < 2 *g_maxArenas;
-    bool alreadyin = Queue_Inside(g_rankingQueue, client);
-    if (player && space && !alreadyin) {
-        Queue_Enqueue(g_rankingQueue, client);
+public void AddPlayer(int client, Handle rankingQueue) {
+    if (!IsPlayer(client)) {
+        return;
     }
 
-    if (GetConVarInt(g_hGunsMenuOnFirstConnct) != 0 && player && !g_GunsSelected[client]) {
-        GiveWeaponMenu(client);
+    bool space = Queue_Length(rankingQueue) < 2 *g_maxArenas;
+    bool alreadyin = Queue_Inside(rankingQueue, client);
+
+    if (space && !alreadyin) {
+        Queue_Enqueue(rankingQueue, client);
     }
 }
 
 /**
  * Round poststart - puts players in their arena and gives them weapons.
  */
-public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnRoundPostStart(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     g_roundFinished = false;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
         g_ArenaWinners[arena] = -1;
@@ -385,17 +587,17 @@ public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcas
         }
     }
 
-    for (int i = 1; i <= MAXPLAYERS; i++) {
+    for (int i = 1; i <= MaxClients; i++) {
         g_ArenaStatsUpdated[i] = false;
         g_LetTimeExpire[i] = false;
     }
 
     // round time is bu a special cvar since mp_roundtime has a lower bound of 1 minutes
-    GameRules_SetProp("m_iRoundTime", GetConVarInt(g_hRoundTime), 4, 0, true);
+    GameRules_SetProp("m_iRoundTime", g_hRoundTime.IntValue, 4, 0, true);
 
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
-    if (GetConVarInt(g_hUseDatabase) != 0) {
+    if (g_hUseDatabase.IntValue != 0) {
         if (!g_dbConnected)
             DB_Connect();
         if (g_dbConnected) {
@@ -411,12 +613,12 @@ public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcas
         if (!IsActivePlayer(i) || g_BlockChatMessages[i])
             continue;
 
-        int other = GetOpponent(i);
+        int other = Multi1v1_GetOpponent(i);
         int arena = g_Ranking[i];
         if (IsValidClient(other)) {
-            Multi1v1Message(i, "%t", "FacingOff", arena - g_arenaOffsetValue, other);
+            Multi1v1_Message(i, "%t", "FacingOff", arena - g_arenaOffsetValue, other);
         } else {
-            Multi1v1Message(i, "%t", "NoOpponent", arena - g_arenaOffsetValue);
+            Multi1v1_Message(i, "%t", "NoOpponent", arena - g_arenaOffsetValue);
         }
     }
 
@@ -429,13 +631,13 @@ public Event_OnRoundPostStart(Handle event, const char name[], bool dontBroadcas
  *  - sets the score/mvp count
  *  - prints out who the opponent is
  */
-public SetupPlayer(int client, int arena, int other, bool onCT) {
+public void SetupPlayer(int client, int arena, int other, bool onCT) {
     float angles[3];
     float spawn[3];
 
     int team = onCT ? CS_TEAM_CT : CS_TEAM_T;
     SwitchPlayerTeam(client, team);
-    GetSpawn(arena, team, spawn, angles);
+    Multi1v1_GetArenaSpawn(arena, team, spawn, angles);
 
     CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);
@@ -451,9 +653,13 @@ public SetupPlayer(int client, int arena, int other, bool onCT) {
 
     // Set clan tags to the arena number
     char buffer[32];
-    Format(buffer, sizeof(buffer), "Arena %d", arena - g_arenaOffsetValue);
-    CS_SetClientClanTag(client, buffer);
-    CS_SetMVPCount(client, g_RoundsLeader[client]);
+    Format(buffer, sizeof(buffer), "%T", "ArenaClanTag", LANG_SERVER, arena - g_arenaOffsetValue);
+
+    if (g_hUseTeamTags.IntValue != 0)
+        CS_SetClientClanTag(client, buffer);
+
+    if (g_hUseMVPStars.IntValue != 0)
+        CS_SetMVPCount(client, g_RoundsLeader[client]);
 
     Call_StartForward(g_hAfterPlayerSetup);
     Call_PushCell(client);
@@ -467,7 +673,10 @@ public SetupPlayer(int client, int arena, int other, bool onCT) {
  *  - throws all the players into a queue according to their standing from this round
  *  - updates globals g_Ranking, g_ArenaPlayer1, g_ArenaPlayer2 for the next round setup
  */
-public Event_OnRoundEnd(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     g_totalRounds++;
     g_roundFinished = true;
 
@@ -488,19 +697,31 @@ public Event_OnRoundEnd(Handle event, const char name[], bool dontBroadcast) {
         if (IsPlayer(winner) && IsPlayer(loser)) {
 
             // also skip the update if we already did it (a player got a kill earlier in the round)
-            if (winner != loser && !g_ArenaStatsUpdated[arena]) {
-                DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
-                g_ArenaStatsUpdated[arena] = true;
+            if (winner != loser) {
+                if (winner != loser && IsPlayer(winner) && IsPlayer(loser)) {
+                    Call_StartForward(g_hOnRoundWon);
+                    Call_PushCell(winner);
+                    Call_PushCell(loser);
+                    Call_PushCell(g_LetTimeExpire[winner]);
+                    Call_Finish();
+                }
+                if (!g_ArenaStatsUpdated[arena]) {
+                    DB_RoundUpdate(winner, loser, g_LetTimeExpire[winner]);
+                    g_ArenaStatsUpdated[arena] = true;
+                }
+
             }
         }
-
     }
 }
 
 /**
  * Player death event, updates g_arenaWinners/g_arenaLosers for the arena that was just decided.
  */
-public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     int victim = GetClientOfUserId(GetEventInt(event, "userid"));
     int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
     int arena = g_Ranking[victim];
@@ -539,6 +760,11 @@ public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) 
         g_ArenaWinners[arena] = attacker;
         g_ArenaLosers[arena] = victim;
         g_ArenaStatsUpdated[arena] = true;
+        Call_StartForward(g_hOnRoundWon);
+        Call_PushCell(attacker);
+        Call_PushCell(victim);
+        Call_PushCell(false);
+        Call_Finish();
         DB_RoundUpdate(attacker, victim, false);
     }
 
@@ -548,51 +774,50 @@ public Event_OnPlayerDeath(Handle event, const char name[], bool dontBroadcast) 
  * Player spawn event - gives the appropriate weapons to a player for his arena.
  * Warning: do NOT assume this is called before or after the round start event!
  */
-public Event_OnPlayerSpawn(Handle event, const char name[], bool dontBroadcast) {
+public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     int client = GetClientOfUserId(GetEventInt(event, "userid"));
-    if (!IsValidClient(client) || GetClientTeam(client) <= CS_TEAM_NONE)
+    if (!IsActivePlayer(client))
         return;
 
     int arena = g_Ranking[client];
-    if (arena == -1)
-        LogError("player %N had arena -1 on his spawn", client);
+    if (arena < 1) {
+        LogError("%L had arena %d on player spawn event, switching to queue/spec", client, arena);
+        Queue_Enqueue(g_waitingQueue, client);
+        SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
+        return;
+    }
 
-    RoundType roundType = (arena == -1) ? RoundType_Rifle : g_roundTypes[arena];
-    GivePlayerArenaWeapons(client, roundType);
+    int roundType = (arena == -1) ? 0 : g_roundTypes[arena];
+    Multi1v1_GivePlayerArenaWeapons(client, roundType);
     CreateTimer(0.1, RemoveRadar, client);
 
     Call_StartForward(g_hAfterPlayerSpawn);
     Call_PushCell(client);
     Call_Finish();
+    return;
 }
 
-/**
- * Resets variables for connecting player.
- */
-public OnClientConnected(int client) {
-    ResetClientVariables(client);
-}
 
-/**
- * Writes back player stats and resets the player client index data.
- */
-public OnClientDisconnect(int client) {
-    if (GetConVarInt(g_hUseDatabase) != 0)
-        DB_WriteRatings(client);
-
-    Queue_Drop(g_waitingQueue, client);
-    int arena = g_Ranking[client];
-    UpdateArena(arena);
-    ResetClientVariables(client);
-}
-
-/**
- * Updates client weapon settings according to their cookies.
- */
-public OnClientCookiesCached(int client) {
-    if (IsFakeClient(client))
+public Action Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
         return;
-    UpdatePreferencesOnCookies(client);
+
+    int maxClient = -1;
+    int maxScore = -1;
+    for (int i = 1; i <= MaxClients; i++) {
+        int score = g_RoundsLeader[i];
+        if (IsPlayer(i) && (maxClient == -1 || score > maxScore)) {
+            maxClient = i;
+            maxScore = score;
+        }
+    }
+
+    if (IsPlayer(maxClient)) {
+        Multi1v1_MessageToAll("%t", "MostWins", maxClient, maxScore);
+    }
 }
 
 
@@ -606,68 +831,93 @@ public OnClientCookiesCached(int client) {
 /**
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
-public Action:Command_TeamJoin(int client, const char command[], argc) {
+public Action Command_JoinTeam(int client, const char[] command, int argc) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
     if (!IsValidClient(client))
         return Plugin_Handled;
 
+    // auto-give the guns menu if desired
+    if (!g_GivenGunsMenu[client]) {
+        if (g_hAutoGunsMenuBehavior.IntValue == 1 && AreClientCookiesCached(client)) {
+            GiveWeaponMenu(client);
+        } else if (g_hAutoGunsMenuBehavior.IntValue == 2) {
+            GiveWeaponMenu(client);
+        }
+    }
 
     char arg[4];
     GetCmdArg(1, arg, sizeof(arg));
     int team_to = StringToInt(arg);
     int team_from = GetClientTeam(client);
 
-    // Note that if a player selects auto-select they will have team_to and team_from equal to CS_TEAM_NONE but will get auto-moved
-    if (IsFakeClient(client) || g_PluginTeamSwitch[client] || (team_from == team_to && team_from != CS_TEAM_NONE)) {
+    if (IsFakeClient(client) || g_PluginTeamSwitch[client]) {
         return Plugin_Continue;
+
     } else if ((team_from == CS_TEAM_CT && team_to == CS_TEAM_T )
             || (team_from == CS_TEAM_T  && team_to == CS_TEAM_CT)) {
         // ignore changes between T/CT
         return Plugin_Handled;
+
     } else if (team_to == CS_TEAM_SPECTATOR) {
         // player voluntarily joining spec
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
-        CS_SetClientClanTag(client, "");
         int arena = g_Ranking[client];
-        g_Ranking[client] = -1;
-        UpdateArena(arena);
+        UpdateArena(arena, client);
+        if (g_hUseTeamTags.IntValue != 0)
+            CS_SetClientClanTag(client, "");
+
     } else {
         // Player first joining the game, mark them as waiting to join
-        JoinGame(client);
-    }
-    return Plugin_Handled;
-}
-
-public JoinGame(client) {
-    if (IsValidClient(client)) {
         Queue_Enqueue(g_waitingQueue, client);
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
     }
+
+    return Plugin_Handled;
 }
 
 /**
  * Hook for player chat actions, gives player the guns menu.
  */
-public Action:Command_Say(client, const String:command[], argc) {
-    char text[192];
-    if (GetCmdArgString(text, sizeof(text)) < 1)
+public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
+    if (!g_Enabled)
         return Plugin_Continue;
 
-    StripQuotes(text);
-
-    char gunsChatCommands[][] = { "gun", "guns", ".guns", ".setup", "GUNS", "!GUNS", "!guns" };
+    // To avoid cluttering up chat, these commands are hidden
+    char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns", "gnus" };
+    bool block = (g_hHideGunsChatCommands.IntValue != 0);
+    Action ret = block ? Plugin_Handled : Plugin_Continue;
 
     for (int i = 0; i < sizeof(gunsChatCommands); i++) {
-        if (strcmp(text[0], gunsChatCommands[i], false) == 0) {
-            Command_Guns(client, 0);
-            return Plugin_Handled;
+        if (strcmp(sArgs[0], gunsChatCommands[i], false) == 0) {
+            GiveWeaponMenu(client);
+            return ret;
         }
     }
     return Plugin_Continue;
 }
 
 /** sm_guns command **/
-public Action:Command_Guns(client, args) {
+public Action Command_Guns(int client, int args) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
     GiveWeaponMenu(client);
+    return Plugin_Handled;
+}
+
+public Action Command_Hidestats(int client, int args) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
+    g_HideStats[client] = !g_HideStats[client];
+    if (g_HideStats[client]) {
+        Multi1v1_Message(client, "%t", "HideStats");
+    } else {
+        Multi1v1_Message(client, "%t", "ShowStats");
+    }
+    return Plugin_Handled;
 }
 
 
@@ -681,7 +931,7 @@ public Action:Command_Guns(client, args) {
 /**
  * Switches a client to a new team.
  */
-public SwitchPlayerTeam(int client, int team) {
+public void SwitchPlayerTeam(int client, int team) {
     int previousTeam = GetClientTeam(client);
     if (previousTeam == team)
         return;
@@ -697,46 +947,9 @@ public SwitchPlayerTeam(int client, int team) {
 }
 
 /**
- * Gives helmet and kevlar, if appropriate.
- */
-public GiveVestHelm(int client, RoundType roundType) {
-    if (!IsValidClient(client))
-        return;
-
-    if (roundType == RoundType_Awp || roundType == RoundType_Rifle) {
-        SetEntData(client, g_iPlayers_HelmetOffset, 1);
-        Client_SetArmor(client, 100);
-    } else if (roundType == RoundType_Pistol) {
-        SetEntData(client, g_iPlayers_HelmetOffset, 0);
-        char kevlarAllowed[][] = {
-            "weapon_glock",
-            "weapon_hkp2000",
-            "weapon_usp_silencer"
-        };
-
-        bool giveKevlar = false;
-        for (int i = 0; i < 3; i++) {
-            if (StrEqual(g_SecondaryWeapon[client], kevlarAllowed[i])) {
-                giveKevlar = true;
-                break;
-            }
-        }
-
-        if (giveKevlar) {
-            Client_SetArmor(client, 100);
-        } else {
-            Client_SetArmor(client, 0);
-        }
-
-    } else {
-        LogError("[GiveVestHelm] Unexpected round type = %d", roundType);
-    }
-}
-
-/**
  * Timer for checking round end conditions, since rounds typically won't end naturally.
  */
-public Action:Timer_CheckRoundComplete(Handle timer) {
+public Action Timer_CheckRoundComplete(Handle timer) {
     // This is a check in case the round ended naturally, we won't force another end
     if (g_roundFinished)
         return Plugin_Stop;
@@ -745,6 +958,10 @@ public Action:Timer_CheckRoundComplete(Handle timer) {
     int nPlayers = 0;
     bool allDone = true;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
+        if (g_BlockArenaDones[arena]) {
+            allDone = false;
+            break;
+        }
 
         int p1 = g_ArenaPlayer1[arena];
         int p2 = g_ArenaPlayer2[arena];
@@ -785,15 +1002,33 @@ public Action:Timer_CheckRoundComplete(Handle timer) {
     bool waitingPlayers = nPlayers < 2 && Queue_Length(g_waitingQueue) > 0;
 
     // This check is a sanity check on when the round passes what the round time cvar allowed
-    int freezeTimeLength = GetConVarInt(FindConVar("mp_freezetime"));
-    int maxRoundLength = GetConVarInt(g_hRoundTime) + freezeTimeLength;
+    Handle freezeTimeVar = FindConVar("mp_freezetime");
+    int freezeTimeLength = GetConVarInt(freezeTimeVar);
+    if (freezeTimeVar == INVALID_HANDLE) {
+        freezeTimeLength = 0;
+        LogError("Failed to get convar mp_freezetime");
+    } else {
+        freezeTimeLength = GetConVarInt(freezeTimeVar);
+    }
+
+    int maxRoundLength = g_hRoundTime.IntValue + freezeTimeLength;
     int elapsedTime =  GetTime() - g_roundStartTime;
 
     bool roundTimeExpired = elapsedTime >= maxRoundLength && nPlayers >= 2;
 
     if (normalFinish || waitingPlayers || roundTimeExpired) {
         g_roundFinished = true;
-        CS_TerminateRound(1.0, CSRoundEnd_TerroristWin);
+
+        // find the delay value
+        float delay = 1.0;
+        Handle delayCvar = FindConVar("mp_round_restart_delay");
+        if (delayCvar == INVALID_HANDLE) {
+            LogError("Failed to find cvar mp_round_restart_delay");
+        } else {
+            delay = GetConVarFloat(delayCvar);
+        }
+
+        CS_TerminateRound(delay, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
     }
 
@@ -803,53 +1038,56 @@ public Action:Timer_CheckRoundComplete(Handle timer) {
 /**
  * Resets all client variables to their default.
  */
-public ResetClientVariables(int client) {
+public void ResetClientVariables(int client) {
     g_BlockChatMessages[client] = false;
     g_BlockStatChanges[client] = false;
+    g_BlockMVPStars[client] = false;
+    g_BlockArenaDones[client] = false;
     g_FetchedPlayerInfo[client] = false;
-    g_GunsSelected[client] = false;
+    g_GivenGunsMenu[client] = false;
     g_RoundsLeader[client] = 0;
     g_Wins[client] = 0;
     g_Losses[client] = 0;
     g_Rating[client] = 0.0;
-    g_RifleRating[client] = 0.0;
-    g_PistolRating[client] = 0.0;
-    g_AwpRating[client] = 0.0;
     g_Ranking[client] = -1;
     g_LetTimeExpire[client] = false;
-    g_AllowAWP[client] = false;
-    g_AllowPistol[client] = false;
-    g_GiveFlash[client] = false;
-    g_Preference[client] = RoundType_Rifle;
+    g_Preference[client] = 0;
     g_PrimaryWeapon[client] = "weapon_ak47";
     g_SecondaryWeapon[client] = "weapon_glock";
+    g_HideStats[client] = false;
 }
 
 /**
  * Updates an arena in case a player disconnects or leaves.
  * Checks if we should assign a winner/loser and informs the player they no longer have an opponent.
  */
-public UpdateArena(int arena) {
+public void UpdateArena(int arena, int disconnected) {
     if (arena != -1) {
         int p1 = g_ArenaPlayer1[arena];
         int p2 = g_ArenaPlayer2[arena];
-        bool hasp1 = IsActivePlayer(p1);
-        bool hasp2 = IsActivePlayer(p2);
+        bool hasp1 = IsActivePlayer(p1) && p1 != disconnected;
+        bool hasp2 = IsActivePlayer(p2) && p2 != disconnected;
 
         if (hasp1 && !hasp2) {
-            g_ArenaWinners[arena] = p1;
-            if (!g_ArenaStatsUpdated[arena])
-                DB_RoundUpdate(p1, p2, false);
-            g_ArenaLosers[arena] = -1;
-            g_ArenaPlayer2[arena] = -1;
-            g_ArenaStatsUpdated[arena] = true;
+            PlayerLeft(arena, p1, p2);
         } else if (hasp2 && !hasp1) {
-            g_ArenaWinners[arena] = p2;
-            if (!g_ArenaStatsUpdated[arena])
-                DB_RoundUpdate(p1, p2, false);
-            g_ArenaLosers[arena] = -1;
-            g_ArenaPlayer1[arena] = -1;
-            g_ArenaStatsUpdated[arena] = true;
+            PlayerLeft(arena, p2, p1);
         }
     }
+}
+
+static void PlayerLeft(int arena, int player, int left) {
+    if (!g_ArenaStatsUpdated[arena]) {
+        DB_RoundUpdate(player, left, false);
+    }
+    g_ArenaWinners[arena] = player;
+    g_ArenaLosers[arena] = -1;
+    g_ArenaStatsUpdated[arena] = true;
+    if (left == g_ArenaPlayer1[arena])
+        g_ArenaPlayer1[arena] = -1;
+    if (left == g_ArenaPlayer2[arena])
+        g_ArenaPlayer2[arena] = -1;
+
+    if (left > 0)
+        g_Ranking[left] = -1;
 }

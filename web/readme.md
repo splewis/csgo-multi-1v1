@@ -16,11 +16,12 @@ All you have to do is add a password to $anti_squatter_pass in config.inc.php an
 ```bash
 wget http://www.domain.com/stats/cron/antisquatter.php?p={YOUR_PASSWORD} && rm -rf antisquatter.php
 ```
-What that command does is request the antisquatter.php file and then deletes it.
-The anti-squatter script has a feature that prevents the file from being run on a computer other than the local machine. It does this by checking the IP of the connecting machine and comparing it with the IP of the local machine. If the IPs are the same, the script runs. This might not always work. If you are having problems, feel free to email me.
 
 ###In-Game Stats
-"sm_multi1v1_stats_url" should be set to something like "http://www.domain.com/stats/redirect.php?id=". Do this in the multi1v1.cfg config file.
+If you are using the included ``multi1v1_online_stats_viewer`` plugin, you should set the ``sm_multi1v1_stats_url``  to something like:
+``http://www.domain.com/stats/redirect.php?id={USER}&server_id={SERVER}``. 
+
+This cvar should be set in ``cfg/multi1v1/multi1v1_online_stats_viewer.cfg``.
 
 ###Web Interface
 This web interface was a quick job that I randomly took up while I was learning PHP. I will try and keep it updated when I can, but no promises. If you have any issues setting it up, feel free to email me at clayton@hiddenempire.org

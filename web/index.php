@@ -43,9 +43,11 @@
 		}
 
 		if (isset($_GET['id']) && !empty($_GET['id'])){
+
+			// TODO: this might be something worth being configurable
+			$serverID = 0;
 			$totalplayers = mysqli_num_rows(mysqli_query($connect, "SELECT * FROM $mysql_table"));
-			$searchquery = htmlentities($_GET['id']);
-			$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM $mysql_table AS s1 WHERE accountID=".mysqli_real_escape_string($connect, $searchquery);
+			$run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rating > s1.rating)+1 AS rank FROM $mysql_table AS s1 WHERE accountID=".(int)$_GET['id']." AND serverID=".(int)$serverID;
 			$query = mysqli_query($connect, $run_query);
 
 			if (mysqli_num_rows($query) > 0){

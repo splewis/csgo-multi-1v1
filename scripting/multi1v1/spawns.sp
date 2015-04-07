@@ -3,7 +3,7 @@
 /**
  * Loads the spawn positions from the map and updates global spawn arrays.
  */
-public Spawns_MapStart() {
+public void Spawns_MapStart() {
     // Note: these are arrays of arrays!
     // Each index corresponds to the data for THAT arena.
     // Example: g_hTspawns[0] has a handle to another adt array - that array contains
@@ -13,7 +13,7 @@ public Spawns_MapStart() {
     g_hCTSpawns = CreateArray();
     g_hCTAngles = CreateArray();
 
-    bool verbose = GetConVarInt(g_hVerboseSpawnModes) != 0;
+    bool verbose = g_hVerboseSpawnModes.IntValue != 0;
 
     int maxEnt = GetMaxEntities();
     char sClassName[64];
@@ -48,7 +48,7 @@ public Spawns_MapStart() {
     int t = GetArraySize(g_hTSpawns);
     g_maxArenas = (ct < t) ? ct : t;
 
-    bool takenTSpawns[g_maxArenas];
+    bool[] takenTSpawns = new bool[g_maxArenas];
     for (int i = 0; i < g_maxArenas; i++)
         takenTSpawns[i] = false;
 
@@ -82,6 +82,13 @@ public Spawns_MapStart() {
         takenTSpawns[i] = true;
     }
 
+    Call_StartForward(g_hOnSpawnsFound);
+    Call_PushCell(g_hCTSpawns);
+    Call_PushCell(g_hCTAngles);
+    Call_PushCell(g_hTSpawns);
+    Call_PushCell(g_hTAngles);
+    Call_Finish();
+
     // More Helpful logging for map developers
     if (verbose) {
         for (int i = 0; i < g_maxArenas; i++) {
@@ -110,10 +117,10 @@ public Spawns_MapStart() {
 
 }
 
-static AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleList) {
+static void AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleList) {
     for (int i = 0; i < GetArraySize(spawnList); i++) {
-        Handle spawns = Handle:GetArrayCell(spawnList, i);
-        Handle angles = Handle:GetArrayCell(angleList, i);
+        Handle spawns = view_as<Handle>(GetArrayCell(spawnList, i));
+        Handle angles = view_as<Handle>(GetArrayCell(angleList, i));
         int closestIndex = NearestNeighborIndex(spawn, spawns);
 
         if (closestIndex >= 0) {
@@ -137,28 +144,7 @@ static AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleLi
     PushArrayCell(angleList, angles);
 }
 
-public GetSpawn(int arena, int team, float origin[3], float angle[3]) {
-    if (team == CS_TEAM_CT) {
-        Handle spawns = Handle:GetArrayCell(g_hCTSpawns, arena - 1);
-        Handle angles = Handle:GetArrayCell(g_hCTAngles, arena - 1);
-        int count = GetArraySize(spawns);
-        int index = GetRandomInt(0, count - 1);
-        GetArrayArray(spawns, index, origin);
-        GetArrayArray(angles, index, angle);
-    } else if (team == CS_TEAM_T) {
-        Handle spawns = Handle:GetArrayCell(g_hTSpawns, arena - 1);
-        Handle angles = Handle:GetArrayCell(g_hTAngles, arena - 1);
-        int count = GetArraySize(spawns);
-        int index = GetRandomInt(0, count - 1);
-        GetArrayArray(spawns, index, origin);
-        GetArrayArray(angles, index, angle);
-    } else {
-        LogError("Trying to find a spawn for a player not on a team! arena=%d, team=%d",
-                 arena, team);
-    }
-}
-
-Spawns_MapEnd() {
+public void Spawns_MapEnd() {
     CloseHandleArray(g_hTSpawns);
     CloseHandleArray(g_hTAngles);
     CloseHandleArray(g_hCTSpawns);
