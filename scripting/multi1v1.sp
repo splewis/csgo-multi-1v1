@@ -50,7 +50,6 @@ ConVar g_hPistolMenu;
 ConVar g_hPreferenceWeight;
 ConVar g_hRifleMenu;
 ConVar g_hRoundTime;
-ConVar g_hSupport3rdPartyKnife;
 ConVar g_hUseChatPrefix;
 ConVar g_hUseDatabase;
 ConVar g_hUseMVPStars;
@@ -189,7 +188,6 @@ public void OnPluginStart() {
     g_hPreferenceWeight = CreateConVar("sm_multi1v1_preference_weight", "1", "How much weight are given to preferences when round types are being selected. Use a higher number for a preference to be more likely, or 0 to make the preference have no effect");
     g_hRifleMenu = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
     g_hRoundTime = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
-    g_hSupport3rdPartyKnife = CreateConVar("sm_multi1v1_support_3rdparty", "Should the plugin support 3rd party knives");
     g_hUseChatPrefix = CreateConVar("sm_multi1v1_use_chat_prefix", "1", "Whether to use a [Multi1v1] tag in chat messages");
     g_hUseDatabase = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
     g_hUseMVPStars = CreateConVar("sm_multi1v1_use_mvp_stars", "1", "Whether MVP stars are updated to reflect a player's number of rounds in arena 1");
@@ -291,26 +289,7 @@ static void AddUpdater() {
     }
 }
 
-// Patch support for klexen's sm_knifeugrade plugin
-public void ForceKnifeSupportVars() {
-    Handle sm_knifeupgrade_goldknife_crash = FindConVar("sm_knifeupgrade_goldknife_crash");
-    if (sm_knifeupgrade_goldknife_crash != INVALID_HANDLE && GetConVarBool(sm_knifeupgrade_goldknife_crash))
-        SetConVarBool(sm_knifeupgrade_goldknife_crash, false);
-
-    Handle sm_knifeupgrade_round_crash = FindConVar("sm_knifeupgrade_round_crash");
-    if (sm_knifeupgrade_round_crash != INVALID_HANDLE && GetConVarBool(sm_knifeupgrade_round_crash))
-        SetConVarBool(sm_knifeupgrade_round_crash, false);
-}
-
-public void OnConfigsExecuted() {
-    if (g_hSupport3rdPartyKnife.IntValue != 0)
-        ForceKnifeSupportVars();
-}
-
 public void OnMapStart() {
-    if (g_hSupport3rdPartyKnife.IntValue != 0)
-        ForceKnifeSupportVars();
-
     Spawns_MapStart();
     Weapons_MapStart();
 

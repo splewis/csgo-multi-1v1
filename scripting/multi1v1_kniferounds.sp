@@ -20,4 +20,5 @@ public void Multi1v1_OnRoundTypesAdded() {
 
 public void KnifeHandler(int client) {
     Client_SetArmor(client, 100);
+    GivePlayerItem(client, "weapon_knife");
 }

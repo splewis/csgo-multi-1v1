@@ -176,6 +176,7 @@ public void RifleHandler(int client) {
     if (pistolBehavior != 1) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
     }
+    GivePlayerItem(client, "weapon_knife");
 }
 
 public void PistolHandler(int client) {
@@ -187,6 +188,7 @@ public void PistolHandler(int client) {
     } else {
         Client_SetArmor(client, 0);
     }
+    GivePlayerItem(client, "weapon_knife");
 }
 
 public void AwpHandler(int client) {
@@ -201,4 +203,5 @@ public void AwpHandler(int client) {
         g_hDefaultPistol.GetString(defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
     }
+    GivePlayerItem(client, "weapon_knife");
 }
