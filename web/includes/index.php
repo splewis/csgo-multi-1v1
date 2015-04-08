@@ -11,8 +11,8 @@ $generated = "<table class=\"tg\" width=\"450px\">
 
 $alt = 0;
 
-$server_limit = 'AND serverID=1';
-$server_id = '1';
+$server_limit = 'AND serverID=0';
+$server_id = '0';
 if (isset($_GET['serverid'])) {
 	$server_id = (int)$_GET['serverid'];
 	$server_limit = 'AND serverID='.(int)$_GET['serverid'];
