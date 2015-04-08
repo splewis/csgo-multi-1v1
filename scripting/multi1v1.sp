@@ -180,7 +180,7 @@ public void OnPluginStart() {
     g_hAutoUpdate = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to auto-update. Requies the \"Updater\" plugin");
     g_hBlockRadio = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_hDatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
-    g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server. Most users don't need to change this but if you are using the web interface, this cannot be set to 0");
+    g_hDatabaseServerId = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server. Most users don't need to change this but if you are using the web interface and/or want to show/store stats for multiple servers, it should.");
     g_hDefaultPistol = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_hExecDefaultConfig = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
     g_hHideGunsChatCommands = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
