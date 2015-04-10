@@ -24,7 +24,7 @@ If you are using the included ``multi1v1_online_stats_viewer`` plugin, you shoul
 
 These cvars should be set in ``cfg/multi1v1/multi1v1_online_stats_viewer.cfg``.
 
-**Note**: Don't forget that if you have multiple servers with different IDs you have to set the URL with the serverid in the plugin config or else it will only the stats for serverID 1.
+**Note**: Don't forget that if you have multiple servers with different IDs you have to set the URL with the serverid in the plugin config or else it will only the stats for serverID 0.
 
 ###Other Info
 This web interface was a quick job that I randomly took up while I was learning PHP. I don't have a 1v1 server anymore but I will try and keep it updated when I can, but no promises. If you have any issues setting it up, feel free to email me at clayton@hiddenempire.org.
