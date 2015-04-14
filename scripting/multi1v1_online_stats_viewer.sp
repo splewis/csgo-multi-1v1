@@ -53,9 +53,21 @@ public Action Command_Top(int client, int args) {
         return Plugin_Handled;
     }
 
-    LogDebug("Giving top url %s to player %L", url, client);
-    ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
-    QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
+    ConVar idCvar = FindConVar("sm_multi1v1_database_server_id");
+    if (idCvar == null) {
+        LogError("Failed to get id cvar: sm_multi1v1_database_server_id");
+    } else {
+        char serverIDString[32];
+        IntToString(idCvar.IntValue, serverIDString, sizeof(serverIDString));
+
+        ReplaceString(url, sizeof(url), "{SID}", serverIDString, false);
+        ReplaceString(url, sizeof(url), "{SERVER}", serverIDString, false);
+        ReplaceString(url, sizeof(url), "{SERVERID}", serverIDString, false);
+
+        LogDebug("Giving top url %s to player %L", url, client);
+        ShowMOTDPanel(client, "Multi1v1 Stats", url, MOTDPANEL_TYPE_URL);
+        QueryClientConVar(client, "cl_disablehtmlmotd", CheckMOTDAllowed, client);
+    }
 
     return Plugin_Handled;
 }
@@ -78,15 +90,15 @@ public void ShowStatsForPlayer(int client, int target) {
         return;
     }
 
-    Handle idCvar = FindConVar("sm_multi1v1_database_server_id");
-    if (idCvar == INVALID_HANDLE) {
+    ConVar idCvar = FindConVar("sm_multi1v1_database_server_id");
+    if (idCvar == null) {
         LogError("Failed to get id cvar: sm_multi1v1_database_server_id");
     } else {
         char serverIDString[32];
-        Format(serverIDString, sizeof(serverIDString), "%d", GetConVarInt(idCvar));
+        IntToString(idCvar.IntValue, serverIDString, sizeof(serverIDString));
 
         char accountIDString[32];
-        Format(accountIDString, sizeof(accountIDString), "%d", GetSteamAccountID(target));
+        IntToString(GetSteamAccountID(target), accountIDString, sizeof(accountIDString));
 
         ReplaceString(url, sizeof(url), "{UID}", accountIDString, false);
         ReplaceString(url, sizeof(url), "{USER}", accountIDString, false);
