@@ -28,7 +28,7 @@
 		<?php
 		if (isset($_GET['searchquery']) && !empty($_GET['searchquery']) && strlen($_GET['searchquery'])>2){
 			$searchquery = htmlentities($_GET['searchquery']);
-			$run_query = "SELECT `accountID`, `name` FROM multi1v1_stats WHERE name LIKE '%".mysqli_real_escape_string($connect, $searchquery)."%'";
+			$run_query = "SELECT `accountID`, `serverID`, `name` FROM multi1v1_stats WHERE name LIKE '%".mysqli_real_escape_string($connect, $searchquery)."%'";
 			$query = mysqli_query($connect, $run_query);
 
 			echo "<h3>Searching for players with name \"$searchquery\".</h3>";
@@ -37,8 +37,10 @@
 				if ($query) {
 					while ($row = mysqli_fetch_assoc($query)){
 						$accountID = $row['accountID'];
+						$server_id = $row['serverID'];
 						$name = htmlentities($row['name']);
-						echo "<h2><li><a href=\"index.php?id=".$accountID."\">$name</a></li></h2>";
+                                                //FIX SERVER ID
+						echo "<h2><li><a href=\"index.php?id=$accountID&serverid=$server_id\">$name (Server $server_id)</a></li></h2>";
 					}
 				}
 				echo "</ul></div>";
