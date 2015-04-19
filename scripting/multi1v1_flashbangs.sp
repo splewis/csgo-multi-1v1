@@ -61,7 +61,7 @@ public void Multi1v1_AfterPlayerSpawn(int client) {
     }
 }
 
-public int OnClientCookiesCached(int client) {
+public void OnClientCookiesCached(int client) {
     if (IsFakeClient(client))
         return;
     g_GiveFlash[client] = GetCookieBool(client, g_hFlashCookie);

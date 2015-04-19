@@ -355,7 +355,7 @@ public void OnClientDisconnect(int client) {
     ResetClientVariables(client);
 }
 
-public int OnClientCookiesCached(int client) {
+public void OnClientCookiesCached(int client) {
     if (IsFakeClient(client))
         return;
     UpdatePreferencesOnCookies(client);
