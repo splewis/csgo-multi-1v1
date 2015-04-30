@@ -640,6 +640,9 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
     if (g_hUseMVPStars.IntValue != 0)
         CS_SetMVPCount(client, g_RoundsLeader[client]);
 
+    int roundType = (arena == -1) ? 0 : g_roundTypes[arena];
+    Multi1v1_GivePlayerArenaWeapons(client, roundType);
+
     Call_StartForward(g_hAfterPlayerSetup);
     Call_PushCell(client);
     Call_Finish();
@@ -769,8 +772,6 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
         return;
     }
 
-    int roundType = (arena == -1) ? 0 : g_roundTypes[arena];
-    Multi1v1_GivePlayerArenaWeapons(client, roundType);
     CreateTimer(0.1, RemoveRadar, client);
 
     Call_StartForward(g_hAfterPlayerSpawn);
