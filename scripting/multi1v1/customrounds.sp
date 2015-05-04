@@ -26,11 +26,14 @@ public void AddCustomRounds() {
             g_RoundTypeHelmet[roundType] = helmet;
 
             if (kv.JumpToKey("weapons")) {
-                do {
-                    char weapon[WEAPON_NAME_LENGTH];
-                    kv.GetSectionName(weapon, sizeof(weapon));
-                    g_RoundTypeWeaponLists[roundType].PushString(weapon);
-                } while (kv.GotoNextKey(true));
+                if (kv.GotoFirstSubKey(false)) {
+                    do {
+                        char weapon[WEAPON_NAME_LENGTH];
+                        kv.GetSectionName(weapon, sizeof(weapon));
+                        g_RoundTypeWeaponLists[roundType].PushString(weapon);
+                    } while (kv.GotoNextKey(false));
+                    kv.GoBack();
+                }
                 kv.GoBack();
             }
 

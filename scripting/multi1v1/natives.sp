@@ -215,12 +215,13 @@ public int Native_Multi1v1Message(Handle plugin, int numParams) {
 
 public int Native_Multi1v1MessageToAll(Handle plugin, int numParams) {
     char buffer[1024];
+    char finalMsg[1024];
+
     int bytesWritten = 0;
     for (int i = 1; i <= MaxClients; i++) {
         if (IsValidClient(i)) {
             SetGlobalTransTarget(i);
             FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
-            char finalMsg[1024];
 
             if (g_hUseChatPrefix.IntValue == 0)
                 Format(finalMsg, sizeof(finalMsg), " %s", buffer);
