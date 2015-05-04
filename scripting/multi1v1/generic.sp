@@ -307,7 +307,7 @@ stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude, bool
     int offset = Client_GetWeaponsOffset(client) - 4;
 
     int numWeaponsRemoved = 0;
-    for (int i=0; i < MAX_WEAPONS; i++) {
+    for (int i = 0; i < MAX_WEAPONS; i++) {
         offset += 4;
 
         int weapon = GetEntDataEnt2(client, offset);

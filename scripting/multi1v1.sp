@@ -27,7 +27,6 @@
 
 #define DISTRIBUTION_SPREAD 1000.0
 #define K_FACTOR 8.0
-#define MAX_ROUND_TYPES 16
 #define MENU_TIME_LENGTH 15
 #define ROUND_TYPE_NAME_LENGTH 64
 #define TABLE_NAME "multi1v1_stats"
@@ -113,6 +112,11 @@ int g_ArenaLosers[MAXPLAYERS+1] = -1;   // who lost each arena
 int g_roundTypes[MAXPLAYERS+1];         // the round type being used in the arena
 int g_RoundsLeader[MAXPLAYERS+1] = 0;
 
+/** Variables for custom-configurable round types **/
+ArrayList g_RoundTypeWeaponLists[MAX_ROUND_TYPES];
+bool g_RoundTypeKevlar[MAX_ROUND_TYPES];
+bool g_RoundTypeHelmet[MAX_ROUND_TYPES];
+
 /** Overall global variables **/
 int g_arenaOffsetValue = 0;
 int g_roundStartTime = 0;
@@ -142,6 +146,7 @@ Handle g_hOnSpawnsFound = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
 
 /** multi1v1 function includes **/
+#include "multi1v1/customrounds.sp"
 #include "multi1v1/generic.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/radiocommands.sp"
@@ -234,6 +239,10 @@ public void OnPluginStart() {
 
     g_waitingQueue = Queue_Init();
 
+    for (int i = 0; i < sizeof(g_RoundTypeWeaponLists); i++) {
+        g_RoundTypeWeaponLists[i] = new ArrayList(WEAPON_NAME_LENGTH);
+    }
+
     if (g_hAutoUpdate.IntValue != 0) {
         AddUpdater();
     }
@@ -295,6 +304,7 @@ public void OnMapStart() {
 
     Multi1v1_ClearRoundTypes();
     Multi1v1_AddStandardRounds();
+    AddCustomRounds();
     Call_StartForward(g_hOnRoundTypesAdded);
     Call_Finish();
 

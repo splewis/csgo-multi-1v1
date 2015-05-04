@@ -4,6 +4,7 @@
 #define _multi1v1_included
 
 #define WEAPON_NAME_LENGTH 32
+#define MAX_ROUND_TYPES 16
 
 /**
  * Called right before the plugin puts players into the ranking queue.

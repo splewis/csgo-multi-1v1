@@ -160,7 +160,52 @@ If you have a game-hosting specific provider, they may already have SQLite insta
 
 
 ## Custom Round Types
-[multi1v1.inc](scripting/include/multi1v1.inc) contains a few very useful forwards and natives for adding new round types. To get a simple example, check [multi1v1_kniferounds.sp](scripting/multi1v1_kniferounds.sp). The key is calling ``Multi1v1_AddRoundType`` within the ``Multi1v1_OnRoundTypesAdded`` forward.
+
+There are two ways to add your own round types: through writing another plugin using the forward and natives in [multi1v1.inc](scripting/include/multi1v1.inc), and
+defining a round type in a config file.
+
+### Adding round types via a config file
+
+This is the simpler approach, but you are fairly restricted in the logic you can use. The file to edit is ``addons/sourcemod/configs/multi1v1_customrounds.cfg``.
+
+Here is an example file that adds a scout round and a knife round:
+```
+"CustomRoundTypes"
+{
+    "scout"
+    {
+        "name"      "Scout"
+        "ranked"        "1"
+        "ratingFieldName"       "scoutRating"
+        "optional"      "1"
+        "enabled"       "1"
+        "armor"     "1"
+        "helmet"        "1"
+        "weapons"
+        {
+            "weapon_knife"      ""
+            "weapon_ssg08"      ""
+        }
+    }
+    "knife"
+    {
+        "name"      "Knife"
+        "ranked"        "0"
+        "optional"      "1"
+        "enabled"       "1"
+        "armor"     "1"
+        "helmet"        "1"
+        "weapons"
+        {
+            "weapon_knife"      ""
+        }
+    }
+}
+```
+
+### Adding round types via another plugin
+
+Using the natives in [multi1v1.inc](scripting/include/multi1v1.inc), you can write more complex logic into a round type. To get a simple example, check [multi1v1_kniferounds.sp](scripting/multi1v1_kniferounds.sp). The key is calling ``Multi1v1_AddRoundType`` within the ``Multi1v1_OnRoundTypesAdded`` forward.
 
 ```
 typedef RoundTypeWeaponHandler = function void (int client);
@@ -169,11 +214,12 @@ typedef RoundTypeMenuHandler = function void (int client);
 // Registers a new round type by the plugin.
 native int Multi1v1_AddRoundType(const char[] displayName,
                                  const char[] internalName,
-                                 RoundTypeWeaponHandler weaponsHandler,
+                                 RoundTypeWeaponHandler weaponsHandler=Multi1v1_NullWeaponHandler,
                                  RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
                                  bool optional=true,
                                  bool ranked=false,
-                                 const char[] ratingFieldName="");
+                                 const char[] ratingFieldName="",
+                                 bool enabled=true);
 ```
 
 More advanced usage would involve passing a real function as the 4th parameter instead of ``Multi1v1_NullChoiceMenu``.
