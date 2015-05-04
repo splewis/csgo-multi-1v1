@@ -25,6 +25,7 @@ public void AddCustomRounds() {
             g_RoundTypeKevlar[roundType] = armor;
             g_RoundTypeHelmet[roundType] = helmet;
 
+            g_RoundTypeWeaponLists[roundType].Clear();
             if (kv.JumpToKey("weapons")) {
                 if (kv.GotoFirstSubKey(false)) {
                     do {
@@ -49,10 +50,11 @@ public void CustomWeaponHandler(int client) {
     int arena = g_Ranking[client];
     int roundType = g_roundTypes[arena];
     ArrayList weapons = g_RoundTypeWeaponLists[roundType];
+
     for (int i = 0; i < weapons.Length; i++) {
         char weapon[WEAPON_NAME_LENGTH];
         weapons.GetString(i, weapon, sizeof(weapon));
-        GivePlayerItem(client, weapon);
+        GiveWeapon(client, weapon);
     }
 
     Client_SetArmor(client, g_RoundTypeKevlar[roundType] ? 100 : 0);
