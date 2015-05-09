@@ -1,3 +1,9 @@
+1.0.1:
+- Add cvar ``sm_multi1v1_enabled`` (default 1)
+- Add forward ``Multi1v1_OnSpawnsFound``
+- Add support for serverid (default 0) within the stats webpage and within the top url in the online_stats_viewer plugin
+- In addition to other plugins adding round types, simple round types can be defined in the new config file addons/sourcemod/configs/multi1v1_customrounds.cfg
+
 1.0.0:
  - **move to sourcemod 1.7 transitional syntax and API**
  - weapon lists are now stored in configs/multi1v1_weapons.cfg rather than hardcoded into the plugin
