@@ -40,8 +40,8 @@ forward void Multi1v1_OnArenasReady();
 forward void Multi1v1_AfterPlayerSpawn(int client);
 
 /**
- * Called after core player setup functions (teleporting, printing their opponent to chat)
- * are processed.
+ * Called after core player setup functions (teleporting, printing their opponent to chat, giving weapons)
+ * are completed.
  *
  * @param client Player's index.
  * @noreturn

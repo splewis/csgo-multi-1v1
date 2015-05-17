@@ -47,7 +47,7 @@ public int MenuHandler_FlashChoice(Handle menu, MenuAction action, int param1, i
     }
 }
 
-public void Multi1v1_AfterPlayerSpawn(int client) {
+public void Multi1v1_AfterPlayerSetup(int client) {
     if (!IsActivePlayer(client)) {
         return;
     }
