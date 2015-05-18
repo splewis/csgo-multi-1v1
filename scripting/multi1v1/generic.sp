@@ -4,8 +4,8 @@
 #define INTEGER_STRING_LENGTH 20 // max number of digits a 64-bit integer can use up as a string
                                  // this is for converting ints to strings when setting menu values/cookies
 
-char g_ColorNames[][] = {"{NORMAL}", "{DARK_RED}", "{PURPLE}", "{GREEN}", "{MOSS_GREEN}", "{LIGHT_GREEN}", "{LIGHT_RED}", "{GRAY}", "{ORANGE}", "{LIGHT_BLUE}", "{DARK_BLUE}", "{PURPLE}", "{CARRIAGE_RETURN}"};
-char g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",         "\x05",     "\x06",          "\x07",        "\x08",   "\x09",     "\x0B",         "\x0C",        "\x0E",     "\n"};
+char g_ColorNames[][] = {"{NORMAL}", "{DARK_RED}", "{PURPLE}", "{GREEN}", "{MOSS_GREEN}", "{LIGHT_GREEN}", "{LIGHT_RED}", "{GRAY}", "{ORANGE}", "{LIGHT_BLUE}", "{DARK_BLUE}", "{PURPLE}"};
+char g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",         "\x05",     "\x06",          "\x07",        "\x08",   "\x09",     "\x0B",         "\x0C",        "\x0E"};
 
 #include <clientprefs>
 #include <cstrike>
@@ -334,4 +334,12 @@ stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude, bool
     }
 
     return numWeaponsRemoved;
+}
+
+stock ConVar FindCvarAndLogError(const char[] name) {
+    ConVar c = FindConVar(name);
+    if (c == null) {
+        LogError("ConVar \"%s\" could not be found");
+    }
+    return c;
 }

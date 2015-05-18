@@ -132,6 +132,10 @@ ArrayList g_TAnglesList;
 ArrayList g_CTSpawnsList;
 ArrayList g_CTAnglesList;
 
+/** Saved stock cvar handles **/
+ConVar g_FreezetimeCvar;
+ConVar g_RoundRestartDelayCvar;
+
 /** Forwards **/
 Handle g_hAfterPlayerSetup = INVALID_HANDLE;
 Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
@@ -207,6 +211,11 @@ public void OnPluginStart() {
     /** Version cvar **/
     g_VersionCvar = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     SetConVarString(g_VersionCvar, PLUGIN_VERSION);
+
+    /** Find default game cvars **/
+    g_FreezetimeCvar = FindCvarAndLogError("mp_freezetime");
+    g_RoundRestartDelayCvar = FindCvarAndLogError("mp_round_restart_delay");
+
 
     /** Hooks **/
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
@@ -385,18 +394,18 @@ public void OnClientCookiesCached(int client) {
  * if a player does not select a team but leaves their mouse over one, they are
  * put on that team and spawned, so we can't allow that.
  */
-public Action Event_OnFullConnect(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnFullConnect(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
 
-    int client = GetClientOfUserId(GetEventInt(event, "userid"));
+    int client = GetClientOfUserId(event.GetInt("userid"));
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
 }
 
 /**
  * Silences team join/switch events.
  */
-public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnPlayerTeam(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return Plugin_Continue;
 
@@ -407,7 +416,7 @@ public Action Event_OnPlayerTeam(Handle event, const char[] name, bool dontBroad
 /**
  * Round pre-start, sets up who goes in which arena for this round.
  */
-public Action Event_OnRoundPreStart(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnRoundPreStart(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
 
@@ -552,7 +561,7 @@ public void AddPlayer(int client, Handle rankingQueue) {
 /**
  * Round poststart - puts players in their arena and gives them weapons.
  */
-public Action Event_OnRoundPostStart(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnRoundPostStart(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
 
@@ -665,7 +674,7 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
  *  - throws all the players into a queue according to their standing from this round
  *  - updates globals g_Ranking, g_ArenaPlayer1, g_ArenaPlayer2 for the next round setup
  */
-public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
 
@@ -710,12 +719,12 @@ public Action Event_OnRoundEnd(Handle event, const char[] name, bool dontBroadca
 /**
  * Player death event, updates g_arenaWinners/g_arenaLosers for the arena that was just decided.
  */
-public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
 
-    int victim = GetClientOfUserId(GetEventInt(event, "userid"));
-    int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
+    int victim = GetClientOfUserId(event.GetInt("userid"));
+    int attacker = GetClientOfUserId(event.GetInt("attacker"));
     int arena = g_Ranking[victim];
 
     // If we've already decided the arena, don't worry about anything else in it
@@ -766,11 +775,11 @@ public Action Event_OnPlayerDeath(Handle event, const char[] name, bool dontBroa
  * Player spawn event - gives the appropriate weapons to a player for his arena.
  * Warning: do NOT assume this is called before or after the round start event!
  */
-public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
 
-    int client = GetClientOfUserId(GetEventInt(event, "userid"));
+    int client = GetClientOfUserId(event.GetInt("userid"));
     if (!IsActivePlayer(client))
         return;
 
@@ -791,7 +800,7 @@ public Action Event_OnPlayerSpawn(Handle event, const char[] name, bool dontBroa
 }
 
 
-public Action Event_MatchOver(Handle event, const char[] name, bool dontBroadcast) {
+public Action Event_MatchOver(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
 
@@ -992,32 +1001,15 @@ public Action Timer_CheckRoundComplete(Handle timer) {
     bool waitingPlayers = nPlayers < 2 && Queue_Length(g_waitingQueue) > 0;
 
     // This check is a sanity check on when the round passes what the round time cvar allowed
-    Handle freezeTimeVar = FindConVar("mp_freezetime");
-    int freezeTimeLength = GetConVarInt(freezeTimeVar);
-    if (freezeTimeVar == INVALID_HANDLE) {
-        freezeTimeLength = 0;
-        LogError("Failed to get convar mp_freezetime");
-    } else {
-        freezeTimeLength = GetConVarInt(freezeTimeVar);
-    }
-
+    int freezeTimeLength = g_FreezetimeCvar.IntValue;
     int maxRoundLength = g_RoundTimeCvar.IntValue + freezeTimeLength;
     int elapsedTime =  GetTime() - g_roundStartTime;
-
     bool roundTimeExpired = elapsedTime >= maxRoundLength && nPlayers >= 2;
 
     if (normalFinish || waitingPlayers || roundTimeExpired) {
         g_roundFinished = true;
 
-        // find the delay value
-        float delay = 1.0;
-        Handle delayCvar = FindConVar("mp_round_restart_delay");
-        if (delayCvar == INVALID_HANDLE) {
-            LogError("Failed to find cvar mp_round_restart_delay");
-        } else {
-            delay = GetConVarFloat(delayCvar);
-        }
-
+        float delay = g_RoundRestartDelayCvar.FloatValue;
         CS_TerminateRound(delay, CSRoundEnd_TerroristWin);
         return Plugin_Stop;
     }
