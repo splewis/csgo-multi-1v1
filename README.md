@@ -97,7 +97,7 @@ Guidelines for making a multi-1v1 map:
 - Ensure that the arenas are sufficiently far apart so players don't hear shooting in other arenas
 - If you want to edit your map, it's easiest to delete all but 1 arena and re-copy them. Be warned this can cause issues with the game's lighting and clients may crash the first time they load the new map if they had downloaded the old one previously
 - You should avoid areas where it's easy for 1 player to hide; ideally they should have to cover multiple angles if they sit in one spot
-- Here is an example map: [am_grass2.vmf](https://dl.dropboxusercontent.com/u/76035852/am_grass2.zip)
+- Here is an example map: [am_grass2.vmf](misc/am_grass2.vmf)
 - The cvar ``sm_multi1v1_verbose_spawns`` can be set to 1 to log information about how the spawns were partitioned into arenas on map changes
 
 
