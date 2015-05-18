@@ -6,14 +6,14 @@
 public void Spawns_MapStart() {
     // Note: these are arrays of arrays!
     // Each index corresponds to the data for THAT arena.
-    // Example: g_hTspawns[0] has a handle to another adt array - that array contains
+    // Example: g_TspawnsList[0] has a handle to another adt array - that array contains
     //   the 3-vectors of spawns.
-    g_hTSpawns = CreateArray();
-    g_hTAngles = CreateArray();
-    g_hCTSpawns = CreateArray();
-    g_hCTAngles = CreateArray();
+    g_TSpawnsList = new ArrayList();
+    g_TAnglesList = new ArrayList();
+    g_CTSpawnsList = new ArrayList();
+    g_CTAnglesList = new ArrayList();
 
-    bool verbose = g_hVerboseSpawnModes.IntValue != 0;
+    bool verbose = g_VerboseSpawnModeCvar.IntValue != 0;
 
     int maxEnt = GetMaxEntities();
     char sClassName[64];
@@ -28,7 +28,7 @@ public void Spawns_MapStart() {
             if (StrEqual(sClassName, "info_player_terrorist")) {
                 GetEntPropVector(i, Prop_Data, "m_vecOrigin", spawn);
                 GetEntPropVector(i, Prop_Data, "m_angRotation", angle);
-                AddSpawn(spawn, angle, g_hTSpawns, g_hTAngles);
+                AddSpawn(spawn, angle, g_TSpawnsList, g_TAnglesList);
                 if (verbose)
                     LogMessage("T spawn (ent %d) %f %f %f",
                                i, spawn[0], spawn[1], spawn[2]);
@@ -36,7 +36,7 @@ public void Spawns_MapStart() {
             }  else if (StrEqual(sClassName, "info_player_counterterrorist")) {
                 GetEntPropVector(i, Prop_Data, "m_vecOrigin", spawn);
                 GetEntPropVector(i, Prop_Data, "m_angRotation", angle);
-                AddSpawn(spawn, angle, g_hCTSpawns, g_hCTAngles);
+                AddSpawn(spawn, angle, g_CTSpawnsList, g_CTAnglesList);
                 if (verbose)
                     LogMessage("CT spawn (ent %d) %f %f %f",
                                i, spawn[0], spawn[1], spawn[2]);
@@ -44,8 +44,8 @@ public void Spawns_MapStart() {
         }
     }
 
-    int ct = GetArraySize(g_hCTSpawns);
-    int t = GetArraySize(g_hTSpawns);
+    int ct = GetArraySize(g_CTSpawnsList);
+    int t = GetArraySize(g_TSpawnsList);
     g_maxArenas = (ct < t) ? ct : t;
 
     bool[] takenTSpawns = new bool[g_maxArenas];
@@ -55,7 +55,7 @@ public void Spawns_MapStart() {
 
     // Looping through CT spawn clusters, matching the nearest T spawn cluster to each
     for (int i = 0; i < g_maxArenas; i++) {
-        Handle ct_spawns = GetArrayCell(g_hCTSpawns, i);
+        ArrayList ct_spawns = view_as<ArrayList>(g_CTSpawnsList.Get(i));
 
         int closestIndex = -1;
         float closestDist = 0.0;
@@ -64,11 +64,11 @@ public void Spawns_MapStart() {
             if (takenTSpawns[j])
                 continue;
 
-            Handle t_spawns = GetArrayCell(g_hTSpawns, j);
+            ArrayList t_spawns = view_as<ArrayList>(g_TSpawnsList.Get(j));
             float vec1[3];
             float vec2[3];
-            GetArrayArray(ct_spawns, 0, vec1);
-            GetArrayArray(t_spawns, 0, vec2);
+            ct_spawns.GetArray(0, vec1);
+            t_spawns.GetArray(0, vec2);
             float dist = GetVectorDistance(vec1, vec2);
 
             if (closestIndex < 0 || dist < closestDist) {
@@ -77,16 +77,16 @@ public void Spawns_MapStart() {
             }
         }
 
-        SwapArrayItems(g_hTSpawns, i, closestIndex);
-        SwapArrayItems(g_hTAngles, i, closestIndex);
+        SwapArrayItems(g_TSpawnsList, i, closestIndex);
+        SwapArrayItems(g_TAnglesList, i, closestIndex);
         takenTSpawns[i] = true;
     }
 
     Call_StartForward(g_hOnSpawnsFound);
-    Call_PushCell(g_hCTSpawns);
-    Call_PushCell(g_hCTAngles);
-    Call_PushCell(g_hTSpawns);
-    Call_PushCell(g_hTAngles);
+    Call_PushCell(g_CTSpawnsList);
+    Call_PushCell(g_CTAnglesList);
+    Call_PushCell(g_TSpawnsList);
+    Call_PushCell(g_TAnglesList);
     Call_Finish();
 
     // More Helpful logging for map developers
@@ -94,17 +94,17 @@ public void Spawns_MapStart() {
         for (int i = 0; i < g_maxArenas; i++) {
             LogMessage("Cluster %d:", i + 1);
 
-            Handle ct_spawns = GetArrayCell(g_hCTSpawns, i);
+            ArrayList ct_spawns = view_as<ArrayList>(g_CTSpawnsList.Get(i));
             for (int j = 0; j < GetArraySize(ct_spawns); j++) {
                 float vec[3];
-                GetArrayArray(ct_spawns, j, vec);
+                ct_spawns.GetArray(j, vec);
                 LogMessage("  CT Spawn %d: %f %f %f", j + 1, vec[0], vec[1], vec[2]);
             }
 
-            Handle t_spawns = GetArrayCell(g_hTSpawns, i);
+            ArrayList t_spawns = view_as<ArrayList>(g_TSpawnsList.Get(i));
             for (int j = 0; j < GetArraySize(t_spawns); j++) {
                 float vec[3];
-                GetArrayArray(t_spawns, j, vec);
+                t_spawns.GetArray(j, vec);
                 LogMessage("  T Spawn  %d: %f %f %f", j + 1, vec[0], vec[1], vec[2]);
             }
 
@@ -114,39 +114,41 @@ public void Spawns_MapStart() {
     if (g_maxArenas <= 0) {
         LogError("No arenas could be found for this map!");
     }
-
 }
 
-static void AddSpawn(float spawn[3], float angle[3], Handle spawnList, Handle angleList) {
+static void AddSpawn(float spawn[3], float angle[3], ArrayList spawnList, ArrayList angleList) {
+    // First scan for a nearby arena to place this spawn into.
+    // If one is found - these spawn is pushed onto that arena's list.
     for (int i = 0; i < GetArraySize(spawnList); i++) {
-        Handle spawns = view_as<Handle>(GetArrayCell(spawnList, i));
-        Handle angles = view_as<Handle>(GetArrayCell(angleList, i));
+        ArrayList spawns = view_as<ArrayList>(spawnList.Get(i));
+        ArrayList angles = view_as<ArrayList>(angleList.Get(i));
         int closestIndex = NearestNeighborIndex(spawn, spawns);
 
         if (closestIndex >= 0) {
             float closestSpawn[3];
-            GetArrayArray(spawns, closestIndex, closestSpawn);
+            spawns.GetArray(closestIndex, closestSpawn);
             float dist = GetVectorDistance(spawn, closestSpawn);
 
             if (dist < SAME_ARENA_THRESHOLD) {
-                PushArrayArray(spawns, spawn);
-                PushArrayArray(angles, angle);
+                spawns.PushArray(spawn);
+                angles.PushArray(angle);
                 return;
             }
         }
     }
 
-    Handle spawns = CreateArray(3);
-    Handle angles = CreateArray(3);
-    PushArrayArray(spawns, spawn);
-    PushArrayArray(angles, angle);
+    // If no nearby arena was found - create a new list for this newly found arena and push it.
+    ArrayList spawns = new ArrayList(3);
+    ArrayList angles = new ArrayList(3);
+    spawns.PushArray(spawn);
+    angles.PushArray(angle);
     PushArrayCell(spawnList, spawns);
     PushArrayCell(angleList, angles);
 }
 
 public void Spawns_MapEnd() {
-    CloseHandleArray(g_hTSpawns);
-    CloseHandleArray(g_hTAngles);
-    CloseHandleArray(g_hCTSpawns);
-    CloseHandleArray(g_hCTAngles);
+    CloseNestedList(g_TSpawnsList);
+    CloseNestedList(g_TAnglesList);
+    CloseNestedList(g_CTSpawnsList);
+    CloseNestedList(g_CTAnglesList);
 }

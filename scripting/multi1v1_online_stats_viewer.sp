@@ -8,8 +8,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-ConVar g_hStatsWebsite;
-ConVar g_hStatsTop;
+ConVar g_StatsURLCvar;
+ConVar g_StatsTopURLCvar;
 
 public Plugin myinfo = {
     name = "CS:GO Multi1v1: online stats viewer",
@@ -22,8 +22,8 @@ public Plugin myinfo = {
 public void OnPluginStart() {
     InitDebugLog(DEBUG_CVAR, "statsview");
     LoadTranslations("common.phrases");
-    g_hStatsWebsite = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}&serverid={SERVER}.");
-    g_hStatsTop = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL. You may a tag for the serverid via: {SERVER}.  For example: http://csgo1v1.splewis.net/index.php?serverid={SERVER}.");
+    g_StatsURLCvar = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}&serverid={SERVER}.");
+    g_StatsTopURLCvar = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL. You may a tag for the serverid via: {SERVER}.  For example: http://csgo1v1.splewis.net/index.php?serverid={SERVER}.");
     AutoExecConfig(true, "multi1v1_online_stats_viewer", "sourcemod/multi1v1");
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
@@ -47,7 +47,7 @@ public Action Command_Stats(int client, int args) {
 
 public Action Command_Top(int client, int args) {
     char url[255];
-    g_hStatsTop.GetString(url, sizeof(url));
+    g_StatsTopURLCvar.GetString(url, sizeof(url));
     if (StrEqual(url, "")) {
         Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
         return Plugin_Handled;
@@ -84,7 +84,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 public void ShowStatsForPlayer(int client, int target) {
     char url[255];
-    g_hStatsWebsite.GetString(url, sizeof(url));
+    g_StatsURLCvar.GetString(url, sizeof(url));
     if (StrEqual(url, "")) {
         Multi1v1_Message(client, "Sorry, there is no stats website for this server.");
         return;

@@ -50,7 +50,7 @@ public int GetRoundType(int arena, int client1, int client2) {
 static void AddRounds(ArrayList types, int client1, int client2, int roundType) {
     int weight = 1;
 
-    int prefWeight = g_hPreferenceWeight.IntValue;
+    int prefWeight = g_PreferenceWeightCvar.IntValue;
     if (g_Preference[client1] == roundType)
         weight += prefWeight;
     if (g_Preference[client2] == roundType)
@@ -126,7 +126,7 @@ public void ReturnMenuControl(int client) {
 }
 
 public void GiveAllowMenu(int client, int roundType) {
-    Handle menu = CreateMenu(MenuHandler_AllowRoundType);
+    Menu menu = new Menu(MenuHandler_AllowRoundType);
     SetMenuExitButton(menu, true);
     SetMenuTitle(menu, "Allow %s rounds?", g_RoundTypeDisplayNames[roundType]);
     AddMenuBool(menu, true, "Yes");
@@ -134,7 +134,7 @@ public void GiveAllowMenu(int client, int roundType) {
     DisplayMenu(menu, client, MENU_TIME_LENGTH);
 }
 
-public int MenuHandler_AllowRoundType(Handle menu, MenuAction action, int param1, int param2) {
+public int MenuHandler_AllowRoundType(Menu menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         bool choice = GetMenuBool(menu, param2);
@@ -172,7 +172,7 @@ public void RifleHandler(int client) {
     Client_SetHelmet(client, true);
     Client_SetArmor(client, 100);
 
-    int pistolBehavior = g_hPistolBehavior.IntValue;
+    int pistolBehavior = g_PistolBehaviorCvar.IntValue;
     if (pistolBehavior != 1) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
     }
@@ -195,12 +195,12 @@ public void AwpHandler(int client) {
     GiveWeapon(client, "weapon_awp");
     Client_SetHelmet(client, true);
 
-    int pistolBehavior = g_hPistolBehavior.IntValue;
+    int pistolBehavior = g_PistolBehaviorCvar.IntValue;
     if (pistolBehavior == 0) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
     } else if (pistolBehavior == 2 || pistolBehavior == 3) {
         char defaultPistol[32];
-        g_hDefaultPistol.GetString(defaultPistol, sizeof(defaultPistol));
+        g_DefaultPistolCvar.GetString(defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
     }
     GivePlayerItem(client, "weapon_knife");

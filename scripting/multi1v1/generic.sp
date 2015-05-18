@@ -52,7 +52,7 @@ stock bool IsActivePlayer(int client) {
 /**
  * Adds an integer to a menu as a string choice.
  */
-stock void AddMenuInt(Handle menu, int value, const char[] display) {
+stock void AddMenuInt(Menu menu, int value, const char[] display) {
     char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
     AddMenuItem(menu, buffer, display);
@@ -61,7 +61,7 @@ stock void AddMenuInt(Handle menu, int value, const char[] display) {
 /**
  * Gets an integer to a menu from a string choice.
  */
-stock int GetMenuInt(Handle menu, int param2) {
+stock int GetMenuInt(Menu menu, int param2) {
     char choice[INTEGER_STRING_LENGTH];
     GetMenuItem(menu, param2, choice, sizeof(choice));
     return StringToInt(choice);
@@ -70,7 +70,7 @@ stock int GetMenuInt(Handle menu, int param2) {
 /**
  * Adds a boolean to a menu as a string choice.
  */
-stock void AddMenuBool(Handle menu, bool value, const char[] display) {
+stock void AddMenuBool(Menu menu, bool value, const char[] display) {
     int convertedInt = value ? 1 : 0;
     AddMenuInt(menu, convertedInt, display);
 }
@@ -78,7 +78,7 @@ stock void AddMenuBool(Handle menu, bool value, const char[] display) {
 /**
  * Gets a boolean to a menu from a string choice.
  */
-stock bool GetMenuBool(Handle menu, int param2) {
+stock bool GetMenuBool(Menu menu, int param2) {
     return GetMenuInt(menu, param2) != 0;
 }
 
@@ -180,8 +180,8 @@ stock bool GetCookieBool(int client, Handle cookie) {
 /**
  * Returns a random index from an array.
  */
-stock int GetArrayRandomIndex(Handle array) {
-    int len = GetArraySize(array);
+stock int GetArrayRandomIndex(ArrayList array) {
+    int len = array.Length;
     if (len == 0)
         ThrowError("Can't get random index from empty array");
     return GetRandomInt(0, len - 1);
@@ -190,21 +190,21 @@ stock int GetArrayRandomIndex(Handle array) {
 /**
  * Pushes an element to an array multiple times.
  */
-stock void PushArrayCellReplicated(Handle array, int value, int times) {
+stock void PushArrayCellReplicated(ArrayList array, int value, int times) {
     for (int i = 0; i < times; i++)
-        PushArrayCell(array, value);
+        array.Push(value);
 }
 
 /**
  * Given an array of vectors, returns the index of the index
  * that minimizes the euclidean distance between the vectors.
  */
-stock int NearestNeighborIndex(const float vec[3], Handle others) {
+stock int NearestNeighborIndex(const float vec[3], ArrayList others) {
     int closestIndex = -1;
     float closestDistance = 0.0;
-    for (int i = 0; i < GetArraySize(others); i++) {
+    for (int i = 0; i < others.Length; i++) {
         float tmp[3];
-        GetArrayArray(others, i, tmp);
+        others.GetArray(i, tmp);
         float dist = GetVectorDistance(vec, tmp);
         if (closestIndex < 0 || dist < closestDistance) {
             closestDistance = dist;
@@ -216,14 +216,15 @@ stock int NearestNeighborIndex(const float vec[3], Handle others) {
 }
 
 /**
- * Closes all handles within an array of handles.
+ * Closes all handles within an arraylist of arraylists.
  */
-stock void CloseHandleArray(Handle array) {
-    for (int i = 0; i < GetArraySize(array); i++) {
-        Handle tmp = GetArrayCell(array, i);
-        CloseHandle(tmp);
+stock void CloseNestedList(ArrayList list) {
+    int n = list.Length;
+    for (int i = 0; i < n; i++) {
+        ArrayList tmp = view_as<ArrayList>(list.Get(i));
+        delete tmp;
     }
-    CloseHandle(array);
+    delete list;
 }
 
 /**

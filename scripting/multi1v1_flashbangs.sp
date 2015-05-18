@@ -28,7 +28,7 @@ public void OnClientConnected(int client) {
 }
 
 public void Multi1v1_OnGunsMenuDone(int client) {
-    Handle menu = CreateMenu(MenuHandler_FlashChoice);
+    Menu menu = new Menu(MenuHandler_FlashChoice);
     SetMenuExitButton(menu, true);
     SetMenuTitle(menu, "Give players flashbangs?");
     AddMenuBool(menu, true, "Yes");
@@ -36,7 +36,7 @@ public void Multi1v1_OnGunsMenuDone(int client) {
     DisplayMenu(menu, client, 10);
 }
 
-public int MenuHandler_FlashChoice(Handle menu, MenuAction action, int param1, int param2) {
+public int MenuHandler_FlashChoice(Menu menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         bool choice = GetMenuBool(menu, param2);

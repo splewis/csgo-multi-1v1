@@ -132,7 +132,7 @@ public void GiveWeaponMenu(int client) {
  * Displays the round-type preference menu to a client.
  */
 public void GivePreferenceMenu(int client) {
-    Handle menu = CreateMenu(MenuHandler_Preference);
+    Menu menu = new Menu(MenuHandler_Preference);
     SetMenuTitle(menu, "Choose your preference:");
     AddMenuInt(menu, -1, "No Preference");
 
@@ -162,7 +162,7 @@ public void GivePreferenceMenu(int client) {
 /**
  * Menu Handler for round-type preference menu.
  */
-public int MenuHandler_Preference(Handle menu, MenuAction action, int param1, int param2) {
+public int MenuHandler_Preference(Menu menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         int choice = GetMenuInt(menu, param2);
@@ -190,7 +190,7 @@ public void FinishGunsMenu(int client) {
  * Primary weapon choice menu.
  */
 public void RifleChoiceMenu(int client) {
-    if (g_hRifleMenu.IntValue == 0) {
+    if (g_RifleMenuCvar.IntValue == 0) {
         PistolChoiceMenu(client);
     } else {
         Handle menu = CreateMenu(MenuHandler_RifleChoice);
@@ -206,7 +206,7 @@ public void RifleChoiceMenu(int client) {
 /**
  * Rifle weapon handler - updates primaryWeapon.
  */
-public int MenuHandler_RifleChoice(Handle menu, MenuAction action, int param1, int param2) {
+public int MenuHandler_RifleChoice(Menu menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         char info[WEAPON_LENGTH];
@@ -223,7 +223,7 @@ public int MenuHandler_RifleChoice(Handle menu, MenuAction action, int param1, i
  * Displays pistol menu to a player
  */
 public void PistolChoiceMenu(int client) {
-    if (g_hPistolMenu.IntValue == 0) {
+    if (g_PistolMenuCvar.IntValue == 0) {
         ReturnMenuControl(client);
     } else {
         Handle menu = CreateMenu(MenuHandler_PistolChoice);
@@ -239,7 +239,7 @@ public void PistolChoiceMenu(int client) {
 /**
  * Pistol choice handler - updates secondary weapon.
  */
-public int MenuHandler_PistolChoice(Handle menu, MenuAction action, int param1, int param2) {
+public int MenuHandler_PistolChoice(Menu menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
         char info[WEAPON_LENGTH];
@@ -276,7 +276,7 @@ public void UpdatePreferencesOnCookies(int client) {
 
     // This checks if the player has a preference set
     // By not having one set, we can conclude the client has never selected anything in the guns menu
-    if (!StrEqual(cookieValue, "") && g_hAutoGunsMenuBehavior.IntValue == 1) {
+    if (!StrEqual(cookieValue, "") && g_AutoGunsMenuBehaviorCvar.IntValue == 1) {
         g_GivenGunsMenu[client] = true;
     }
 }

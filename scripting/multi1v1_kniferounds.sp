@@ -1,3 +1,9 @@
+/**
+ * This plugin is intended to provide a simple example of how to add round types via the natives provided.
+ * If you really only wanted knife rounds, it would be simpler to only modify the configs/multi1v1_customrounds.cfg
+ * file.
+ */
+
 #include <sourcemod>
 #include <smlib>
 #include "include/multi1v1.inc"

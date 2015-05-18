@@ -163,7 +163,7 @@ public int Native_GetOpponent(Handle plugin, int numParams) {
 }
 
 public int Native_HasDatabase(Handle plugin, int numParams) {
-    return g_hUseDatabase.IntValue != 0 && g_dbConnected && db != INVALID_HANDLE;
+    return g_UseDatabaseCvar.IntValue != 0 && g_dbConnected && db != INVALID_HANDLE;
 }
 
 public int Native_GetDatabase(Handle plugin, int numParams) {
@@ -204,7 +204,7 @@ public int Native_Multi1v1Message(Handle plugin, int numParams) {
     FormatNativeString(0, 2, 3, sizeof(buffer), bytesWritten, buffer);
     char finalMsg[1024];
 
-    if (g_hUseChatPrefix.IntValue == 0)
+    if (g_UseChatPrefixCvar.IntValue == 0)
         Format(finalMsg, sizeof(finalMsg), " %s", buffer);
     else
         Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
@@ -223,7 +223,7 @@ public int Native_Multi1v1MessageToAll(Handle plugin, int numParams) {
             SetGlobalTransTarget(i);
             FormatNativeString(0, 1, 2, sizeof(buffer), bytesWritten, buffer);
 
-            if (g_hUseChatPrefix.IntValue == 0)
+            if (g_UseChatPrefixCvar.IntValue == 0)
                 Format(finalMsg, sizeof(finalMsg), " %s", buffer);
             else
                 Format(finalMsg, sizeof(finalMsg), "%s%s", MESSAGE_PREFIX, buffer);
@@ -298,8 +298,8 @@ public int Native_GetNumSpawnsInArena(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     CHECK_ARENA(arena);
 
-    Handle ct = view_as<Handle>(GetArrayCell(g_hCTSpawns, arena));
-    Handle t = view_as<Handle>(GetArrayCell(g_hTSpawns, arena));
+    ArrayList ct = view_as<ArrayList>(GetArrayCell(g_CTSpawnsList, arena));
+    ArrayList t = view_as<ArrayList>(GetArrayCell(g_TSpawnsList, arena));
     return Math_Min(GetArraySize(ct), GetArraySize(t));
 }
 
@@ -313,14 +313,14 @@ public int Native_GetArenaSpawn(Handle plugin, int numParams) {
     if (team != CS_TEAM_T && team != CS_TEAM_CT)
         ThrowNativeError(SP_ERROR_PARAM, "Invalid team: %d", team);
 
-    Handle spawns;
-    Handle angles;
+    ArrayList spawns;
+    ArrayList angles;
     if (team == CS_TEAM_CT) {
-        spawns = view_as<Handle>(GetArrayCell(g_hCTSpawns, arena - 1));
-        angles = view_as<Handle>(GetArrayCell(g_hCTAngles, arena - 1));
+        spawns = view_as<ArrayList>(GetArrayCell(g_CTSpawnsList, arena - 1));
+        angles = view_as<ArrayList>(GetArrayCell(g_CTAnglesList, arena - 1));
     } else {
-        spawns = view_as<Handle>(GetArrayCell(g_hTSpawns, arena - 1));
-        angles = view_as<Handle>(GetArrayCell(g_hTAngles, arena - 1));
+        spawns = view_as<ArrayList>(GetArrayCell(g_TSpawnsList, arena - 1));
+        angles = view_as<ArrayList>(GetArrayCell(g_TAnglesList, arena - 1));
     }
 
     int count = GetArraySize(spawns);
