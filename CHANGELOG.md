@@ -1,3 +1,6 @@
+1.0.2:
+- correct multi1v1_flashbangs addon not giving flashbangs correctly
+
 1.0.1:
 - Add cvar ``sm_multi1v1_enabled`` (default 1)
 - Add forward ``Multi1v1_OnSpawnsFound``
