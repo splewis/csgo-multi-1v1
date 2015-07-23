@@ -6,7 +6,7 @@ char g_radioCommands[][] = {
     "go", "cheer", "fallback", "sticktog", "holdpos", "followme",
     "roger", "negative", "cheer", "compliment", "thanks",
     "enemyspot", "needbackup", "takepoint", "sectorclear", "inposition",
-    "takingfire", "reportingin", "getout", "enemydown", "coverme"
+    "takingfire", "reportingin", "getout", "enemydown", "coverme", "regroup",
 };
 
 public void AddRadioCommandListeners() {
