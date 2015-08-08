@@ -207,7 +207,7 @@ Here is an example file that adds a scout round and a knife round:
 
 Using the natives in [multi1v1.inc](scripting/include/multi1v1.inc), you can write more complex logic into a round type. To get a simple example, check [multi1v1_kniferounds.sp](scripting/multi1v1_kniferounds.sp). The key is calling ``Multi1v1_AddRoundType`` within the ``Multi1v1_OnRoundTypesAdded`` forward.
 
-```
+```sourcepawn
 typedef RoundTypeWeaponHandler = function void (int client);
 typedef RoundTypeMenuHandler = function void (int client);
 

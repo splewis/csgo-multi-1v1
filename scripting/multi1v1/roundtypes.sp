@@ -2,6 +2,13 @@
  * Roundtype runtime registration/selection code.
  */
 
+public void LoadRoundTypes() {
+    Multi1v1_ClearRoundTypes();
+    Multi1v1_AddStandardRounds();
+    AddCustomRounds();
+    Call_StartForward(g_hOnRoundTypesAdded);
+    Call_Finish();
+}
 
 /**
  * Returns a round type appropriate for a given pair of players.

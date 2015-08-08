@@ -232,6 +232,7 @@ public void OnPluginStart() {
     AddRadioCommandListeners();
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
     RegConsoleCmd("sm_hidestats", Command_Hidestats, "Hides player stats/ratings");
+    RegAdminCmd("sm_reloadroundtypes", Command_ReloadRoundTypes, ADMFLAG_CHANGEMAP, "Reloads multi1v1 round types");
 
     /** Fowards **/
     g_hAfterPlayerSetup = CreateGlobalForward("Multi1v1_AfterPlayerSetup", ET_Ignore, Param_Cell);
@@ -310,12 +311,7 @@ static void AddUpdater() {
 public void OnMapStart() {
     Spawns_MapStart();
     Weapons_MapStart();
-
-    Multi1v1_ClearRoundTypes();
-    Multi1v1_AddStandardRounds();
-    AddCustomRounds();
-    Call_StartForward(g_hOnRoundTypesAdded);
-    Call_Finish();
+    LoadRoundTypes();
 
     Queue_Clear(g_waitingQueue);
 
@@ -919,6 +915,10 @@ public Action Command_Hidestats(int client, int args) {
     return Plugin_Handled;
 }
 
+public Action Command_ReloadRoundTypes(int client, int args) {
+    LoadRoundTypes();
+    return Plugin_Handled;
+}
 
 
 /*************************
