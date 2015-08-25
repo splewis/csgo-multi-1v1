@@ -44,6 +44,7 @@ ConVar g_DatabaseServerIdCvar;
 ConVar g_DefaultPistolCvar;
 ConVar g_ExecDefaultConfigCvar;
 ConVar g_HideGunsChatCommandsCvar;
+ConVar g_MuteOtherArenasCvar;
 ConVar g_PistolBehaviorCvar;
 ConVar g_PistolMenuCvar;
 ConVar g_PreferenceWeightCvar;
@@ -152,13 +153,14 @@ Handle g_hOnStatsCached = INVALID_HANDLE;
 /** multi1v1 function includes **/
 #include "multi1v1/customrounds.sp"
 #include "multi1v1/generic.sp"
+#include "multi1v1/mute.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/radiocommands.sp"
 #include "multi1v1/roundtypes.sp"
 #include "multi1v1/spawns.sp"
 #include "multi1v1/stats.sp"
-#include "multi1v1/weaponlogic.sp"
 #include "multi1v1/version.sp"
+#include "multi1v1/weaponlogic.sp"
 
 
 
@@ -188,10 +190,11 @@ public void OnPluginStart() {
     g_AutoUpdateCvar = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to auto-update. Requies the \"Updater\" plugin");
     g_BlockRadioCvar = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
     g_DatabaseNameCvar = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
-    g_DatabaseServerIdCvar = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server. Most users don't need to change this but if you are using the web interface and/or want to show/store stats for multiple servers, it should.");
+    g_DatabaseServerIdCvar = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server. Most users don't need to change this but if you are using the web interface and/or want to show/store stats for multiple servers separately, it should.");
     g_DefaultPistolCvar = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_ExecDefaultConfigCvar = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
     g_HideGunsChatCommandsCvar = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
+    g_MuteOtherArenasCvar = CreateConVar("sm_multi1v1_mute_other_arenas", "1", "Whether bullet shots from other arenas are muted");
     g_PistolBehaviorCvar = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
     g_PistolMenuCvar = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
     g_PreferenceWeightCvar = CreateConVar("sm_multi1v1_preference_weight", "1", "How much weight are given to preferences when round types are being selected. Use a higher number for a preference to be more likely, or 0 to make the preference have no effect");
@@ -226,6 +229,7 @@ public void OnPluginStart() {
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
     HookEvent("cs_win_panel_match", Event_MatchOver);
+    AddTempEntHook("Shotgun Shot", Hook_ShotgunShot);
 
     /** Commands **/
     AddCommandListener(Command_JoinTeam, "jointeam");

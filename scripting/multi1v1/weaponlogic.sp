@@ -265,11 +265,11 @@ public void UpdatePreferencesOnCookies(int client) {
     char cookieValue[WEAPON_LENGTH];
     GetCookieStringByName(client, "multi1v1_rifle", cookieValue, sizeof(cookieValue));
     if (IsAllowedRifle(cookieValue))
-        strcopy(g_PrimaryWeapon[client], sizeof(cookieValue), cookieValue);
+        strcopy(g_PrimaryWeapon[client], WEAPON_LENGTH, cookieValue);
 
     GetCookieStringByName(client, "multi1v1_pistol", cookieValue, sizeof(cookieValue));
     if (IsAllowedPistol(cookieValue))
-        strcopy(g_SecondaryWeapon[client], sizeof(cookieValue), cookieValue);
+        strcopy(g_SecondaryWeapon[client], WEAPON_LENGTH, cookieValue);
 
     GetCookieStringByName(client, "multi1v1_preference", cookieValue, sizeof(cookieValue));
     g_Preference[client] = Multi1v1_GetRoundTypeIndex(cookieValue);
