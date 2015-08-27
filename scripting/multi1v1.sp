@@ -194,7 +194,7 @@ public void OnPluginStart() {
     g_DefaultPistolCvar = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_ExecDefaultConfigCvar = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
     g_HideGunsChatCommandsCvar = CreateConVar("sm_multi1v1_block_guns_chat_commands", "1", "Whether commands like \"guns\" or \"!guns\" will be blocked from showing up in chat.");
-    g_MuteOtherArenasCvar = CreateConVar("sm_multi1v1_mute_other_arenas", "1", "Whether bullet shots from other arenas are muted");
+    g_MuteOtherArenasCvar = CreateConVar("sm_multi1v1_mute_other_arenas", "0", "Whether bullet shots from other arenas are muted");
     g_PistolBehaviorCvar = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
     g_PistolMenuCvar = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
     g_PreferenceWeightCvar = CreateConVar("sm_multi1v1_preference_weight", "1", "How much weight are given to preferences when round types are being selected. Use a higher number for a preference to be more likely, or 0 to make the preference have no effect");
