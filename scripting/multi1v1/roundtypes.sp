@@ -134,11 +134,11 @@ public void ReturnMenuControl(int client) {
 
 public void GiveAllowMenu(int client, int roundType) {
     Menu menu = new Menu(MenuHandler_AllowRoundType);
-    SetMenuExitButton(menu, true);
-    SetMenuTitle(menu, "Allow %s rounds?", g_RoundTypeDisplayNames[roundType]);
+    menu.ExitButton = true;
+    menu.SetTitle("Allow %s rounds?", g_RoundTypeDisplayNames[roundType]);
     AddMenuBool(menu, true, "Yes");
     AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, MENU_TIME_LENGTH);
+    menu.Display(client, MENU_TIME_LENGTH);
 }
 
 public int MenuHandler_AllowRoundType(Menu menu, MenuAction action, int param1, int param2) {
@@ -152,7 +152,7 @@ public int MenuHandler_AllowRoundType(Menu menu, MenuAction action, int param1, 
         SetCookieBoolByName(client, cookieName, choice);
         ReturnMenuControl(client);
     } else if (action == MenuAction_End) {
-        CloseHandle(menu);
+        delete menu;
     }
 }
 

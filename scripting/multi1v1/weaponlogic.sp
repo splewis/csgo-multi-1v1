@@ -27,46 +27,46 @@ public void Weapons_MapStart() {
         return;
     }
 
-    Handle kv = CreateKeyValues("Weapons");
-    FileToKeyValues(kv, configFile);
+    KeyValues kv = new KeyValues("Weapons");
+    kv.ImportFromFile(configFile);
 
     // Parse the rifles section
     if (!KvJumpToKey(kv, "Rifles")) {
         LogError("The weapon config file did not contain a \"Rifles\" section: %s", configFile);
-        CloseHandle(kv);
+        delete kv;
         LoadBackupConfig();
         return;
     }
-    if (!KvGotoFirstSubKey(kv)) {
+    if (!kv.GotoFirstSubKey()) {
         LogError("No rifles were found.");
     }
     do {
-        KvGetSectionName(kv, g_Rifles[g_numRifles][0], WEAPON_NAME_LENGTH);
-        KvGetString(kv, "name", g_Rifles[g_numRifles][1], WEAPON_NAME_LENGTH, g_Rifles[g_numRifles][0]);
-        KvGetString(kv, "team", g_Rifles[g_numRifles][2], WEAPON_NAME_LENGTH, "ANY");
+        kv.GetSectionName(g_Rifles[g_numRifles][0], WEAPON_NAME_LENGTH);
+        kv.GetString("name", g_Rifles[g_numRifles][1], WEAPON_NAME_LENGTH, g_Rifles[g_numRifles][0]);
+        kv.GetString("team", g_Rifles[g_numRifles][2], WEAPON_NAME_LENGTH, "ANY");
         g_numRifles++;
-    } while (KvGotoNextKey(kv));
-    KvRewind(kv);
+    } while (kv.GotoNextKey());
+    kv.Rewind();
 
     // Parse the pistols section
     if (!KvJumpToKey(kv, "Pistols")) {
         LogError("The weapon config file did not contain a \"Pistols\" section: %s", configFile);
-        CloseHandle(kv);
+        delete kv;
         LoadBackupConfig();
         return;
     }
 
-    if (!KvGotoFirstSubKey(kv)) {
+    if (!kv.GotoFirstSubKey()) {
         LogError("No pistols were found.");
     }
     do {
-        KvGetSectionName(kv, g_Pistols[g_numPistols][0], WEAPON_NAME_LENGTH);
-        KvGetString(kv, "name", g_Pistols[g_numPistols][1], WEAPON_NAME_LENGTH, g_Pistols[g_numPistols][0]);
-        KvGetString(kv, "team", g_Pistols[g_numPistols][2], WEAPON_NAME_LENGTH, "ANY");
+        kv.GetSectionName(g_Pistols[g_numPistols][0], WEAPON_NAME_LENGTH);
+        kv.GetString("name", g_Pistols[g_numPistols][1], WEAPON_NAME_LENGTH, g_Pistols[g_numPistols][0]);
+        kv.GetString("team", g_Pistols[g_numPistols][2], WEAPON_NAME_LENGTH, "ANY");
         g_numPistols++;
-    } while (KvGotoNextKey(kv));
+    } while (kv.GotoNextKey());
 
-    CloseHandle(kv);
+    delete kv;
 }
 
 /**
@@ -133,7 +133,7 @@ public void GiveWeaponMenu(int client) {
  */
 public void GivePreferenceMenu(int client) {
     Menu menu = new Menu(MenuHandler_Preference);
-    SetMenuTitle(menu, "Choose your preference:");
+    menu.SetTitle("Choose your preference:");
     AddMenuInt(menu, -1, "No Preference");
 
     int count = 0;
@@ -151,10 +151,10 @@ public void GivePreferenceMenu(int client) {
     }
 
     if (count >= 2) {
-        DisplayMenu(menu, client, MENU_TIME_LENGTH);
+        menu.Display(client, MENU_TIME_LENGTH);
     } else {
         SetCookieStringByName(client, "multi1v1_preference", "none");
-        CloseHandle(menu);
+        delete menu;
         FinishGunsMenu(client);
     }
 }
@@ -176,7 +176,7 @@ public int MenuHandler_Preference(Menu menu, MenuAction action, int param1, int 
         FinishGunsMenu(client);
 
     } else if (action == MenuAction_End) {
-        CloseHandle(menu);
+        delete menu;
     }
 }
 
@@ -193,13 +193,13 @@ public void RifleChoiceMenu(int client) {
     if (g_RifleMenuCvar.IntValue == 0) {
         PistolChoiceMenu(client);
     } else {
-        Handle menu = CreateMenu(MenuHandler_RifleChoice);
-        SetMenuTitle(menu, "Choose your favorite rifle:");
-        SetMenuExitButton(menu, true);
+        Menu menu = new Menu(MenuHandler_RifleChoice);
+        menu.SetTitle("Choose your favorite rifle:");
+        menu.ExitButton = true;
         for (int i = 0; i < g_numRifles; i++)
-            AddMenuItem(menu, g_Rifles[i][0], g_Rifles[i][1]);
+            menu.AddItem(g_Rifles[i][0], g_Rifles[i][1]);
 
-        DisplayMenu(menu, client, MENU_TIME_LENGTH);
+        menu.Display(client, MENU_TIME_LENGTH);
     }
 }
 
@@ -215,7 +215,7 @@ public int MenuHandler_RifleChoice(Menu menu, MenuAction action, int param1, int
         SetCookieStringByName(client, "multi1v1_rifle", info);
         PistolChoiceMenu(client);
     } else if (action == MenuAction_End) {
-        CloseHandle(menu);
+        delete menu;
     }
 }
 
@@ -226,13 +226,13 @@ public void PistolChoiceMenu(int client) {
     if (g_PistolMenuCvar.IntValue == 0) {
         ReturnMenuControl(client);
     } else {
-        Handle menu = CreateMenu(MenuHandler_PistolChoice);
-        SetMenuExitButton(menu, true);
-        SetMenuTitle(menu, "Choose your favorite pistol:");
+        Menu menu = new Menu(MenuHandler_PistolChoice);
+        menu.ExitButton = true;
+        menu.SetTitle("Choose your favorite pistol:");
         for (int i = 0; i < g_numPistols; i++)
-            AddMenuItem(menu, g_Pistols[i][0], g_Pistols[i][1]);
+            menu.AddItem(g_Pistols[i][0], g_Pistols[i][1]);
 
-        DisplayMenu(menu, client, MENU_TIME_LENGTH);
+        menu.Display(client, MENU_TIME_LENGTH);
     }
 }
 
@@ -248,7 +248,7 @@ public int MenuHandler_PistolChoice(Menu menu, MenuAction action, int param1, in
         SetCookieStringByName(client, "multi1v1_pistol", info);
         ReturnMenuControl(client);
     } else if (action == MenuAction_End) {
-        CloseHandle(menu);
+        delete menu;
     }
 }
 

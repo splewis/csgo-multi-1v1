@@ -262,7 +262,7 @@ public void OnPluginStart() {
     }
 }
 
-public int EnabledChanged(Handle cvar, const char[] oldValue, const char[] newValue) {
+public int EnabledChanged(ConVar cvar, const char[] oldValue, const char[] newValue) {
     bool wasEnabled = !StrEqual(oldValue, "0");
     g_Enabled = !StrEqual(newValue, "0");
 
