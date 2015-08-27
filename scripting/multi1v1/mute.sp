@@ -1,14 +1,14 @@
-public bool CanSee(int entity, int client) {
+public bool CanHear(int client1, int client2) {
     if (g_MuteOtherArenasCvar.IntValue == 0) {
         return true;
     }
 
-    if (!IsValidClient(entity) || !IsValidClient(client) || entity == client) {
+    if (!IsValidClient(client1) || !IsValidClient(client2) || client1 == client2) {
         return true;
     }
 
     // Block the transmisson.
-    if (Multi1v1_GetOpponent(entity) != client) {
+    if (Multi1v1_GetOpponent(client1) != client2) {
         return false;
     }
 
@@ -25,7 +25,7 @@ public Action Hook_ShotgunShot(const char[] te_name, const int[] players, int nu
 
     for (int i = 0; i < numClients; i++) {
         int client = players[i];
-        if (CanSee(shooterIndex, i)) {
+        if (CanHear(shooterIndex, client)) {
             // client should be able to hear it
             newClients[newTotal] = client;
             newTotal++;
