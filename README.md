@@ -215,16 +215,11 @@ typedef RoundTypeMenuHandler = function void (int client);
 native int Multi1v1_AddRoundType(const char[] displayName,
                                  const char[] internalName,
                                  RoundTypeWeaponHandler weaponsHandler=Multi1v1_NullWeaponHandler,
-                                 RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
                                  bool optional=true,
                                  bool ranked=false,
                                  const char[] ratingFieldName="",
                                  bool enabled=true);
 ```
-
-More advanced usage would involve passing a real function as the 4th parameter instead of ``Multi1v1_NullChoiceMenu``.
-You could pass a function, for example, that lets you choose some option that goes along with the round type.
-The menu-handler callback should call ``Multi1v1_ReturnMenuControl`` once the client has finished the selection.
 
 Note that the multi1v1 plugin will
 - create and update the column for the round-type stats if you set the round type as ranked and give a non-empty string as the ``ratingFieldName`` parameter ( note that these columns are only created on database-connections)

@@ -42,7 +42,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("Multi1v1_GetRoundTypeIndex", Native_GetRoundTypeIndex);
     CreateNative("Multi1v1_AddRoundType", Native_AddRoundType);
     CreateNative("Multi1v1_ClearRoundTypes", Native_ClearRoundTypes);
-    CreateNative("Multi1v1_ReturnMenuControl", Native_ReturnMenuControl);
     CreateNative("Multi1v1_AddStandardRounds", Native_AddStandardRounds);
     CreateNative("Multi1v1_GetCurrentRoundType", Native_GetCurrentRoundType);
     CreateNative("Multi1v1_GetNumRoundTypes", Native_GetNumRoundTypes);
@@ -52,6 +51,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("Multi1v1_IsRoundTypeEnabled", Native_IsRoundTypeEnabled);
     CreateNative("Multi1v1_EnableRoundType", Native_EnableRoundType);
     CreateNative("Multi1v1_DisableRoundType", Native_DisableRoundType);
+    CreateNative("Multi1v1_GiveWeaponsMenu", Native_GiveWeaponsMenu);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -375,28 +375,16 @@ public int Native_AddRoundType(Handle plugin, int numParams) {
     }
 
     RoundTypeWeaponHandler weaponHandler = view_as<RoundTypeWeaponHandler>(GetNativeFunction(3));
-    RoundTypeMenuHandler menuHandler = view_as<RoundTypeMenuHandler>(GetNativeFunction(4));
-    bool optional = GetNativeCell(5);
-    bool ranked = GetNativeCell(6);
-    GetNativeString(7, ratingFieldName, sizeof(ratingFieldName));
-
-    // enabled may not be passed, default to true for backwards compatilibilty
-    bool enabled = true;
-    if (numParams >= 8) {
-        enabled = GetNativeCell(8);
-    }
+    bool optional = GetNativeCell(4);
+    bool ranked = GetNativeCell(5);
+    GetNativeString(6, ratingFieldName, sizeof(ratingFieldName));
+    bool enabled = GetNativeCell(7);
 
     if (!ranked && !StrEqual(ratingFieldName, "")) {
         LogError("Warning: marked round type \"%s\" as unranked but passed rating field name \"%s\"", internalName, ratingFieldName);
     }
 
-    return AddRoundType(plugin, displayName, internalName, weaponHandler, menuHandler, optional, ranked, ratingFieldName, enabled);
-}
-
-public int Native_ReturnMenuControl(Handle plugin, int numParams) {
-    int client = GetNativeCell(1);
-    CHECK_CONNECTED(client);
-    ReturnMenuControl(client);
+    return AddRoundType(plugin, displayName, internalName, weaponHandler, optional, ranked, ratingFieldName, enabled);
 }
 
 public int Native_GetRoundTypeIndex(Handle plugin, int numParams) {
@@ -463,4 +451,11 @@ public int Native_DisableRoundType(Handle plugin, int numParams) {
     int roundType = GetNativeCell(1);
     CHECK_ROUNDTYPE(roundType);
     g_RoundTypeEnabled[roundType] = false;
+}
+
+public int Native_GiveWeaponsMenu(Handle plugin, int numParams) {
+    int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
+    int pos = GetNativeCell(2);
+    GiveWeaponsMenu(client, pos);
 }

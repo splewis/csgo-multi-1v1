@@ -20,30 +20,30 @@ public Plugin myinfo = {
 };
 
 public void OnPluginStart() {
-	g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 allow flashbangs in rounds", CookieAccess_Protected);
+    LoadTranslations("multi1v1.phrases");
+    g_hFlashCookie = RegClientCookie("multi1v1_flashbang", "Multi-1v1 allow flashbangs in rounds", CookieAccess_Protected);
 }
 
 public void OnClientConnected(int client) {
     g_GiveFlash[client] = false;
 }
 
-public void Multi1v1_OnGunsMenuDone(int client) {
-    Menu menu = new Menu(MenuHandler_FlashChoice);
-    SetMenuExitButton(menu, true);
-    SetMenuTitle(menu, "Give players flashbangs?");
-    AddMenuBool(menu, true, "Yes");
-    AddMenuBool(menu, false, "No");
-    DisplayMenu(menu, client, 10);
+public void Multi1v1_OnGunsMenuCreated(int client, Menu menu) {
+    char enabledString[32];
+    GetEnabledString(enabledString, sizeof(enabledString), g_GiveFlash[client], client);
+    AddMenuOption(menu, "flashbangs", "Flashbangs: %s", enabledString);
 }
 
-public int MenuHandler_FlashChoice(Menu menu, MenuAction action, int param1, int param2) {
+public void Multi1v1_GunsMenuCallback(Menu menu, MenuAction action, int param1, int param2) {
     if (action == MenuAction_Select) {
         int client = param1;
-        bool choice = GetMenuBool(menu, param2);
-        g_GiveFlash[client] = choice;
-        SetCookieBool(client, g_hFlashCookie, choice);
-    } else if (action == MenuAction_End) {
-        CloseHandle(menu);
+        char buffer[128];
+        menu.GetItem(param2, buffer, sizeof(buffer));
+        if (StrEqual(buffer, "flashbangs")) {
+            g_GiveFlash[client] = !g_GiveFlash[client];
+            SetCookieBool(client, g_hFlashCookie, g_GiveFlash[client]);
+            Multi1v1_GiveWeaponsMenu(client, GetMenuSelectionPosition());
+        }
     }
 }
 

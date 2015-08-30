@@ -56,4 +56,12 @@
 		"#format"	"{1:d}"
 		"en"		"Arena {1}"
 	}
+	"Disabled"
+	{
+		"en"		"disabled"
+	}
+	"Enabled"
+	{
+		"en"		"enabled"
+	}
 }

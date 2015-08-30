@@ -1,3 +1,4 @@
+
 #if defined _multi1v1_included
   #endinput
 #endif
@@ -68,11 +69,21 @@ forward void Multi1v1_OnStatsCached(int client);
 
 /**
  * Called after a player finishes going through the weapons menu.
+ * Note that the info strings used by the weapons menu are
+ * "rifle", "pistol", "pref", and "allowx" (where x is an integer),
+ * so you should avoid adding these into the menu.
  *
  * @param client Player's index.
+ * @param menu Menu being displayed to the client.
  * @noreturn
  */
-forward void Multi1v1_OnGunsMenuDone(int client);
+forward void Multi1v1_OnGunsMenuCreated(int client, Menu menu);
+
+/**
+ * Called directly by the guns menu callback.
+ * @noreturn
+ */
+forward void Multi1v1_GunsMenuCallback(Menu menu, MenuAction action, int param1, int param2);
 
 /**
  * Called each map start after the standard round types have been added.
@@ -359,7 +370,6 @@ typedef RoundTypeMenuHandler = function void (int client);
 native int Multi1v1_AddRoundType(const char[] displayName,
                                  const char[] internalName,
                                  RoundTypeWeaponHandler weaponsHandler=Multi1v1_NullWeaponHandler,
-                                 RoundTypeMenuHandler menuHandler=Multi1v1_NullChoiceMenu,
                                  bool optional=true,
                                  bool ranked=false,
                                  const char[] ratingFieldName="",
@@ -384,23 +394,8 @@ native void Multi1v1_AddStandardRounds();
  */
 native int Multi1v1_GetRoundTypeIndex(const char[] internalName);
 
-/**
- * Returns menu control to the menu controller.
- * This is intended to be called from within a RoundTypeMenuHandler in the guns menu
- * once a client has picked an option.
- *
- * @error Client not connected.
- * @noreturn
- */
-native void Multi1v1_ReturnMenuControl(int client);
-
 // Helper null callback for round types that don't need to give players weapons on spawn.
 public void Multi1v1_NullWeaponHandler(int client) {
-}
-
-// Helper null callback for round types that don't need a special menu created.
-public void Multi1v1_NullChoiceMenu(int client) {
-    Multi1v1_ReturnMenuControl(client);
 }
 
 native bool Multi1v1_IsRoundTypeEnabled(int roundType);
@@ -441,6 +436,10 @@ native int Multi1v1_PlayerPreference(int client);
  */
 native bool Multi1v1_IsHidingStats(int client);
 
+/**
+ * Gives a player the guns menu.
+ */
+native void Multi1v1_GiveWeaponsMenu(int client, int pos=0);
 
 public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",
@@ -488,7 +487,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_GetPistolChoice");
     MarkNativeAsOptional("Multi1v1_AddRoundType");
     MarkNativeAsOptional("Multi1v1_ClearRoundTypes");
-    MarkNativeAsOptional("Multi1v1_ReturnMenuControl");
     MarkNativeAsOptional("Multi1v1_GetRoundTypeIndex");
     MarkNativeAsOptional("Multi1v1_AddStandardRounds");
     MarkNativeAsOptional("Multi1v1_GetCurrentRoundType");
@@ -499,5 +497,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_IsRoundTypeEnabled");
     MarkNativeAsOptional("Multi1v1_EnableRoundType");
     MarkNativeAsOptional("Multi1v1_DisableRoundType");
+    MarkNativeAsOptional("Multi1v1_GiveWeaponsMenu");
 }
 #endif

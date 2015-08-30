@@ -1,15 +1,3 @@
-#define WEAPON_MAX 16
-
-// Stored data from the weapons config file.
-// Each array has 3 elements:
-//  0: game's name of the weapon (e.g. "weapon_ak47")
-//  1: player-readable name of the weapon (e.g. "AK47")
-//  2: team the weapon belongs to (e.g. "T", "CT", or "ANY")
-int g_numRifles;
-char g_Rifles[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
-int g_numPistols;
-char g_Pistols[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
-
 /**
  * Initializes weapon-related data on map start.
  * This includes the server-specific weapon config file configs/multi1v1_weapons.cfg.
@@ -119,140 +107,6 @@ public int GetWeaponTeam(const char[] weapon) {
 }
 
 /**
- * Opens up the weapon menu for a client.
- */
-public void GiveWeaponMenu(int client) {
-    g_GivenGunsMenu[client] = true;
-    g_CurrentRoundTypeMenuIndex[client] = -1;
-    g_WaitingOnRoundAllow[client] = false;
-    RifleChoiceMenu(client);
-}
-
-/**
- * Displays the round-type preference menu to a client.
- */
-public void GivePreferenceMenu(int client) {
-    Menu menu = new Menu(MenuHandler_Preference);
-    menu.SetTitle("Choose your preference:");
-    AddMenuInt(menu, -1, "No Preference");
-
-    int count = 0;
-    for (int i = 0; i < g_numRoundTypes; i++) {
-        if (!g_RoundTypeEnabled[i]) {
-            continue;
-        }
-
-        if (g_AllowedRoundTypes[client][i] || !g_RoundTypeOptional[i]) {
-            count++;
-            char buffer[128];
-            Format(buffer, sizeof(buffer), "%s rounds", g_RoundTypeDisplayNames[i]);
-            AddMenuInt(menu, i, buffer);
-        }
-    }
-
-    if (count >= 2) {
-        menu.Display(client, MENU_TIME_LENGTH);
-    } else {
-        SetCookieStringByName(client, "multi1v1_preference", "none");
-        delete menu;
-        FinishGunsMenu(client);
-    }
-}
-
-/**
- * Menu Handler for round-type preference menu.
- */
-public int MenuHandler_Preference(Menu menu, MenuAction action, int param1, int param2) {
-    if (action == MenuAction_Select) {
-        int client = param1;
-        int choice = GetMenuInt(menu, param2);
-        g_Preference[client] = choice;
-
-        if (choice == -1) {
-            SetCookieStringByName(client, "multi1v1_preference", "none");
-        } else {
-            SetCookieStringByName(client, "multi1v1_preference", g_RoundTypeNames[choice]);
-        }
-        FinishGunsMenu(client);
-
-    } else if (action == MenuAction_End) {
-        delete menu;
-    }
-}
-
-public void FinishGunsMenu(int client) {
-    Call_StartForward(g_hOnGunsMenuDone);
-    Call_PushCell(client);
-    Call_Finish();
-}
-
-/**
- * Primary weapon choice menu.
- */
-public void RifleChoiceMenu(int client) {
-    if (g_RifleMenuCvar.IntValue == 0) {
-        PistolChoiceMenu(client);
-    } else {
-        Menu menu = new Menu(MenuHandler_RifleChoice);
-        menu.SetTitle("Choose your favorite rifle:");
-        menu.ExitButton = true;
-        for (int i = 0; i < g_numRifles; i++)
-            menu.AddItem(g_Rifles[i][0], g_Rifles[i][1]);
-
-        menu.Display(client, MENU_TIME_LENGTH);
-    }
-}
-
-/**
- * Rifle weapon handler - updates primaryWeapon.
- */
-public int MenuHandler_RifleChoice(Menu menu, MenuAction action, int param1, int param2) {
-    if (action == MenuAction_Select) {
-        int client = param1;
-        char info[WEAPON_LENGTH];
-        GetMenuItem(menu, param2, info, sizeof(info));
-        g_PrimaryWeapon[client] = info;
-        SetCookieStringByName(client, "multi1v1_rifle", info);
-        PistolChoiceMenu(client);
-    } else if (action == MenuAction_End) {
-        delete menu;
-    }
-}
-
-/**
- * Displays pistol menu to a player
- */
-public void PistolChoiceMenu(int client) {
-    if (g_PistolMenuCvar.IntValue == 0) {
-        ReturnMenuControl(client);
-    } else {
-        Menu menu = new Menu(MenuHandler_PistolChoice);
-        menu.ExitButton = true;
-        menu.SetTitle("Choose your favorite pistol:");
-        for (int i = 0; i < g_numPistols; i++)
-            menu.AddItem(g_Pistols[i][0], g_Pistols[i][1]);
-
-        menu.Display(client, MENU_TIME_LENGTH);
-    }
-}
-
-/**
- * Pistol choice handler - updates secondary weapon.
- */
-public int MenuHandler_PistolChoice(Menu menu, MenuAction action, int param1, int param2) {
-    if (action == MenuAction_Select) {
-        int client = param1;
-        char info[WEAPON_LENGTH];
-        GetMenuItem(menu, param2, info, sizeof(info));
-        g_SecondaryWeapon[client] = info;
-        SetCookieStringByName(client, "multi1v1_pistol", info);
-        ReturnMenuControl(client);
-    } else if (action == MenuAction_End) {
-        delete menu;
-    }
-}
-
-/**
  * Sets all the weapon choices based on the client's cookies.
  */
 public void UpdatePreferencesOnCookies(int client) {
@@ -310,7 +164,10 @@ public bool IsDefaultPistol(const char[] weapon) {
     return false;
 }
 
-static bool IsAllowedRifle(const char[] weapon) {
+public bool IsAllowedRifle(const char[] weapon) {
+    if (g_RifleMenuCvar.IntValue == 0) {
+        return false;
+    }
     for (int i = 0; i < g_numRifles; i++) {
         if (StrEqual(g_Rifles[i][0], weapon, false)) {
             return true;
@@ -319,11 +176,33 @@ static bool IsAllowedRifle(const char[] weapon) {
     return false;
 }
 
-static bool IsAllowedPistol(const char[] weapon) {
+public bool IsAllowedPistol(const char[] weapon) {
+    if (g_PistolMenuCvar.IntValue == 0) {
+        return false;
+    }
     for (int i = 0; i < g_numPistols; i++) {
         if (StrEqual(g_Pistols[i][0], weapon, false)) {
             return true;
         }
     }
     return false;
+}
+
+
+public int GetRifleIndex(int client) {
+    for (int i = 0; i < g_numRifles; i++) {
+        if (StrEqual(g_Rifles[i][0], g_PrimaryWeapon[client])) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+public int GetPistolIndex(int client) {
+    for (int i = 0; i < g_numPistols; i++) {
+        if (StrEqual(g_Pistols[i][0], g_SecondaryWeapon[client])) {
+            return i;
+        }
+    }
+    return 0;
 }
