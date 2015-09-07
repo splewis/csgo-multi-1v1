@@ -338,3 +338,9 @@ static void ForceLossMessage(int client, float rating, float delta) {
 static bool HasRoundTypeSpecificRating(int roundType) {
     return g_RoundTypeRanked[roundType] && !StrEqual(g_RoundTypeFieldNames[roundType], "");
 }
+
+public bool AreStatsEnabled() {
+    char dbCfgName[255];
+    g_DatabaseNameCvar.GetString(dbCfgName, sizeof(dbCfgName));
+    return g_UseDatabaseCvar.IntValue != 0 && SQL_CheckConfig(dbCfgName);
+}

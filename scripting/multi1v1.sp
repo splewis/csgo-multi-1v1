@@ -201,7 +201,7 @@ public void OnPluginStart() {
     g_RifleMenuCvar = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
     g_RoundTimeCvar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_UseChatPrefixCvar = CreateConVar("sm_multi1v1_use_chat_prefix", "1", "Whether to use a [Multi1v1] tag in chat messages");
-    g_UseDatabaseCvar = CreateConVar("sm_multi1v1_use_database", "0", "Whether a database is used to store player statistics");
+    g_UseDatabaseCvar = CreateConVar("sm_multi1v1_use_database", "1", "Whether a database is used to store player statistics");
     g_UseMVPStarsCvar = CreateConVar("sm_multi1v1_use_mvp_stars", "1", "Whether MVP stars are updated to reflect a player's number of rounds in arena 1");
     g_UseTeamTagsCvar = CreateConVar("sm_multi1v1_use_team_tags", "1", "Whether the team (or clan) tag is updated to reflect a player's arena numbers");
     g_VerboseSpawnModeCvar = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin");
@@ -330,7 +330,7 @@ public void OnMapStart() {
         g_ArenaLosers[i] = -1;
     }
 
-    if (!g_dbConnected && g_UseDatabaseCvar.IntValue != 0) {
+    if (!g_dbConnected && AreStatsEnabled()) {
         DB_Connect();
     }
 
@@ -595,7 +595,7 @@ public Action Event_OnRoundPostStart(Event event, const char[] name, bool dontBr
 
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
-    if (g_UseDatabaseCvar.IntValue != 0) {
+    if (AreStatsEnabled()) {
         if (!g_dbConnected)
             DB_Connect();
         if (g_dbConnected) {
