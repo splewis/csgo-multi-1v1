@@ -50,6 +50,15 @@ stock bool IsActivePlayer(int client) {
 }
 
 /**
+ * Adds a formatted display string to a menu.
+ */
+stock void AddMenuOption(Menu menu, const char[] info, const char[] display, any:...) {
+    char formattedDisplay[128];
+    VFormat(formattedDisplay, sizeof(formattedDisplay), display, 4);
+    menu.AddItem(info, formattedDisplay);
+}
+
+/**
  * Adds an integer to a menu as a string choice.
  */
 stock void AddMenuInt(Menu menu, int value, const char[] display) {
@@ -342,4 +351,11 @@ stock ConVar FindCvarAndLogError(const char[] name) {
         LogError("ConVar \"%s\" could not be found");
     }
     return c;
+}
+
+stock void GetEnabledString(char[] buffer, int length, bool variable, int client=LANG_SERVER) {
+    if (variable)
+        Format(buffer, length, "%T", "Enabled", client);
+    else
+        Format(buffer, length, "%T", "Disabled", client);
 }

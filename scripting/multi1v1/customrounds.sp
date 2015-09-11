@@ -16,8 +16,7 @@ public void AddCustomRounds() {
             bool optional = !!kv.GetNum("optional", 1);
             bool enabled = !!kv.GetNum("enabled", 1);
 
-            int roundType = Multi1v1_AddRoundType(displayName, internalName,
-                                                  CustomWeaponHandler, Multi1v1_NullChoiceMenu,
+            int roundType = Multi1v1_AddRoundType(displayName, internalName, CustomWeaponHandler,
                                                   optional, ranked, ratingFieldName, enabled);
 
             bool armor = !!kv.GetNum("armor", 1);

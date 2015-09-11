@@ -1,4 +1,4 @@
-#define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v1.x/csgo-multi-1v1.txt"
+#define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v1.1.x/csgo-multi-1v1.txt"
 
 #include <sourcemod>
 #include <sdkhooks>
@@ -27,7 +27,6 @@
 
 #define DISTRIBUTION_SPREAD 1000.0
 #define K_FACTOR 8.0
-#define MENU_TIME_LENGTH 15
 #define ROUND_TYPE_NAME_LENGTH 64
 #define TABLE_NAME "multi1v1_stats"
 #define WEAPON_LENGTH 32
@@ -80,9 +79,6 @@ bool g_HideStats[MAXPLAYERS+1];
 
 Handle g_SavedCvars = INVALID_HANDLE;
 
-bool g_WaitingOnRoundAllow[MAXPLAYERS+1];
-int g_CurrentRoundTypeMenuIndex[MAXPLAYERS+1];
-
 int g_Preference[MAXPLAYERS+1];
 char g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 char g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
@@ -96,7 +92,6 @@ int g_numRoundTypes = 0;
 char g_RoundTypeNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
 char g_RoundTypeDisplayNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
 RoundTypeWeaponHandler g_RoundTypeWeaponHandlers[MAX_ROUND_TYPES];
-RoundTypeMenuHandler g_RoundTypeMenuHandlers[MAX_ROUND_TYPES];
 bool g_RoundTypeRanked[MAX_ROUND_TYPES];
 bool g_RoundTypeOptional[MAX_ROUND_TYPES];
 bool g_RoundTypeEnabled[MAX_ROUND_TYPES];
@@ -137,11 +132,22 @@ ArrayList g_CTAnglesList;
 ConVar g_FreezetimeCvar;
 ConVar g_RoundRestartDelayCvar;
 
+// Stored data from the weapons config file.
+// Each array has 3 elements:
+//  0: game's name of the weapon (e.g. "weapon_ak47")
+//  1: player-readable name of the weapon (e.g. "AK47")
+//  2: team the weapon belongs to (e.g. "T", "CT", or "ANY")
+#define WEAPON_MAX 16
+int g_numRifles;
+char g_Rifles[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
+int g_numPistols;
+char g_Pistols[WEAPON_MAX][3][WEAPON_NAME_LENGTH];
+
 /** Forwards **/
 Handle g_hAfterPlayerSetup = INVALID_HANDLE;
 Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
+Handle g_hGunsMenuCallback = INVALID_HANDLE;
 Handle g_hOnArenasReady = INVALID_HANDLE;
-Handle g_hOnGunsMenuDone = INVALID_HANDLE;
 Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
 Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
 Handle g_hOnRoundTypeDecided = INVALID_HANDLE;
@@ -149,10 +155,11 @@ Handle g_hOnRoundTypesAdded = INVALID_HANDLE;
 Handle g_hOnRoundWon = INVALID_HANDLE;
 Handle g_hOnSpawnsFound = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
+Handle g_hOnGunsMenuCreated = INVALID_HANDLE;
 
 /** multi1v1 function includes **/
-#include "multi1v1/customrounds.sp"
 #include "multi1v1/generic.sp"
+#include "multi1v1/customrounds.sp"
 #include "multi1v1/mute.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/radiocommands.sp"
@@ -161,6 +168,7 @@ Handle g_hOnStatsCached = INVALID_HANDLE;
 #include "multi1v1/stats.sp"
 #include "multi1v1/version.sp"
 #include "multi1v1/weaponlogic.sp"
+#include "multi1v1/menus.sp"
 
 
 
@@ -241,8 +249,8 @@ public void OnPluginStart() {
     /** Fowards **/
     g_hAfterPlayerSetup = CreateGlobalForward("Multi1v1_AfterPlayerSetup", ET_Ignore, Param_Cell);
     g_hAfterPlayerSpawn = CreateGlobalForward("Multi1v1_AfterPlayerSpawn", ET_Ignore, Param_Cell);
+    g_hGunsMenuCallback = CreateGlobalForward("Multi1v1_GunsMenuCallback", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_hOnArenasReady = CreateGlobalForward("Multi1v1_OnArenasReady", ET_Ignore);
-    g_hOnGunsMenuDone = CreateGlobalForward("Multi1v1_OnGunsMenuDone", ET_Ignore, Param_Cell);
     g_hOnPostArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnPreArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnRoundTypeDecided = CreateGlobalForward("Multi1v1_OnRoundTypeDecided", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_CellByRef);
@@ -250,6 +258,7 @@ public void OnPluginStart() {
     g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
     g_hOnSpawnsFound = CreateGlobalForward("Multi1v1_OnSpawnsFound", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
+    g_hOnGunsMenuCreated = CreateGlobalForward("Multi1v1_OnGunsMenuCreated", ET_Ignore, Param_Cell, Param_Cell);
 
     g_waitingQueue = Queue_Init();
 
@@ -334,8 +343,9 @@ public void OnMapStart() {
         DB_Connect();
     }
 
-    if (g_Enabled)
+    if (g_Enabled) {
         ExecConfigs();
+    }
 }
 
 public void OnMapEnd() {
@@ -840,9 +850,9 @@ public Action Command_JoinTeam(int client, const char[] command, int argc) {
     // auto-give the guns menu if desired
     if (!g_GivenGunsMenu[client]) {
         if (g_AutoGunsMenuBehaviorCvar.IntValue == 1 && AreClientCookiesCached(client)) {
-            GiveWeaponMenu(client);
+            GiveWeaponsMenu(client);
         } else if (g_AutoGunsMenuBehaviorCvar.IntValue == 2) {
-            GiveWeaponMenu(client);
+            GiveWeaponsMenu(client);
         }
     }
 
@@ -890,7 +900,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
     for (int i = 0; i < sizeof(gunsChatCommands); i++) {
         if (strcmp(sArgs[0], gunsChatCommands[i], false) == 0) {
-            GiveWeaponMenu(client);
+            GiveWeaponsMenu(client);
             return ret;
         }
     }
@@ -902,7 +912,7 @@ public Action Command_Guns(int client, int args) {
     if (!g_Enabled)
         return Plugin_Continue;
 
-    GiveWeaponMenu(client);
+    GiveWeaponsMenu(client);
     return Plugin_Handled;
 }
 
