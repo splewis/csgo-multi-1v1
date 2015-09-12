@@ -128,6 +128,8 @@ public void UpdatePreferencesOnCookies(int client) {
     GetCookieStringByName(client, "multi1v1_preference", cookieValue, sizeof(cookieValue));
     g_Preference[client] = Multi1v1_GetRoundTypeIndex(cookieValue);
 
+    g_HideStats[client] = GetCookieBool(client, g_HideStatsCookie);
+
     // This checks if the player has a preference set
     // By not having one set, we can conclude the client has never selected anything in the guns menu
     if (!StrEqual(cookieValue, "") && g_AutoGunsMenuBehaviorCvar.IntValue == 1) {

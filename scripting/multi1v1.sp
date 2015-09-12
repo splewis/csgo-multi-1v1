@@ -77,6 +77,8 @@ bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done 
 bool g_GivenGunsMenu[MAXPLAYERS+1];
 bool g_HideStats[MAXPLAYERS+1];
 
+Handle g_HideStatsCookie;
+
 Handle g_SavedCvars = INVALID_HANDLE;
 
 int g_Preference[MAXPLAYERS+1];
@@ -269,6 +271,8 @@ public void OnPluginStart() {
     if (g_AutoUpdateCvar.IntValue != 0) {
         AddUpdater();
     }
+
+    g_HideStatsCookie = RegClientCookie("multi1v1_hidestats", "Whether multi1v1 stats are hidden", CookieAccess_Public);
 }
 
 public int EnabledChanged(ConVar cvar, const char[] oldValue, const char[] newValue) {
@@ -921,6 +925,8 @@ public Action Command_Hidestats(int client, int args) {
         return Plugin_Continue;
 
     g_HideStats[client] = !g_HideStats[client];
+    SetCookieBool(client, g_HideStatsCookie, g_HideStats[client]);
+
     if (g_HideStats[client]) {
         Multi1v1_Message(client, "%t", "HideStats");
     } else {
