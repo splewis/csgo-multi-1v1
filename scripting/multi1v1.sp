@@ -49,6 +49,7 @@ ConVar g_PistolMenuCvar;
 ConVar g_PreferenceWeightCvar;
 ConVar g_RifleMenuCvar;
 ConVar g_RoundTimeCvar;
+ConVar g_UseAssistsCvar;
 ConVar g_UseChatPrefixCvar;
 ConVar g_UseDatabaseCvar;
 ConVar g_UseMVPStarsCvar;
@@ -210,6 +211,7 @@ public void OnPluginStart() {
     g_PreferenceWeightCvar = CreateConVar("sm_multi1v1_preference_weight", "1", "How much weight are given to preferences when round types are being selected. Use a higher number for a preference to be more likely, or 0 to make the preference have no effect");
     g_RifleMenuCvar = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
     g_RoundTimeCvar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
+    g_UseAssistsCvar = CreateConVar("sm_multi1v1_use_assists", "0", "Whether assists are updated to reflect a player's number of rounds in arena 1");
     g_UseChatPrefixCvar = CreateConVar("sm_multi1v1_use_chat_prefix", "1", "Whether to use a [Multi1v1] tag in chat messages");
     g_UseDatabaseCvar = CreateConVar("sm_multi1v1_use_database", "1", "Whether a database is used to store player statistics");
     g_UseMVPStarsCvar = CreateConVar("sm_multi1v1_use_mvp_stars", "1", "Whether MVP stars are updated to reflect a player's number of rounds in arena 1");
@@ -672,6 +674,9 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
 
     if (g_UseMVPStarsCvar.IntValue != 0)
         CS_SetMVPCount(client, g_RoundsLeader[client]);
+
+    if (g_UseAssistsCvar.IntValue != 0)
+        CS_SetClientAssists(client, g_RoundsLeader[client]);
 
     int roundType = (arena == -1) ? 0 : g_roundTypes[arena];
     Multi1v1_GivePlayerArenaWeapons(client, roundType);
