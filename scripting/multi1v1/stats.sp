@@ -17,20 +17,17 @@ char g_TableFormat[][] = {
  */
 public void DB_Connect() {
     char error[255];
-    char dbCfgName[255];
-    g_DatabaseNameCvar.GetString(dbCfgName, sizeof(dbCfgName));
-    db = SQL_Connect(dbCfgName, true, error, sizeof(error));
+    db = SQL_Connect(DATABASE_CONFIG_NAME, true, error, sizeof(error));
     if (db == INVALID_HANDLE) {
-        g_dbConnected = false;
         LogError("Could not connect: %s", error);
     } else {
-        SQL_SetCharset(db, "utf8");
+        db.SetCharset("utf8");
         SQL_LockDatabase(db);
 
-        // create the table
+        // Create the table if needed.
         SQL_CreateTable(db, TABLE_NAME, g_TableFormat, sizeof(g_TableFormat));
 
-        // Add new columns/key for backwards compatability reaons
+        // Add new columns/key for backwards compatability reaons.
         SQL_AddColumn(db, TABLE_NAME, "serverID INT NOT NULL default 0");
         SQL_AddColumn(db, TABLE_NAME, "recentRounds INT default 0 NOT NULL");
         for (int i = 0; i < g_numRoundTypes; i++) {
@@ -41,10 +38,10 @@ public void DB_Connect() {
             }
         }
 
+        // Update primary keys for backwards compatibility.
         SQL_UpdatePrimaryKey(db, TABLE_NAME, "`accountID`,`serverID`");
 
         SQL_UnlockDatabase(db);
-        g_dbConnected = true;
     }
 }
 
@@ -88,7 +85,7 @@ public void DB_AddPlayer(int client) {
         Format(query, sizeof(query),
                "INSERT IGNORE INTO %s (accountID,serverID,auth) VALUES (%d, %d, '%s');",
                TABLE_NAME, id, serverID, authSanitized);
-        SQL_TQuery(db, Callback_Insert, query, GetClientSerial(client));
+        db.Query(Callback_Insert, query, GetClientSerial(client));
     }
 }
 
@@ -123,7 +120,7 @@ public void Callback_Insert(Handle owner, Handle hndl, const char[] error, int s
             Format(query, sizeof(query),
                    "UPDATE %s SET name = '%s', lastTime = %d WHERE accountID = %d AND serverID = %d",
                    TABLE_NAME, sanitized_name, GetTime(), id, serverID);
-            SQL_TQuery(db, SQLErrorCheckCallback, query);
+            db.Query(SQLErrorCheckCallback, query);
         }
     }
 }
@@ -155,7 +152,7 @@ public void DB_FetchRatings(int client) {
             Format(query, sizeof(query),
                    "SELECT rating, wins, losses, %s FROM %s WHERE accountID = %d AND serverID = %d",
                    roundTypeRatings, TABLE_NAME, GetSteamAccountID(client), serverID);
-            SQL_TQuery(db, Callback_FetchRating, query, GetClientSerial(client));
+            db.Query(Callback_FetchRating, query, GetClientSerial(client));
         }
     }
 }
@@ -212,7 +209,7 @@ public void DB_WriteRatings(int client) {
         Format(query, sizeof(query),
                "UPDATE %s set rating = %f %s WHERE accountID = %d AND serverID = %d",
                TABLE_NAME, g_Rating[client], roundTypeRatings, GetSteamAccountID(client), serverID);
-        SQL_TQuery(db, SQLErrorCheckCallback, query);
+        db.Query(SQLErrorCheckCallback, query);
     }
 }
 
@@ -262,7 +259,7 @@ public void Increment(int client, const char[] field) {
             Format(query, sizeof(query),
                 "UPDATE %s SET %s = %s + 1 WHERE accountID = %d AND serverID = %d",
                 TABLE_NAME, field, field, id, serverid);
-            SQL_TQuery(db, SQLErrorCheckCallback, query);
+            db.Query(SQLErrorCheckCallback, query);
         }
     }
 }
@@ -340,7 +337,5 @@ static bool HasRoundTypeSpecificRating(int roundType) {
 }
 
 public bool AreStatsEnabled() {
-    char dbCfgName[255];
-    g_DatabaseNameCvar.GetString(dbCfgName, sizeof(dbCfgName));
-    return g_UseDatabaseCvar.IntValue != 0 && SQL_CheckConfig(dbCfgName);
+    return g_UseDatabaseCvar.IntValue != 0 && SQL_CheckConfig(DATABASE_CONFIG_NAME);
 }

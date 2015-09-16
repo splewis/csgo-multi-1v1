@@ -163,7 +163,7 @@ public int Native_GetOpponent(Handle plugin, int numParams) {
 }
 
 public int Native_HasDatabase(Handle plugin, int numParams) {
-    return g_UseDatabaseCvar.IntValue != 0 && g_dbConnected && db != INVALID_HANDLE;
+    return g_UseDatabaseCvar.IntValue != 0 && db != null;
 }
 
 public int Native_GetDatabase(Handle plugin, int numParams) {

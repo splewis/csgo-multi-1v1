@@ -28,6 +28,7 @@
 #define DISTRIBUTION_SPREAD 1000.0
 #define K_FACTOR 8.0
 #define ROUND_TYPE_NAME_LENGTH 64
+#define DATABASE_CONFIG_NAME "multi1v1"
 #define TABLE_NAME "multi1v1_stats"
 #define WEAPON_LENGTH 32
 
@@ -38,7 +39,6 @@ bool g_Enabled = true;
 ConVar g_AutoGunsMenuBehaviorCvar;
 ConVar g_AutoUpdateCvar;
 ConVar g_BlockRadioCvar;
-ConVar g_DatabaseNameCvar;
 ConVar g_DatabaseServerIdCvar;
 ConVar g_DefaultPistolCvar;
 ConVar g_ExecDefaultConfigCvar;
@@ -68,8 +68,7 @@ float g_Rating[MAXPLAYERS+1];
 float g_RoundTypeRating[MAXPLAYERS+1][MAX_ROUND_TYPES];
 
 /** Database interactions **/
-bool g_dbConnected = false;
-Handle db = INVALID_HANDLE;
+Database db = null;
 
 /** Client arrays **/
 int g_Ranking[MAXPLAYERS+1]; // which arena each player is in
@@ -200,7 +199,6 @@ public void OnPluginStart() {
     g_AutoGunsMenuBehaviorCvar = CreateConVar("sm_multi1v1_menu_open_behavior", "0", "Determines auto-open behavior of the guns menu. 0=never auto-open, 1=open if the client has no preference cookies saved, 2=always open on client connect");
     g_AutoUpdateCvar = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to auto-update. Requies the \"Updater\" plugin");
     g_BlockRadioCvar = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
-    g_DatabaseNameCvar = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
     g_DatabaseServerIdCvar = CreateConVar("sm_multi1v1_database_server_id", "0", "If you are storing database stats, a number to identify this server. Most users don't need to change this but if you are using the web interface and/or want to show/store stats for multiple servers separately, it should.");
     g_DefaultPistolCvar = CreateConVar("sm_multi1v1_default_pistol", "weapon_p250", "Default pistol to give if sm_multi1v1_pistol_behavior=2");
     g_ExecDefaultConfigCvar = CreateConVar("sm_multi1v1_exec_default_config", "1", "Whether the plugin will exectue gamemode_competitive.cfg before the sourcemod/multi1v1/game_cvars.cfg file.");
@@ -345,7 +343,7 @@ public void OnMapStart() {
         g_ArenaLosers[i] = -1;
     }
 
-    if (!g_dbConnected && AreStatsEnabled()) {
+    if (db == null && AreStatsEnabled()) {
         DB_Connect();
     }
 
@@ -371,7 +369,7 @@ public void ExecConfigs() {
 }
 
 public void OnClientAuthorized(int client, const char[] auth) {
-    if (!StrEqual(auth, "BOT") && g_UseDatabaseCvar.IntValue != 0 && g_dbConnected) {
+    if (!StrEqual(auth, "BOT") && g_UseDatabaseCvar.IntValue != 0 && db != null) {
         DB_AddPlayer(client);
     }
 }
@@ -612,9 +610,9 @@ public Action Event_OnRoundPostStart(Event event, const char[] name, bool dontBr
     // Fetch all the ratings
     // it can be expensive, so we try to get them all during freeze time where it isn't much of an issue
     if (AreStatsEnabled()) {
-        if (!g_dbConnected)
+        if (db == null)
             DB_Connect();
-        if (g_dbConnected) {
+        if (db != null) {
             for (int i = 1; i <= MaxClients; i++) {
                 if (IsValidClient(i) && !IsFakeClient(i) && !g_FetchedPlayerInfo[i]) {
                     DB_FetchRatings(i);
