@@ -24,8 +24,8 @@ public void DB_Connect() {
         g_dbConnected = false;
         LogError("Could not connect: %s", error);
     } else {
-        SQL_LockDatabase(db);
         SQL_SetCharset(db, "utf8");
+        SQL_LockDatabase(db);
 
         // create the table
         SQL_CreateTable(db, TABLE_NAME, g_TableFormat, sizeof(g_TableFormat));
