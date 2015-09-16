@@ -803,8 +803,9 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
         return;
 
     int arena = g_Ranking[client];
+
+    // Error handling if a player somehow joined a team without ever going through the queue.
     if (arena < 1) {
-        LogError("%L had arena %d on player spawn event, switching to queue/spec", client, arena);
         Queue_Enqueue(g_waitingQueue, client);
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         return;
