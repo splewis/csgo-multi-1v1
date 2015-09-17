@@ -37,6 +37,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("Multi1v1_ELORatingDelta", Native_ELORatingDelta);
     CreateNative("Multi1v1_GetNumSpawnsInArena", Native_GetNumSpawnsInArena);
     CreateNative("Multi1v1_GetArenaSpawn", Native_GetArenaSpawn);
+    CreateNative("Multi1v1_FindArenaNumber", Native_FindArenaNumber);
     CreateNative("Multi1v1_GetRifleChoice", Native_GetRifleChoice);
     CreateNative("Multi1v1_GetPistolChoice", Native_GetPistolChoice);
     CreateNative("Multi1v1_GetRoundTypeIndex", Native_GetRoundTypeIndex);
@@ -298,8 +299,8 @@ public int Native_GetNumSpawnsInArena(Handle plugin, int numParams) {
     int arena = GetNativeCell(1);
     CHECK_ARENA(arena);
 
-    ArrayList ct = view_as<ArrayList>(GetArrayCell(g_CTSpawnsList, arena));
-    ArrayList t = view_as<ArrayList>(GetArrayCell(g_TSpawnsList, arena));
+    ArrayList ct = view_as<ArrayList>(GetArrayCell(g_CTSpawnsList, arena - 1));
+    ArrayList t = view_as<ArrayList>(GetArrayCell(g_TSpawnsList, arena - 1));
     return Math_Min(GetArraySize(ct), GetArraySize(t));
 }
 
@@ -330,6 +331,12 @@ public int Native_GetArenaSpawn(Handle plugin, int numParams) {
 
     SetNativeArray(3, origin, sizeof(origin));
     SetNativeArray(4, angle, sizeof(angle));
+}
+
+public int Native_FindArenaNumber(Handle plugin, int numParams) {
+    float origin[3];
+    GetNativeArray(1, origin, 3);
+    return FindClosestArenaNumber(origin);
 }
 
 public int Native_GetRifleChoice(Handle plugin, int numParams) {

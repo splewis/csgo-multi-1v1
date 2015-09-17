@@ -332,6 +332,16 @@ native int Multi1v1_GetNumSpawnsInArena(int arena);
 native void Multi1v1_GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);
 
 /**
+ * Finds the arena number of a position. This may be inaccurate if the
+ * given position isn't actually inside any arena as it uses the spawns
+ * to determine the closest arena.
+ * Note: arena numbers are ordered between [1, Multi1v1_GetMaximumArenas()]
+ *
+ * @param origin Position vector.
+ */
+native int Multi1v1_FindArenaNumber(const float origin[3]);
+
+/**
  * Gets the rifle the client has selected in the weapons menu.
  *
  * @param client Client index.
@@ -483,6 +493,7 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_ELORatingDelta");
     MarkNativeAsOptional("Multi1v1_GetNumSpawnsInArena");
     MarkNativeAsOptional("Multi1v1_GetArenaSpawn");
+    MarkNativeAsOptional("Multi1v1_FindArenaNumber");
     MarkNativeAsOptional("Multi1v1_GetRifleChoice");
     MarkNativeAsOptional("Multi1v1_GetPistolChoice");
     MarkNativeAsOptional("Multi1v1_AddRoundType");

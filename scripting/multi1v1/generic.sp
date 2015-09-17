@@ -10,6 +10,10 @@ char g_ColorCodes[][] =    {"\x01",     "\x02",      "\x03",   "\x04",         "
 #include <clientprefs>
 #include <cstrike>
 
+#define SPECMODE_FIRSTPERSON 4
+#define SPECMODE_THIRDPERSON 5
+#define SPECMODE_FREELOOK 6
+
 /**
  * Removes the radar element from a client's HUD.
  */
@@ -358,4 +362,12 @@ stock void GetEnabledString(char[] buffer, int length, bool variable, int client
         Format(buffer, length, "%T", "Enabled", client);
     else
         Format(buffer, length, "%T", "Disabled", client);
+}
+
+public float fmin(float x, float y) {
+    return (x < y) ? x : y;
+}
+
+public float fmax(float x, float y) {
+    return (x < y) ? y : x;
 }

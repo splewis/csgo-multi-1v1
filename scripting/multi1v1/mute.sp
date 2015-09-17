@@ -26,18 +26,21 @@ public Action Hook_ShotgunShot(const char[] te_name, const int[] players, int nu
     for (int i = 0; i < numClients; i++) {
         int client = players[i];
 
-        bool rebroadcast;
+        bool rebroadcast = true;
         if (!IsPlayer(client)) {
             rebroadcast = true;
         } else if (IsPlayerAlive(client)) {
             rebroadcast = CanHear(shooterIndex, client);
-        } else {
+        } else if (IsClientObserver(client) && GetEntPropEnt(client, Prop_Send, "m_iObserverMode") != SPECMODE_FREELOOK) {
             int target = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
             rebroadcast = CanHear(shooterIndex, target);
         }
 
+        // TODO: we can also take freelook into account by getting the current position
+        // and testing the shooter's arena number with FindClosestArenaNumber(position).
+
         if (rebroadcast) {
-            // client should be able to hear it
+            // This Client should be able to hear it.
             newClients[newTotal] = client;
             newTotal++;
         }
