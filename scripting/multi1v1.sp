@@ -920,10 +920,6 @@ public Action Command_Guns(int client, int args) {
     if (!g_Enabled)
         return Plugin_Continue;
 
-    float vec[3];
-    GetClientAbsOrigin(client, vec);
-    PrintToChat(client, "in arena %d", FindClosestArenaNumber(vec));
-
     GiveWeaponsMenu(client);
     return Plugin_Handled;
 }
