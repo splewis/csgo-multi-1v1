@@ -7,8 +7,11 @@ public bool CanHear(int shooter, int client) {
         return true;
     }
 
+    float pos[3];
+    GetClientAbsOrigin(client, pos);
+
     // Block the transmisson.
-    if (Multi1v1_GetOpponent(shooter) != client) {
+    if (Multi1v1_GetArenaNumber(shooter) != FindClosestArenaNumber(pos)) {
         return false;
     }
 
@@ -17,6 +20,10 @@ public bool CanHear(int shooter, int client) {
 }
 
 public Action Hook_ShotgunShot(const char[] te_name, const int[] players, int numClients, float delay) {
+    if (g_MuteOtherArenasCvar.IntValue == 0) {
+        return Plugin_Continue;
+    }
+
     int shooterIndex = TE_ReadNum("m_iPlayer") + 1;
 
     // Check which clients need to be excluded.
@@ -29,15 +36,16 @@ public Action Hook_ShotgunShot(const char[] te_name, const int[] players, int nu
         bool rebroadcast = true;
         if (!IsPlayer(client)) {
             rebroadcast = true;
-        } else if (IsPlayerAlive(client)) {
+        } else {
             rebroadcast = CanHear(shooterIndex, client);
-        } else if (IsClientObserver(client) && GetEntPropEnt(client, Prop_Send, "m_iObserverMode") != SPECMODE_FREELOOK) {
-            int target = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
-            rebroadcast = CanHear(shooterIndex, target);
         }
 
-        // TODO: we can also take freelook into account by getting the current position
-        // and testing the shooter's arena number with FindClosestArenaNumber(position).
+        // else if (IsPlayerAlive(client)) {
+        //     rebroadcast = CanHear(shooterIndex, client);
+        // } else if (IsClientObserver(client) && GetEntPropEnt(client, Prop_Send, "m_iObserverMode") != SPECMODE_FREELOOK) {
+        //     int target = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
+        //     rebroadcast = CanHear(shooterIndex, target);
+        // }
 
         if (rebroadcast) {
             // This Client should be able to hear it.
