@@ -23,7 +23,7 @@ public void OnPluginStart() {
     InitDebugLog(DEBUG_CVAR, "statsview");
     LoadTranslations("common.phrases");
     g_StatsURLCvar = CreateConVar("sm_multi1v1_stats_url", "", "URL to send player stats to. You may use tags for userid and serverid via: {USER} and {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?id={USER}&serverid={SERVER}.");
-    g_StatsTopURLCvar = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL. You may a tag for the serverid via: {SERVER}.  For example: http://csgo1v1.splewis.net/index.php?serverid={SERVER}.");
+    g_StatsTopURLCvar = CreateConVar("sm_multi1v1_top_url", "", "Top 15 URL. You may a tag for the serverid via: {SERVER}.  For example: http://csgo1v1.splewis.net/redirect.php?serverid={SERVER}.");
     AutoExecConfig(true, "multi1v1_online_stats_viewer", "sourcemod/multi1v1");
     RegConsoleCmd("sm_stats", Command_Stats, "Displays a players multi-1v1 stats");
     RegConsoleCmd("sm_rank", Command_Stats, "Displays a players multi-1v1 stats");
