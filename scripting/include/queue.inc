@@ -13,7 +13,9 @@
  * Initializes the queue. The handle returned by this must be closed or destroyed later.
  */
 stock Handle Queue_Init() {
-    return CreateArray();
+    Handle x = CreateArray();
+    LogDebug("Queue_Init -> %d", x);
+    return x;
 }
 
 /**
@@ -92,5 +94,6 @@ stock void Queue_Clear(Handle queueHandle) {
  * Frees the handle used by the queue.
  */
 stock void Queue_Destroy(Handle queueHandle) {
+    LogDebug("Queue_Destroy -> %d", queueHandle);
     CloseHandle(queueHandle);
 }

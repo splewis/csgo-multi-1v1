@@ -235,8 +235,10 @@ stock void CloseNestedList(ArrayList list) {
     int n = list.Length;
     for (int i = 0; i < n; i++) {
         ArrayList tmp = view_as<ArrayList>(list.Get(i));
+        LogDebug("delete %d", tmp);
         delete tmp;
     }
+    LogDebug("delete %d", list);
     delete list;
 }
 

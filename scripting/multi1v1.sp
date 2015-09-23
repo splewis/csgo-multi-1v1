@@ -190,6 +190,7 @@ public Plugin myinfo = {
 
 public void OnPluginStart() {
     InitDebugLog(DEBUG_CVAR, "multi1v1");
+    LogDebug("OnPluginStart");
     LoadTranslations("common.phrases");
     LoadTranslations("multi1v1.phrases");
 
@@ -265,6 +266,7 @@ public void OnPluginStart() {
     g_waitingQueue = Queue_Init();
 
     for (int i = 0; i < sizeof(g_RoundTypeWeaponLists); i++) {
+        LogDebug("g_RoundTypeWeaponLists[%d] -> %d", i, g_RoundTypeWeaponLists[i]);
         g_RoundTypeWeaponLists[i] = new ArrayList(WEAPON_NAME_LENGTH);
     }
 
@@ -326,6 +328,7 @@ static void AddUpdater() {
 }
 
 public void OnMapStart() {
+    LogDebug("OnMapStart");
     Spawns_MapStart();
     Weapons_MapStart();
     LoadRoundTypes();
@@ -353,6 +356,7 @@ public void OnMapStart() {
 }
 
 public void OnMapEnd() {
+    LogDebug("OnMapEnd");
     Spawns_MapEnd();
 }
 
@@ -434,6 +438,7 @@ public Action Event_OnRoundPreStart(Event event, const char[] name, bool dontBro
     if (!g_Enabled)
         return;
 
+    LogDebug("Event_OnRoundPreStart");
     g_roundStartTime = GetTime();
 
     // Here we add each player to the queue in their new ranking
@@ -579,6 +584,7 @@ public Action Event_OnRoundPostStart(Event event, const char[] name, bool dontBr
     if (!g_Enabled)
         return;
 
+    LogDebug("Event_OnRoundPostStart");
     g_roundFinished = false;
     for (int arena = 1; arena <= g_maxArenas; arena++) {
         g_ArenaWinners[arena] = -1;
@@ -695,6 +701,7 @@ public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcas
     if (!g_Enabled)
         return;
 
+    LogDebug("Event_OnRoundEnd");
     g_totalRounds++;
     g_roundFinished = true;
 

@@ -6,6 +6,9 @@ stock Handle SaveCvars(ArrayList cvarNames) {
     ArrayList storageList = CreateArray();
     ArrayList cvarNameList = new ArrayList(CVAR_NAME_MAX_LENGTH);
     ArrayList cvarValueList = new ArrayList(CVAR_VALUE_MAX_LENGTH);
+    LogDebug("storageList -> %d", storageList);
+    LogDebug("cvarNameList -> %d", cvarNameList);
+    LogDebug("cvarValueList -> %d", cvarValueList);
 
     char nameBuffer[CVAR_NAME_MAX_LENGTH];
     char valueBuffer[CVAR_VALUE_MAX_LENGTH];
@@ -50,6 +53,10 @@ stock void RestoreCvars(Handle& cvarStorage, bool close=false) {
 
 // Closes a cvar storage object returned by SaveCvars.
 stock void CloseCvarStorage(Handle& cvarStorage) {
+    LogDebug("delete %d", GetArrayCell(cvarStorage, 0));
+    LogDebug("delete %d", GetArrayCell(cvarStorage, 1));
+    LogDebug("delete %d", cvarStorage);
+
     CloseHandle(GetArrayCell(cvarStorage, 0));
     CloseHandle(GetArrayCell(cvarStorage, 1));
     CloseHandle(cvarStorage);
