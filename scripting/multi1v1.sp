@@ -266,7 +266,7 @@ public void OnPluginStart() {
     g_waitingQueue = Queue_Init();
 
     for (int i = 0; i < sizeof(g_RoundTypeWeaponLists); i++) {
-        LogDebug("g_RoundTypeWeaponLists[%d] -> %d", i, g_RoundTypeWeaponLists[i]);
+        LogDebug("g_RoundTypeWeaponLists[%d] -> %x", i, g_RoundTypeWeaponLists[i]);
         g_RoundTypeWeaponLists[i] = new ArrayList(WEAPON_NAME_LENGTH);
     }
 

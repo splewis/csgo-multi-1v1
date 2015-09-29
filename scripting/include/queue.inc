@@ -14,7 +14,7 @@
  */
 stock Handle Queue_Init() {
     Handle x = CreateArray();
-    LogDebug("Queue_Init -> %d", x);
+    LogDebug("Queue_Init -> %x", x);
     return x;
 }
 
@@ -94,6 +94,6 @@ stock void Queue_Clear(Handle queueHandle) {
  * Frees the handle used by the queue.
  */
 stock void Queue_Destroy(Handle queueHandle) {
-    LogDebug("Queue_Destroy -> %d", queueHandle);
+    LogDebug("delete %x", queueHandle);
     CloseHandle(queueHandle);
 }

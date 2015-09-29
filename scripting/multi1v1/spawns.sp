@@ -12,10 +12,10 @@ public void Spawns_MapStart() {
     g_TAnglesList = new ArrayList();
     g_CTSpawnsList = new ArrayList();
     g_CTAnglesList = new ArrayList();
-    LogDebug("g_TSpawnsList -> %d", g_TSpawnsList);
-    LogDebug("g_TAnglesList -> %d", g_TAnglesList);
-    LogDebug("g_CTSpawnsList -> %d", g_CTSpawnsList);
-    LogDebug("g_TSpawnsList -> %d", g_CTAnglesList);
+    LogDebug("g_TSpawnsList -> %x", g_TSpawnsList);
+    LogDebug("g_TAnglesList -> %x", g_TAnglesList);
+    LogDebug("g_CTSpawnsList -> %x", g_CTSpawnsList);
+    LogDebug("g_TSpawnsList -> %x", g_CTAnglesList);
 
     bool verbose = g_VerboseSpawnModeCvar.IntValue != 0;
 
@@ -144,8 +144,8 @@ static void AddSpawn(float spawn[3], float angle[3], ArrayList spawnList, ArrayL
     // If no nearby arena was found - create a new list for this newly found arena and push it.
     ArrayList spawns = new ArrayList(3);
     ArrayList angles = new ArrayList(3);
-    LogDebug("new spawn list -> %d", spawns);
-    LogDebug("new angle list -> %d", angles);
+    LogDebug("new spawn list -> %x", spawns);
+    LogDebug("new angle list -> %x", angles);
     spawns.PushArray(spawn);
     angles.PushArray(angle);
     PushArrayCell(spawnList, spawns);
