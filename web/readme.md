@@ -11,7 +11,7 @@ $run_query = "SELECT s1.*, (SELECT COUNT(*) FROM $mysql_table AS s2 WHERE s2.rat
 ```
 
 ###Setting up Anti-Squatter
-Setting up the anti-squatter feature is fairly simple to set up. 
+Setting up the anti-squatter feature is fairly simple to set up.
 All you have to do is add a password to $anti_squatter_pass in config.inc.php and create a cronjob set to run everyday with the command following command:
 ```bash
 wget http://www.domain.com/stats/cron/antisquatter.php?p={YOUR_PASSWORD} && rm -rf antisquatter.php
@@ -20,7 +20,7 @@ wget http://www.domain.com/stats/cron/antisquatter.php?p={YOUR_PASSWORD} && rm -
 
 ###In-Game Stats
 If you are using the included ``multi1v1_online_stats_viewer`` plugin, you should set the ``sm_multi1v1_stats_url``  to something like:
-``http://www.domain.com/stats/redirect.php?id={USER}&serverid={SERVER}`` and ``sm_multi1v1_top_url`` to something like: ``http://www.domain.com/stats/index.php?serverid={SERVER}``. 
+``http://www.domain.com/stats/redirect.php?id={USER}&serverid={SERVER}`` and ``sm_multi1v1_top_url`` to something like: ``http://www.domain.com/stats/redirect.php?serverid={SERVER}``.
 
 These cvars should be set in ``cfg/multi1v1/multi1v1_online_stats_viewer.cfg``.
 
