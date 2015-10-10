@@ -28,7 +28,7 @@
 #define DISTRIBUTION_SPREAD 1000.0
 #define K_FACTOR 8.0
 #define ROUND_TYPE_NAME_LENGTH 64
-#define DATABASE_CONFIG_NAME "multi1v1"
+//#define DATABASE_CONFIG_NAME "multi1v1"
 #define TABLE_NAME "multi1v1_stats"
 #define WEAPON_LENGTH 32
 
@@ -56,6 +56,7 @@ ConVar g_UseMVPStarsCvar;
 ConVar g_UseTeamTagsCvar;
 ConVar g_VerboseSpawnModeCvar;
 ConVar g_VersionCvar;
+ConVar g_DatabaseName;
 
 /** Saved data for database interaction - be careful when using these, they may not
  *  be fetched, check multi1v1/stats.sp for a function that checks that instead of
@@ -215,6 +216,7 @@ public void OnPluginStart() {
     g_UseMVPStarsCvar = CreateConVar("sm_multi1v1_use_mvp_stars", "1", "Whether MVP stars are updated to reflect a player's number of rounds in arena 1");
     g_UseTeamTagsCvar = CreateConVar("sm_multi1v1_use_team_tags", "1", "Whether the team (or clan) tag is updated to reflect a player's arena numbers");
     g_VerboseSpawnModeCvar = CreateConVar("sm_multi1v1_verbose_spawns", "0", "Set to 1 to get info about all spawns the plugin read - useful for map creators testing against the plugin");
+    g_DatabaseName = CreateConVar("sm_multi1v1_db_name", "multi1v1", "Name of the database configuration in configs/databases.cfg to use.");
 
     HookConVarChange(g_EnabledCvar, EnabledChanged);
 

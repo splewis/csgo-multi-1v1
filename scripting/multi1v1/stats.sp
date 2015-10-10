@@ -17,7 +17,9 @@ char g_TableFormat[][] = {
  */
 public void DB_Connect() {
     char error[255];
-    db = SQL_Connect(DATABASE_CONFIG_NAME, true, error, sizeof(error));
+    char database_name[256];
+    g_DatabaseName.GetString(database_name, sizeof(database_name));
+    db = SQL_Connect(database_name, true, error, sizeof(error));
     if (db == INVALID_HANDLE) {
         LogError("Could not connect: %s", error);
     } else {
@@ -337,5 +339,7 @@ static bool HasRoundTypeSpecificRating(int roundType) {
 }
 
 public bool AreStatsEnabled() {
-    return g_UseDatabaseCvar.IntValue != 0 && SQL_CheckConfig(DATABASE_CONFIG_NAME);
+	char dbname[256];
+	g_DatabaseName.GetString(dbname, sizeof(dbname));
+	return g_UseDatabaseCvar.IntValue != 0 && SQL_CheckConfig(dbname);
 }
