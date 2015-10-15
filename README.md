@@ -89,6 +89,8 @@ You should make sure you have a relatively recent version of smlib - some change
 ## Maps
 I have a [workshop collection](http://steamcommunity.com/sharedfiles/filedetails/?id=249376192) of maps I know of. The "am_" prefix stands for aim_multi, reflecting the fact that the maps are similar to aim_ maps but there are multiple copies of them.
 
+**Note: standard maps (de_dust2, etc.) or aim maps (aim_map, etc.) will not work with this plugin. Maps must be custom-made with multiple arenas.**
+
 Guidelines for making a multi-1v1 map:
 - Create 1 arena and test it well, and when are you happy copy it
 - Create a bunch of arenas, I'd recommend making at least **16**
