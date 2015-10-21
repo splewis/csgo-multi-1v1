@@ -115,9 +115,14 @@ public void RifleHandler(int client) {
     Client_SetArmor(client, 100);
 
     int pistolBehavior = g_PistolBehaviorCvar.IntValue;
-    if (pistolBehavior != 1) {
+    if (pistolBehavior == 0 || pistolBehavior == 3) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
+    } else if (pistolBehavior == 2) {
+        char defaultPistol[WEAPON_NAME_LENGTH];
+        g_DefaultPistolCvar.GetString(defaultPistol, sizeof(defaultPistol));
+        GiveWeapon(client,  defaultPistol);
     }
+
     GivePlayerItem(client, "weapon_knife");
 }
 
@@ -141,7 +146,7 @@ public void AwpHandler(int client) {
     if (pistolBehavior == 0) {
         GiveWeapon(client, g_SecondaryWeapon[client]);
     } else if (pistolBehavior == 2 || pistolBehavior == 3) {
-        char defaultPistol[32];
+        char defaultPistol[WEAPON_NAME_LENGTH];
         g_DefaultPistolCvar.GetString(defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
     }
