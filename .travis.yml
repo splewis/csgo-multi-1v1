@@ -3,7 +3,7 @@ sudo: false
 addons:
     apt_packages:
         - lib32stdc++6  # needed for spcomp
-        - lynx
+        - elinks
 
 env:
     - SMVERSION=1.7
@@ -19,7 +19,7 @@ before_script:
     # install the sourcemod compiler
     - SMPATTERN="http:.*sourcemod-.*-linux.*"
     - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
-    - SMPACKAGE=`lynx -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
+    - SMPACKAGE=`elinks -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
     - TEST_SCRIPT="tests/test_compile-all.sp"
 
     - wget $SMPACKAGE
