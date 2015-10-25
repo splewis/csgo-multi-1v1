@@ -40,13 +40,6 @@ public Action Hook_ShotgunShot(const char[] te_name, const int[] players, int nu
             rebroadcast = CanHear(shooterIndex, client);
         }
 
-        // else if (IsPlayerAlive(client)) {
-        //     rebroadcast = CanHear(shooterIndex, client);
-        // } else if (IsClientObserver(client) && GetEntPropEnt(client, Prop_Send, "m_iObserverMode") != SPECMODE_FREELOOK) {
-        //     int target = GetEntPropEnt(client, Prop_Send, "m_hObserverTarget");
-        //     rebroadcast = CanHear(shooterIndex, target);
-        // }
-
         if (rebroadcast) {
             // This Client should be able to hear it.
             newClients[newTotal] = client;
