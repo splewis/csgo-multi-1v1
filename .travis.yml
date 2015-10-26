@@ -3,7 +3,6 @@ sudo: false
 addons:
     apt_packages:
         - lib32stdc++6  # needed for spcomp
-        - elinks
 
 env:
     - SMVERSION=1.7
@@ -17,14 +16,10 @@ before_script:
     - cd ..
 
     # install the sourcemod compiler
-    - SMPATTERN="http:.*sourcemod-.*-linux.*"
-    - SMURL="http://www.sourcemod.net/smdrop/$SMVERSION/"
-    - SMPACKAGE=`elinks -dump "$SMURL" | egrep -o "$SMPATTERN" | tail -1`
-    - TEST_SCRIPT="tests/test_compile-all.sp"
-
+    - SMPACKAGE="http://www.sourcemod.net/smdrop/${SMVERSION}/$(wget -qO- "http://www.sourcemod.net/smdrop/${SMVERSION}/" | grep linux | cut -d "\"" -f 2 | tail -n 1)"
     - wget $SMPACKAGE
-    - tar -xzf $(basename "$SMPACKAGE")
-    - cp -R scripting/ addons/sourcemod/
+    - mkdir $SMVERSION sharedinclude
+    - tar xfz $(basename $SMPACKAGE) -C $SMVERSION
     - cd addons/sourcemod/scripting/
     - chmod +x spcomp
     - PATH+=":$PWD"
