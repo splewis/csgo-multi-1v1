@@ -20,7 +20,8 @@ stock void GiveWeaponsMenu(int client, int position=0) {
     if (pref >= 0 && (g_AllowedRoundTypes[client][pref] || !g_RoundTypeOptional[pref])) {
         Format(prefString, sizeof(prefString), "Preference: %s rounds", g_RoundTypeDisplayNames[pref]);
     }
-    AddMenuItem(menu, "pref", prefString);
+    int style = (CountRoundTypesAvaliableToClient(client) >= 2) ? ITEMDRAW_DEFAULT : ITEMDRAW_DISABLED;
+    AddMenuItem(menu, "pref", prefString, style);
 
     for (int i = 0; i < g_numRoundTypes; i++) {
         if (g_RoundTypeEnabled[i] && g_RoundTypeOptional[i]) {
@@ -92,26 +93,29 @@ public void GivePreferenceMenu(int client) {
     menu.ExitBackButton = true;
     AddMenuInt(menu, -1, "No Preference");
 
-    int count = 0;
     for (int i = 0; i < g_numRoundTypes; i++) {
         if (!g_RoundTypeEnabled[i]) {
             continue;
         }
 
         if (g_AllowedRoundTypes[client][i] || !g_RoundTypeOptional[i]) {
-            count++;
             char buffer[128];
             Format(buffer, sizeof(buffer), "%s rounds", g_RoundTypeDisplayNames[i]);
             AddMenuInt(menu, i, buffer);
         }
     }
 
-    if (count >= 2) {
-        menu.Display(client, MENU_TIME_FOREVER);
-    } else {
-        SetCookieStringByName(client, "multi1v1_preference", "none");
-        delete menu;
+    menu.Display(client, MENU_TIME_FOREVER);
+}
+
+static int CountRoundTypesAvaliableToClient(int client) {
+    int count = 0;
+    for (int i = 0; i < g_numRoundTypes; i++) {
+        if (g_RoundTypeEnabled[i] && (g_AllowedRoundTypes[client][i] || !g_RoundTypeOptional[i])) {
+            count++;
+        }
     }
+    return count;
 }
 
 /**
