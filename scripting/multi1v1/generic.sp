@@ -65,10 +65,13 @@ stock void AddMenuOption(Menu menu, const char[] info, const char[] display, any
 /**
  * Adds an integer to a menu as a string choice.
  */
-stock void AddMenuInt(Menu menu, int value, const char[] display) {
+stock void AddMenuInt(Menu menu, int value, const char[] display, any:...) {
+    char formattedDisplay[128];
+    VFormat(formattedDisplay, sizeof(formattedDisplay), display, 4);
+
     char buffer[INTEGER_STRING_LENGTH];
     IntToString(value, buffer, sizeof(buffer));
-    AddMenuItem(menu, buffer, display);
+    AddMenuItem(menu, buffer, formattedDisplay);
 }
 
 /**

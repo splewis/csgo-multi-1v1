@@ -64,4 +64,53 @@
 	{
 		"en"		"enabled"
 	}
+	"WeaponsMenuTitle"
+	{
+		"en"		"Select your weapons preferences:"
+	}
+	"WeaponsMenuRifle"
+	{
+		"#format"		"{1:s}"
+		"en"		"Rifle: {1}"
+	}
+	"WeaponsMenuPistol"
+	{
+		"#format"		"{1:s}"
+		"en"		"Pistol: {1}"
+	}
+	"WeaponsMenuRoundTypeEnabled"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"		"{1} rounds: {2}"
+	}
+	"WeaponsMenuPreferenceTitle"
+	{
+		"en"		"Choose your preferred round type:"
+	}
+	"WeaponsMenuPreference"
+	{
+		"#format"		"{1:s}"
+		"en"		"Preference: {1} rounds"
+	}
+	"WeaponsMenuPreferenceNone"
+	{
+		"en"		"Preference: none"
+	}
+	"WeaponsMenuNoPreference"
+	{
+		"en"		"No preference"
+	}
+	"WeaponsMenuPreferenceChoice"
+	{
+		"#format"		"{1:s}"
+		"en"		"{1} rounds"
+	}
+	"WeaponsMenuSelection"
+	{
+		"en"		"Choose your favorite rifle:"
+	}
+	"PistolMenuTitle"
+	{
+		"en"		"Choose your favorite pistol:"
+	}
 }
