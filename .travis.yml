@@ -16,10 +16,9 @@ before_script:
     - cd ..
 
     # install the sourcemod compiler
-    - SMPACKAGE="http://www.sourcemod.net/smdrop/${SMVERSION}/$(wget -qO- "http://www.sourcemod.net/smdrop/${SMVERSION}/" | grep linux | cut -d "\"" -f 2 | tail -n 1)"
+    - SMPACKAGE="http://sourcemod.net/latest.php?os=linux&version=${SMVERSION}"
     - wget $SMPACKAGE
-    - mkdir $SMVERSION sharedinclude
-    - tar xfz $(basename $SMPACKAGE) -C $SMVERSION
+    - tar xfz $(basename $SMPACKAGE)
     - cd addons/sourcemod/scripting/
     - chmod +x spcomp
     - PATH+=":$PWD"
