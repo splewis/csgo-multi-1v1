@@ -48,4 +48,56 @@
 	{
 		"pl"		"Arena {1}"
 	}
+	"Disabled"
+	{
+		"pl"		"Wylaczone"
+	}
+	"Enabled"
+	{
+		"pl"		"Wlaczone"
+	}
+	"WeaponsMenuTitle"
+	{
+		"pl"		"Wybierz swoje bronie:"
+	}
+	"WeaponsMenuRifle"
+	{
+		"pl"		"Karabin: {1}"
+	}
+	"WeaponsMenuPistol"
+	{
+		"pl"		"Pistolet: {1}"
+	}
+	"WeaponsMenuRoundTypeEnabled"
+	{
+		"pl"		"{1} rundy: {2}"
+	}
+	"WeaponsMenuPreferenceTitle"
+	{
+		"pl"		"Wybierz swoj ulubiony typ rundy:"
+	}
+	"WeaponsMenuPreference"
+	{
+		"pl"		"Wybor: {1} rundy"
+	}
+	"WeaponsMenuPreferenceNone"
+	{
+		"pl"		"Wybor: brak"
+	}
+	"WeaponsMenuNoPreference"
+	{
+		"pl"		"Brak wyboru"
+	}
+	"WeaponsMenuPreferenceChoice"
+	{
+		"pl"		"{1} rundy"
+	}
+	"WeaponsMenuSelection"
+	{
+		"pl"		"Wybierz ulubiony karabin:"
+	}
+	"PistolMenuTitle"
+	{
+		"pl"		"Wybierz ulubiony pistolet:"
+	}
 }
