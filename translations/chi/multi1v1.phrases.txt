@@ -28,4 +28,76 @@
 	{
 		"chi"			"{GREEN}你{NORMAL}({GREEN}{1}{NORMAL}分，{LIGHT_RED}减{2}{NORMAL}分)未在规定时间内击败对手。"
 	}
+	"MostWins"
+	{
+		"chi"		"{GREEN}{1} {NORMAL}是获胜最多的玩家，在这张竞技地图中拥有高达 {PURPLE}({2}) {NORMAL}个回合的胜利。"
+	}
+	"OpponentLeft"
+	{
+		"chi"		"{GREEN}你的对手离开了。"
+	}
+	"HideStats"
+	{
+		"chi"		"玩家资料目前是隐藏的。"
+	}
+	"ShowStats"
+	{
+		"chi"		"玩家资料目前是公开的。"
+	}
+	"ArenaClanTag"
+	{
+		"chi"		"竞技场 {1}"
+	}
+	"Disabled"
+	{
+		"chi"		"禁用"
+	}
+	"Enabled"
+	{
+		"chi"		"启用"
+	}
+	"WeaponsMenuTitle"
+	{
+		"chi"		"选择你所偏好的武器："
+	}
+	"WeaponsMenuRifle"
+	{
+		"chi"		"步枪： {1}"
+	}
+	"WeaponsMenuPistol"
+	{
+		"chi"		"手枪： {1}"
+	}
+	"WeaponsMenuRoundTypeEnabled"
+	{
+		"chi"		"{1} 回合： {2}"
+	}
+	"WeaponsMenuPreferenceTitle"
+	{
+		"chi"		"选择您所喜欢的回合类别："
+	}
+	"WeaponsMenuPreference"
+	{
+		"chi"		"偏好: {1} 回合"
+	}
+	"WeaponsMenuPreferenceNone"
+	{
+		"chi"		"偏好： 没有设置"
+	}
+	"WeaponsMenuNoPreference"
+	{
+		"chi"		"没有偏好"
+	}
+	"WeaponsMenuPreferenceChoice"
+	{
+		"chi"		"{1} 回合"
+	}
+	"WeaponsMenuSelection"
+	{
+		"chi"		"选择你最喜欢的步枪："
+	}
+	"PistolMenuTitle"
+	{
+		"chi"		"选择你最喜欢的手枪："
+	}
 }
