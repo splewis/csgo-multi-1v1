@@ -1,3 +1,15 @@
+1.1.0:
+- correct a crash-causing issue on recent sourcemod builds when stats were enabled (it was a deadlock caused by SQL_SetCharSet happening inside a lock)
+- add sm_reloadroundtypes admin command for reloading all round types (normally only happens on map changes)
+- block "regroup" radio command block and don't block radio commands when plugin is diabled
+- add sm_multi1v1_mute_other_arenas cvar (default 1) that mutes gunshots from arenas other than a client's closest one
+- adjust database stats to be enabled by default
+- remove cvar sm_multi1v1_database_name
+- add a cookie for clients to hide stats (multi1v1_hidestats)
+- add ccvar sm_multi1v1_use_assists for displaying rounds in arena 1 via the assists on the scoreboard
+- correct pistol-giving behavior on rifle rounds to match sm_multi1v1_pistol_behavior description
+- add norwegian translations (thanks bawls)
+
 1.0.2:
 - correct multi1v1_flashbangs addon not giving flashbangs correctly
 
