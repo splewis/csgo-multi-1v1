@@ -1,8 +1,4 @@
 public bool CanHear(int shooter, int client) {
-    if (g_MuteOtherArenasCvar.IntValue == 0) {
-        return true;
-    }
-
     if (!IsValidClient(shooter) || !IsValidClient(client) || shooter == client) {
         return true;
     }
@@ -20,7 +16,7 @@ public bool CanHear(int shooter, int client) {
 }
 
 public Action Hook_ShotgunShot(const char[] te_name, const int[] players, int numClients, float delay) {
-    if (g_MuteOtherArenasCvar.IntValue == 0) {
+    if (g_MuteOtherArenasCvar.IntValue == 0 || g_EnabledCvar.IntValue == 0) {
         return Plugin_Continue;
     }
 
