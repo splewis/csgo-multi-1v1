@@ -29,12 +29,10 @@ stock void GiveWeaponsMenu(int client, int position=0) {
         if (g_RoundTypeEnabled[i] && g_RoundTypeOptional[i]) {
             char enabledString[32];
             GetEnabledString(enabledString, sizeof(enabledString), g_AllowedRoundTypes[client][i], client);
-            LogMessage("enabledString = %s", enabledString);
 
             char infostring[128];
             Format(infostring, sizeof(infostring), "allow%d", i);
             AddMenuOption(menu, infostring, "%T", "WeaponsMenuRoundTypeEnabled", client, g_RoundTypeDisplayNames[i], enabledString);
-            LogMessage("infostring = %s", infostring);
         }
     }
 
