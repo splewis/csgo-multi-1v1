@@ -32,6 +32,10 @@ public void OnPluginStart() {
 }
 
 public Action Command_Stats(int client, int args) {
+    if (!Enabled()) {
+        return Plugin_Continue;
+    }
+
     char arg1[32];
     if (args >= 1 && GetCmdArg(1, arg1, sizeof(arg1))) {
         int target = FindTarget(client, arg1, true, false);
@@ -46,6 +50,10 @@ public Action Command_Stats(int client, int args) {
 }
 
 public Action Command_Top(int client, int args) {
+    if (!Enabled()) {
+        return Plugin_Continue;
+    }
+
     char url[255];
     g_StatsTopURLCvar.GetString(url, sizeof(url));
     if (StrEqual(url, "")) {
@@ -83,6 +91,10 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 }
 
 public void ShowStatsForPlayer(int client, int target) {
+    if (!Enabled()) {
+        return;
+    }
+
     char url[255];
     g_StatsURLCvar.GetString(url, sizeof(url));
     if (StrEqual(url, "")) {
@@ -117,4 +129,8 @@ public void CheckMOTDAllowed(QueryCookie cookie, int client, ConVarQueryResult r
     if (!StrEqual(cvarValue, "0")) {
         Multi1v1_Message(client, "You must have {LIGHT_GREEN}cl_disablehtmlmotd 0 {NORMAL}to use that command.");
     }
+}
+
+public bool Enabled() {
+    return FindConVar("sm_multi1v1_enabled").IntValue != 0;
 }
