@@ -275,6 +275,12 @@ public void OnPluginStart() {
     g_HideStatsCookie = RegClientCookie("multi1v1_hidestats", "Whether multi1v1 stats are hidden", CookieAccess_Public);
 }
 
+public void OnPluginEnd() {
+    if (g_SavedCvars != INVALID_HANDLE) {
+        RestoreCvars(g_SavedCvars, true);
+    }
+}
+
 public int EnabledChanged(ConVar cvar, const char[] oldValue, const char[] newValue) {
     bool wasEnabled = !StrEqual(oldValue, "0");
     g_Enabled = !StrEqual(newValue, "0");
