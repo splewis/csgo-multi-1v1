@@ -22,9 +22,15 @@ before_script:
     - cd addons/sourcemod/scripting/
     - chmod +x spcomp
     - PATH+=":$PWD"
+    - cd include
+
+    # get updater include
+    - wget https://bitbucket.org/GoD_Tony/updater/raw/12181277db77d6117052b8ddf5810c7681745156/include/updater.inc
+
+    # get pugsetup include
+    - wget https://raw.githubusercontent.com/splewis/csgo-pug-setup/master/scripting/include/pugsetup.inc
 
     # install smlib
-    - cd include
     - git clone https://github.com/bcserv/smlib
     - cp -r smlib/scripting/include/* .
     - cd ../../../..

@@ -14,6 +14,7 @@
 
 #undef REQUIRE_PLUGIN
 #include "include/updater.inc"
+#tryinclude <pugsetup>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -1103,3 +1104,36 @@ static void PlayerLeft(int arena, int player, int left) {
     if (left > 0)
         g_Ranking[left] = -1;
 }
+
+// pugsetup (github.com/splewis/csgo-pug-setup) integrations
+#if defined _pugsetup_included
+public Action OnSetupMenuOpen(int client, Menu menu, bool displayOnly) {
+    int leader = GetLeader(false);
+    if (!IsPlayer(leader)) {
+        SetLeader(client);
+    }
+
+    int style = ITEMDRAW_DEFAULT;
+    if (!HasPermissions(client, Permission_Leader) || displayOnly) {
+        style = ITEMDRAW_DISABLED;
+    }
+
+    if (g_Enabled) {
+        AddMenuItem(menu, "disable_multi1v1", "Disable mult1v1", style);
+    } else {
+        AddMenuItem(menu, "enabled_multi1v1", "Enable multi1v1", style);
+    }
+
+    return Plugin_Continue;
+}
+
+public void OnSetupMenuSelect(Menu menu, int client, const char[] selected_info, int selected_position) {
+    if (StrEqual(selected_info, "disable_multi1v1")) {
+        SetConVarInt(g_EnabledCvar, 0);
+        GiveSetupMenu(client, false, selected_position);
+    } else if (StrEqual(selected_info, "enabled_multi1v1")) {
+        SetConVarInt(g_EnabledCvar, 1);
+        GiveSetupMenu(client, false, selected_position);
+    }
+}
+#endif
