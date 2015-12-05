@@ -182,3 +182,18 @@ public int FindClosestArenaNumber(const float[3] origin) {
     }
     return minArena;
 }
+
+public void ShuffleArenas() {
+    int numArenas = g_TSpawnsList.Length;
+    for (int i = 0; i < numArenas; i++) {
+        int j = GetRandomInt(0, numArenas - 1);
+        SwapArenas(i, j);
+    }
+}
+
+public void SwapArenas(int i, int j) {
+    g_TAnglesList.SwapAt(i, j);
+    g_TSpawnsList.SwapAt(i, j);
+    g_CTAnglesList.SwapAt(i, j);
+    g_CTSpawnsList.SwapAt(i, j);
+}

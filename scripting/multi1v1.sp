@@ -48,6 +48,7 @@ ConVar g_MuteOtherArenasCvar;
 ConVar g_PistolBehaviorCvar;
 ConVar g_PistolMenuCvar;
 ConVar g_PreferenceWeightCvar;
+ConVar g_RandomizeArenaOrderCvar;
 ConVar g_RifleMenuCvar;
 ConVar g_RoundTimeCvar;
 ConVar g_UseAssistsCvar;
@@ -208,6 +209,7 @@ public void OnPluginStart() {
     g_PistolBehaviorCvar = CreateConVar("sm_multi1v1_pistol_behavior", "0", "Behavior 0=always give the pistol the player selected, 1=never give pistols on non-pistol rounds, 2=always give sm_multi1v1_default_pistol on non-pistol rounds 3=give pistol choice on rifle/pistol rounds, but use sm_multi1v1_default_pistol on awp rounds");
     g_PistolMenuCvar = CreateConVar("sm_multi1v1_show_pistol_menu", "1", "Whether the pistol choice menu should be included in the guns menu");
     g_PreferenceWeightCvar = CreateConVar("sm_multi1v1_preference_weight", "1", "How much weight are given to preferences when round types are being selected. Use a higher number for a preference to be more likely, or 0 to make the preference have no effect");
+    g_RandomizeArenaOrderCvar = CreateConVar("sm_multi1v1_randomize_arena_order", "0", "Whether the randomize the ordering of the arenas each round");
     g_RifleMenuCvar = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
     g_RoundTimeCvar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
     g_UseAssistsCvar = CreateConVar("sm_multi1v1_use_assists", "0", "Whether assists are updated to reflect a player's number of rounds in arena 1");
@@ -440,6 +442,11 @@ public Action Event_OnPlayerTeam(Event event, const char[] name, bool dontBroadc
 public Action Event_OnRoundPreStart(Event event, const char[] name, bool dontBroadcast) {
     if (!g_Enabled)
         return;
+
+    // Randomize arena orders if enabled.
+    if (g_RandomizeArenaOrderCvar.IntValue != 0) {
+        ShuffleArenas();
+    }
 
     g_roundStartTime = GetTime();
 
