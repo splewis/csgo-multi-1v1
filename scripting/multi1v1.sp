@@ -152,14 +152,15 @@ Handle g_hAfterPlayerSetup = INVALID_HANDLE;
 Handle g_hAfterPlayerSpawn = INVALID_HANDLE;
 Handle g_hGunsMenuCallback = INVALID_HANDLE;
 Handle g_hOnArenasReady = INVALID_HANDLE;
+Handle g_hOnGunsMenuCreated = INVALID_HANDLE;
 Handle g_hOnPostArenaRankingsSet = INVALID_HANDLE;
 Handle g_hOnPreArenaRankingsSet = INVALID_HANDLE;
 Handle g_hOnRoundTypeDecided = INVALID_HANDLE;
 Handle g_hOnRoundTypesAdded = INVALID_HANDLE;
 Handle g_hOnRoundWon = INVALID_HANDLE;
+Handle g_hOnSpawnSet = INVALID_HANDLE;
 Handle g_hOnSpawnsFound = INVALID_HANDLE;
 Handle g_hOnStatsCached = INVALID_HANDLE;
-Handle g_hOnGunsMenuCreated = INVALID_HANDLE;
 
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
@@ -256,14 +257,15 @@ public void OnPluginStart() {
     g_hAfterPlayerSpawn = CreateGlobalForward("Multi1v1_AfterPlayerSpawn", ET_Ignore, Param_Cell);
     g_hGunsMenuCallback = CreateGlobalForward("Multi1v1_GunsMenuCallback", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_hOnArenasReady = CreateGlobalForward("Multi1v1_OnArenasReady", ET_Ignore);
+    g_hOnGunsMenuCreated = CreateGlobalForward("Multi1v1_OnGunsMenuCreated", ET_Ignore, Param_Cell, Param_Cell);
     g_hOnPostArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPostArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnPreArenaRankingsSet = CreateGlobalForward("Multi1v1_OnPreArenaRankingsSet", ET_Ignore, Param_Cell);
     g_hOnRoundTypeDecided = CreateGlobalForward("Multi1v1_OnRoundTypeDecided", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_CellByRef);
     g_hOnRoundTypesAdded = CreateGlobalForward("Multi1v1_OnRoundTypesAdded", ET_Ignore);
     g_hOnRoundWon = CreateGlobalForward("Multi1v1_OnRoundWon", ET_Ignore, Param_Cell, Param_Cell, Param_Cell);
+    g_hOnSpawnSet = CreateGlobalForward("Multi1v1_OnSpawnSet", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_hOnSpawnsFound = CreateGlobalForward("Multi1v1_OnSpawnsFound", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
     g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
-    g_hOnGunsMenuCreated = CreateGlobalForward("Multi1v1_OnGunsMenuCreated", ET_Ignore, Param_Cell, Param_Cell);
 
     g_waitingQueue = Queue_Init();
 
@@ -663,7 +665,14 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
 
     int team = onCT ? CS_TEAM_CT : CS_TEAM_T;
     SwitchPlayerTeam(client, team);
-    Multi1v1_GetArenaSpawn(arena, team, spawn, angles);
+    int spawnIndex = Multi1v1_GetArenaSpawn(arena, team, spawn, angles);
+
+    Call_StartForward(g_hOnSpawnSet);
+    Call_PushCell(client);
+    Call_PushCell(arena);
+    Call_PushCell(onCT);
+    Call_PushCell(spawnIndex);
+    Call_Finish();
 
     CS_RespawnPlayer(client);
     TeleportEntity(client, spawn, angles, NULL_VECTOR);

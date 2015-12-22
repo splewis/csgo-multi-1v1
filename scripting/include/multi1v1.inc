@@ -119,6 +119,8 @@ forward void Multi1v1_OnRoundTypeDecided(int arena, int player1, int player2, in
 */
 forward void Multi1v1_OnSpawnsFound(ArrayList ctOrigins, ArrayList ctAngles, ArrayList tOrigins, ArrayList tAngles);
 
+forward void Multi1v1_OnSpawnSet(int client, int arena, bool onCT, int spawnIndex);
+
 /**
  * Returns if a player is actively in an arena.
  *
@@ -329,7 +331,7 @@ native int Multi1v1_GetNumSpawnsInArena(int arena);
  * @param angle Array to fill the spawn angles into.
  * @error Invalid arena number or team.
  */
-native void Multi1v1_GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);
+native int Multi1v1_GetArenaSpawn(int arena, int team, float origin[3], float angle[3]);
 
 /**
  * Finds the arena number of a position. This may be inaccurate if the

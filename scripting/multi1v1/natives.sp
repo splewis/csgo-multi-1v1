@@ -332,6 +332,8 @@ public int Native_GetArenaSpawn(Handle plugin, int numParams) {
 
     SetNativeArray(3, origin, sizeof(origin));
     SetNativeArray(4, angle, sizeof(angle));
+
+    return index;
 }
 
 public int Native_FindArenaNumber(Handle plugin, int numParams) {
@@ -470,6 +472,7 @@ public int Native_GiveWeaponsMenu(Handle plugin, int numParams) {
 
 public int Native_GetRoundTypeDisplayName(Handle plugin, int numParams) {
     int roundType = GetNativeCell(1);
+    CHECK_ROUNDTYPE(roundType);
     int bufferLength = GetNativeCell(3);
     SetNativeString(2, g_RoundTypeDisplayNames[roundType], bufferLength);
 }
