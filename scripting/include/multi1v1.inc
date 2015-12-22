@@ -411,6 +411,7 @@ public void Multi1v1_NullWeaponHandler(int client) {
 native bool Multi1v1_IsRoundTypeEnabled(int roundType);
 native void Multi1v1_EnableRoundType(int roundType);
 native void Multi1v1_DisableRoundType(int roundType);
+native void Multi1v1_GetRoundTypeDisplayName(int roundType, char[] buffer, int bufferLength);
 
 /**
  * Returns the current round type in an arena.
@@ -509,5 +510,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_EnableRoundType");
     MarkNativeAsOptional("Multi1v1_DisableRoundType");
     MarkNativeAsOptional("Multi1v1_GiveWeaponsMenu");
+    MarkNativeAsOptional("Multi1v1_GetRoundTypeDisplayName");
 }
 #endif

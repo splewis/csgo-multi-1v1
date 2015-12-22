@@ -53,6 +53,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("Multi1v1_EnableRoundType", Native_EnableRoundType);
     CreateNative("Multi1v1_DisableRoundType", Native_DisableRoundType);
     CreateNative("Multi1v1_GiveWeaponsMenu", Native_GiveWeaponsMenu);
+    CreateNative("Multi1v1_GetRoundTypeDisplayName", Native_GetRoundTypeDisplayName);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -465,4 +466,10 @@ public int Native_GiveWeaponsMenu(Handle plugin, int numParams) {
     CHECK_CONNECTED(client);
     int pos = GetNativeCell(2);
     GiveWeaponsMenu(client, pos);
+}
+
+public int Native_GetRoundTypeDisplayName(Handle plugin, int numParams) {
+    int roundType = GetNativeCell(1);
+    int bufferLength = GetNativeCell(3);
+    SetNativeString(2, g_RoundTypeDisplayNames[roundType], bufferLength);
 }
