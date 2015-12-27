@@ -72,6 +72,9 @@ float g_RoundTypeRating[MAXPLAYERS+1][MAX_ROUND_TYPES];
 /** Database interactions **/
 Database db = null;
 
+#define STATS_QUERY_LENGTH 1024
+ArrayList g_RoundSQLQueries = null; // Queries to send at the end of this round.
+
 /** Client arrays **/
 int g_Ranking[MAXPLAYERS+1]; // which arena each player is in
 bool g_LetTimeExpire[MAXPLAYERS+1];
@@ -233,7 +236,6 @@ public void OnPluginStart() {
     g_FreezetimeCvar = FindCvarAndLogError("mp_freezetime");
     g_RoundRestartDelayCvar = FindCvarAndLogError("mp_round_restart_delay");
 
-
     /** Hooks **/
     HookEvent("player_team", Event_OnPlayerTeam, EventHookMode_Pre);
     HookEvent("player_connect_full", Event_OnFullConnect);
@@ -268,6 +270,7 @@ public void OnPluginStart() {
     g_hOnStatsCached = CreateGlobalForward("Multi1v1_OnStatsCached", ET_Ignore, Param_Cell);
 
     g_waitingQueue = Queue_Init();
+    g_RoundSQLQueries = new ArrayList(STATS_QUERY_LENGTH);
 
     for (int i = 0; i < sizeof(g_RoundTypeWeaponLists); i++) {
         g_RoundTypeWeaponLists[i] = new ArrayList(WEAPON_NAME_LENGTH);
@@ -390,9 +393,6 @@ public void OnClientConnected(int client) {
 }
 
 public void OnClientDisconnect(int client) {
-    if (g_UseDatabaseCvar.IntValue != 0)
-        DB_WriteRatings(client);
-
     Queue_Drop(g_waitingQueue, client);
     int arena = g_Ranking[client];
     UpdateArena(arena, client);
@@ -754,6 +754,8 @@ public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcas
             }
         }
     }
+
+    DB_SendRoundResults();
 }
 
 /**
