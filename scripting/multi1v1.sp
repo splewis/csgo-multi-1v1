@@ -927,7 +927,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
         return Plugin_Continue;
 
     // To avoid cluttering up chat, these commands are hidden
-    char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", ".setup", "!gun", "!guns", "gnus" };
+    char gunsChatCommands[][] = { "gun", "guns", ".gun", ".guns", "!gun", "!guns", "gnus" };
     bool block = (g_HideGunsChatCommandsCvar.IntValue != 0);
     Action ret = block ? Plugin_Handled : Plugin_Continue;
 
