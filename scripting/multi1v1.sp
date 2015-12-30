@@ -739,7 +739,7 @@ public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcas
 
             // also skip the update if we already did it (a player got a kill earlier in the round)
             if (winner != loser) {
-                if (winner != loser && IsPlayer(winner) && IsPlayer(loser)) {
+                if (IsPlayer(winner) && IsPlayer(loser)) {
                     Call_StartForward(g_hOnRoundWon);
                     Call_PushCell(winner);
                     Call_PushCell(loser);
