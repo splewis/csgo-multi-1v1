@@ -250,6 +250,7 @@ public void OnPluginStart() {
     /** Commands **/
     AddCommandListener(Command_JoinTeam, "jointeam");
     AddRadioCommandListeners();
+    RegConsoleCmd("multi1v1_spawninfo", Command_SpawnInfo, "Displays map spawn info");
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
     RegConsoleCmd("sm_hidestats", Command_Hidestats, "Hides player stats/ratings");
     RegAdminCmd("sm_reloadroundtypes", Command_ReloadRoundTypes, ADMFLAG_CHANGEMAP, "Reloads multi1v1 round types");

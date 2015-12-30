@@ -92,7 +92,7 @@ public void Spawns_MapStart() {
     // More Helpful logging for map developers
     if (verbose) {
         for (int i = 0; i < g_maxArenas; i++) {
-            LogMessage("Cluster %d:", i + 1);
+            LogMessage("Arena %d:", i + 1);
 
             ArrayList ct_spawns = view_as<ArrayList>(g_CTSpawnsList.Get(i));
             for (int j = 0; j < GetArraySize(ct_spawns); j++) {
@@ -196,4 +196,28 @@ public void SwapArenas(int i, int j) {
     g_TSpawnsList.SwapAt(i, j);
     g_CTAnglesList.SwapAt(i, j);
     g_CTSpawnsList.SwapAt(i, j);
+}
+
+public Action Command_SpawnInfo(int client, int args) {
+    char mapname[PLATFORM_MAX_PATH];
+    GetCurrentMap(mapname, sizeof(mapname));
+    ReplyToCommand(client, "Spawn info for map %s:", mapname);
+    ReplyToCommand(client, " Number of arenas: %d", g_maxArenas);
+    for (int i = 0; i < g_maxArenas; i++) {
+        ReplyToCommand(client, " Arena %d:", i + 1);
+
+        ArrayList ct_spawns = view_as<ArrayList>(g_CTSpawnsList.Get(i));
+        for (int j = 0; j < GetArraySize(ct_spawns); j++) {
+            float vec[3];
+            ct_spawns.GetArray(j, vec);
+            ReplyToCommand(client, "  CT Spawn %d: %f %f %f", j + 1, vec[0], vec[1], vec[2]);
+        }
+
+        ArrayList t_spawns = view_as<ArrayList>(g_TSpawnsList.Get(i));
+        for (int j = 0; j < GetArraySize(t_spawns); j++) {
+            float vec[3];
+            t_spawns.GetArray(j, vec);
+            ReplyToCommand(client, "  T Spawn  %d: %f %f %f", j + 1, vec[0], vec[1], vec[2]);
+        }
+    }
 }
