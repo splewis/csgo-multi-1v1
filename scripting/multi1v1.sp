@@ -799,7 +799,7 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
             }
         }
 
-    } else if (!g_ArenaStatsUpdated[arena]) {
+    } else {
         g_ArenaWinners[arena] = attacker;
         g_ArenaLosers[arena] = victim;
         g_ArenaStatsUpdated[arena] = true;
