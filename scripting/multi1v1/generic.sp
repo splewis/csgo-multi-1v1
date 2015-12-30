@@ -172,9 +172,13 @@ stock void SetCookieInt(int client, Handle cookie, int value) {
 /**
  * Fetches the value of a cookie that is an integer.
  */
-stock int GetCookieInt(int client, Handle cookie) {
+stock int GetCookieInt(int client, Handle cookie, int defaultValue=0) {
     char buffer[INTEGER_STRING_LENGTH];
     GetClientCookie(client, cookie, buffer, sizeof(buffer));
+    if (StrEqual(buffer, "")) {
+        return defaultValue;
+    }
+
     return StringToInt(buffer);
 }
 
@@ -189,8 +193,8 @@ stock void SetCookieBool(int client, Handle cookie, bool value) {
 /**
  * Gets a cookie that represents a boolean.
  */
-stock bool GetCookieBool(int client, Handle cookie) {
-    return GetCookieInt(client, cookie) != 0;
+stock bool GetCookieBool(int client, Handle cookie, bool defaultValue=false) {
+    return GetCookieInt(client, cookie, defaultValue) != 0;
 }
 
 /**

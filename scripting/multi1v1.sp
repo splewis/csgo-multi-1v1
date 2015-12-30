@@ -81,8 +81,12 @@ bool g_LetTimeExpire[MAXPLAYERS+1];
 bool g_PluginTeamSwitch[MAXPLAYERS+1];  // Flags the teamswitches as being done by the plugin
 bool g_GivenGunsMenu[MAXPLAYERS+1];
 bool g_HideStats[MAXPLAYERS+1];
+bool g_AutoSpec[MAXPLAYERS+1];
 
+#define AUTOSPEC_DEFAULT false
+#define HIDESTATS_DEAFULT false
 Handle g_HideStatsCookie;
+Handle g_AutoSpecCookie;
 
 Handle g_SavedCvars = INVALID_HANDLE;
 
@@ -168,6 +172,7 @@ Handle g_hOnStatsCached = INVALID_HANDLE;
 /** multi1v1 function includes **/
 #include "multi1v1/generic.sp"
 #include "multi1v1/customrounds.sp"
+#include "multi1v1/menus.sp"
 #include "multi1v1/mute.sp"
 #include "multi1v1/natives.sp"
 #include "multi1v1/radiocommands.sp"
@@ -176,7 +181,6 @@ Handle g_hOnStatsCached = INVALID_HANDLE;
 #include "multi1v1/stats.sp"
 #include "multi1v1/version.sp"
 #include "multi1v1/weaponlogic.sp"
-#include "multi1v1/menus.sp"
 
 
 
@@ -281,6 +285,7 @@ public void OnPluginStart() {
     }
 
     g_HideStatsCookie = RegClientCookie("multi1v1_hidestats", "Whether multi1v1 stats are hidden", CookieAccess_Public);
+    g_AutoSpecCookie = RegClientCookie("multi1v1_autospec", "Whether multi1v1 will automatically switch to targets to spectate", CookieAccess_Public);
 }
 
 public void OnPluginEnd() {
@@ -768,6 +773,7 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
     int victim = GetClientOfUserId(event.GetInt("userid"));
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
     int arena = g_Ranking[victim];
+    UpdateAutoSpecTargets();
 
     // If we've already decided the arena, don't worry about anything else in it
     if (g_ArenaStatsUpdated[arena])
@@ -964,8 +970,25 @@ public Action Command_Hidestats(int client, int args) {
     return Plugin_Handled;
 }
 
+public Action Command_Autospec(int client, int args) {
+    if (!g_Enabled)
+        return Plugin_Continue;
+
+    g_AutoSpec[client] = !g_AutoSpec[client];
+    SetCookieBool(client, g_AutoSpecCookie, g_AutoSpec[client]);
+
+    if (g_AutoSpec[client]) {
+        Multi1v1_Message(client, "%t", "AutoSpecOn");
+    } else {
+        Multi1v1_Message(client, "%t", "AutoSpecOff");
+    }
+    return Plugin_Handled;
+}
+
+
 public Action Command_ReloadRoundTypes(int client, int args) {
     LoadRoundTypes();
+    ReplyToCommand(client, "Successfully reloaded %d round types.", g_numRoundTypes);
     return Plugin_Handled;
 }
 
@@ -1085,7 +1108,8 @@ public void ResetClientVariables(int client) {
     g_Preference[client] = 0;
     g_PrimaryWeapon[client] = "weapon_ak47";
     g_SecondaryWeapon[client] = "weapon_glock";
-    g_HideStats[client] = false;
+    g_HideStats[client] = HIDESTATS_DEAFULT;
+    g_AutoSpec[client] = AUTOSPEC_DEFAULT;
 }
 
 /**
@@ -1155,3 +1179,23 @@ public void OnSetupMenuSelect(Menu menu, int client, const char[] selected_info,
     }
 }
 #endif
+
+public void UpdateAutoSpecTargets() {
+    // Find a client in the current highest active arena.
+    int highest_active_target = -1;
+    for (int i = 1; i < g_arenas; i++) {
+        int p1 = g_ArenaPlayer1[i];
+        int p2 = g_ArenaPlayer2[i];
+        if (IsPlayer(p1) && IsPlayer(p2) && IsPlayerAlive(p1) && IsPlayerAlive(p2)) {
+            highest_active_target = p1;
+            break;
+        }
+    }
+
+    // Update all dead clients with autopec enabled to observe this target.
+    for (int i = 1; i <= MaxClients; i++) {
+        if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i)) {
+            SetEntPropEnt(i, Prop_Send, "m_hObserverTarget", highest_active_target);
+        }
+    }
+}
