@@ -245,6 +245,7 @@ public void OnPluginStart() {
     HookEvent("player_connect_full", Event_OnFullConnect);
     HookEvent("player_spawn", Event_OnPlayerSpawn);
     HookEvent("player_death", Event_OnPlayerDeath);
+    HookEvent("player_death", UpdateAutoSpecTargets, EventHookMode_Post);
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
@@ -773,7 +774,6 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
     int victim = GetClientOfUserId(event.GetInt("userid"));
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
     int arena = g_Ranking[victim];
-    UpdateAutoSpecTargets();
 
     // If we've already decided the arena, don't worry about anything else in it
     if (g_ArenaStatsUpdated[arena])
@@ -1180,7 +1180,11 @@ public void OnSetupMenuSelect(Menu menu, int client, const char[] selected_info,
 }
 #endif
 
-public void UpdateAutoSpecTargets() {
+
+public Action UpdateAutoSpecTargets(Event event, const char[] name, bool dontBroadcast) {
+    if (!g_Enabled)
+        return;
+
     // Find a client in the current highest active arena.
     int highest_active_target = -1;
     for (int i = 1; i < g_arenas; i++) {
