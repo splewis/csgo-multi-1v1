@@ -1196,10 +1196,13 @@ public Action UpdateAutoSpecTargets(Event event, const char[] name, bool dontBro
         }
     }
 
-    // Update all dead clients with autopec enabled to observe this target.
-    for (int i = 1; i <= MaxClients; i++) {
-        if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i)) {
-            SetEntPropEnt(i, Prop_Send, "m_hObserverTarget", highest_active_target);
+    if (highest_active_target != -1) {
+        // Update all dead clients with autopec enabled to observe this target.
+        for (int i = 1; i <= MaxClients; i++) {
+            if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i)) {
+                SetEntPropEnt(i, Prop_Send, "m_hObserverTarget", highest_active_target);
+            }
         }
     }
+
 }
