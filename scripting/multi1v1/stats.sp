@@ -46,6 +46,15 @@ public void DB_Connect() {
 }
 
 /**
+ * Generic SQL threaded query error callback.
+ */
+public void SQLErrorCheckCallback(Handle owner, Handle hndl, const char[] error, int data) {
+    if (!StrEqual("", error)) {
+        LogError("Last SQL Error: %s", error);
+    }
+}
+
+/**
  * Adds a player, updating their name if they already exist, to the database.
  */
 public void DB_AddPlayer(int client) {
@@ -181,25 +190,27 @@ public void Callback_FetchRating(Handle owner, Handle hndl, const char[] error, 
 /**
  * Writes the rating for a player, if the rating is valid, back to the database.
  */
-public void DB_AddRatingUpdateQuery(int client) {
-    int serverID = g_DatabaseServerIdCvar.IntValue;
-    char roundTypeRatings[1024] = "";
+public void DB_WriteRatings(int client) {
+    if (g_FetchedPlayerInfo[client] && IsPlayer(client)) {
+        int serverID = g_DatabaseServerIdCvar.IntValue;
 
-    for (int i = 0; i < g_numRoundTypes; i++) {
-        if (!HasRoundTypeSpecificRating(i))
-            continue;
+        char roundTypeRatings[1024] = "";
 
-        char buffer[128];
-        Format(buffer, sizeof(buffer), ", %s = %f", g_RoundTypeFieldNames[i], g_RoundTypeRating[client][i]);
-        StrCat(roundTypeRatings, sizeof(roundTypeRatings), buffer);
+        for (int i = 0; i < g_numRoundTypes; i++) {
+            if (!HasRoundTypeSpecificRating(i))
+                continue;
+
+            char buffer[128];
+            Format(buffer, sizeof(buffer), ", %s = %f", g_RoundTypeFieldNames[i], g_RoundTypeRating[client][i]);
+            StrCat(roundTypeRatings, sizeof(roundTypeRatings), buffer);
+        }
+
+        char query[2048];
+        Format(query, sizeof(query),
+               "UPDATE %s set rating = %f %s WHERE accountID = %d AND serverID = %d",
+               TABLE_NAME, g_Rating[client], roundTypeRatings, GetSteamAccountID(client), serverID);
+        db.Query(SQLErrorCheckCallback, query);
     }
-
-    char query[STATS_QUERY_LENGTH];
-    Format(query, sizeof(query),
-            "UPDATE %s set rating = %f %s WHERE accountID = %d AND serverID = %d",
-            TABLE_NAME, g_Rating[client], roundTypeRatings, GetSteamAccountID(client), serverID);
-
-    g_RoundSQLQueries.PushString(query);
 }
 
 /**
@@ -220,45 +231,36 @@ public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
             return;
 
         g_Losses[loser]++;
-        DB_AddIncrementQuery(loser, "losses");
+        Increment(loser, "losses");
 
         if (forceLoss) {
             g_Losses[winner]++;
-            DB_AddIncrementQuery(winner, "losses");
+            Increment(winner, "losses");
         } else {
             g_Wins[winner]++;
-            DB_AddIncrementQuery(winner, "wins");
+            Increment(winner, "wins");
         }
 
-        DB_AddIncrementQuery(winner, "recentRounds");
-        DB_AddIncrementQuery(loser, "recentRounds");
+        Increment(winner, "recentRounds");
+        Increment(loser, "recentRounds");
         UpdateRatings(winner, loser, forceLoss, roundType);
     }
-}
-
-public void DB_SendRoundResults() {
-    Transaction txn = new Transaction();
-    char buffer[STATS_QUERY_LENGTH];
-    for (int i = 0; i < g_RoundSQLQueries.Length; i++) {
-        g_RoundSQLQueries.GetString(i, buffer, sizeof(buffer));
-        txn.AddQuery(buffer);
-    }
-    g_RoundSQLQueries.Clear();
-    db.Execute(txn, INVALID_FUNCTION, SQLTransactionErrorCheckCallback, g_totalRounds);
 }
 
 /**
  * Increments a named field in the database.
  */
-public void DB_AddIncrementQuery(int client, const char[] field) {
-    int id = GetSteamAccountID(client);
-    if (id >= 1) {
-        int serverid = g_DatabaseServerIdCvar.IntValue;
-        char query[STATS_QUERY_LENGTH];
-        Format(query, sizeof(query),
-            "UPDATE %s SET %s = %s + 1 WHERE accountID = %d AND serverID = %d",
-            TABLE_NAME, field, field, id, serverid);
-        g_RoundSQLQueries.PushString(query);
+public void Increment(int client, const char[] field) {
+    if (db != INVALID_HANDLE && IsPlayer(client)) {
+        int id = GetSteamAccountID(client);
+        if (id >= 1) {
+            int serverid = g_DatabaseServerIdCvar.IntValue;
+            char query[1024];
+            Format(query, sizeof(query),
+                "UPDATE %s SET %s = %s + 1 WHERE accountID = %d AND serverID = %d",
+                TABLE_NAME, field, field, id, serverid);
+            db.Query(SQLErrorCheckCallback, query);
+        }
     }
 }
 
@@ -299,10 +301,10 @@ static void UpdateRatings(int winner, int loser, bool forceLoss, int roundType) 
                 g_RoundTypeRating[winner][roundType] += delta;
                 g_RoundTypeRating[loser][roundType] -= delta;
             }
-        }
 
-        DB_AddRatingUpdateQuery(winner);
-        DB_AddRatingUpdateQuery(loser);
+            DB_WriteRatings(winner);
+            DB_WriteRatings(loser);
+        }
     }
 }
 
@@ -310,6 +312,8 @@ static void ForceLoss(int winner, int loser) {
     float delta = K_FACTOR / 2.0;
     g_Rating[winner] -= delta;
     g_Rating[loser] -= delta;
+    DB_WriteRatings(winner);
+    DB_WriteRatings(loser);
     ForceLossMessage(winner, g_Rating[winner], delta);
     ForceLossMessage(loser, g_Rating[loser], delta);
 }
@@ -334,22 +338,4 @@ static bool HasRoundTypeSpecificRating(int roundType) {
 
 public bool AreStatsEnabled() {
     return g_UseDatabaseCvar.IntValue != 0 && SQL_CheckConfig(DATABASE_CONFIG_NAME);
-}
-
-/**
- * Generic SQL threaded query error callback.
- */
-public void SQLErrorCheckCallback(Handle owner, Handle hndl, const char[] error, int data) {
-    if (!StrEqual("", error)) {
-        LogError("Last SQL Error: %s", error);
-    }
-}
-
-/**
- * Error checking callback for per-round stats update transactions.
- */
-public void SQLTransactionErrorCheckCallback(Database database, any data, int numQueries,
-                                            const char[] error, int failIndex, any[] queryData) {
-    LogError("SQL transaction update when updating player stats on round %d (%d queries): %s",
-             data, numQueries, error);
 }
