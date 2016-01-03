@@ -268,7 +268,7 @@ public void Increment(int client, const char[] field) {
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
 static void UpdateRatings(int winner, int loser, bool forceLoss, int roundType) {
-    if (db != INVALID_HANDLE) {
+    if (db != INVALID_HANDLE && CountActivePlayers() >= g_MinPlayersForRatingChangesCvar.IntValue) {
         // go fetch the ratings if needed
         if (!g_FetchedPlayerInfo[winner]) {
             DB_FetchRatings(winner);
@@ -338,4 +338,17 @@ static bool HasRoundTypeSpecificRating(int roundType) {
 
 public bool AreStatsEnabled() {
     return g_UseDatabaseCvar.IntValue != 0 && SQL_CheckConfig(DATABASE_CONFIG_NAME);
+}
+
+static int CountActivePlayers() {
+    int count = 0;
+    for (int i = 1; i <= MaxClients; i++) {
+        if (IsPlayer(i)) {
+            int team = GetClientTeam(i);
+            if (team == CS_TEAM_T || team == CS_TEAM_CT) {
+                count++;
+            }
+        }
+    }
+    return count;
 }
