@@ -1126,14 +1126,14 @@ static void PlayerLeft(int arena, int player, int left) {
 
 // pugsetup (github.com/splewis/csgo-pug-setup) integrations
 #if defined _pugsetup_included
-public Action OnSetupMenuOpen(int client, Menu menu, bool displayOnly) {
-    int leader = GetLeader(false);
+public Action PugSetup_OnSetupMenuOpen(int client, Menu menu, bool displayOnly) {
+    int leader = PugSetup_GetLeader(false);
     if (!IsPlayer(leader)) {
-        SetLeader(client);
+        PugSetup_SetLeader(client);
     }
 
     int style = ITEMDRAW_DEFAULT;
-    if (!HasPermissions(client, Permission_Leader) || displayOnly) {
+    if (!PugSetup_HasPermissions(client, Permission_Leader) || displayOnly) {
         style = ITEMDRAW_DISABLED;
     }
 
@@ -1146,13 +1146,13 @@ public Action OnSetupMenuOpen(int client, Menu menu, bool displayOnly) {
     return Plugin_Continue;
 }
 
-public void OnSetupMenuSelect(Menu menu, int client, const char[] selected_info, int selected_position) {
+public void PugSetup_OnSetupMenuSelect(Menu menu, int client, const char[] selected_info, int selected_position) {
     if (StrEqual(selected_info, "disable_multi1v1")) {
         SetConVarInt(g_EnabledCvar, 0);
-        GiveSetupMenu(client, false, selected_position);
+        PugSetup_GiveSetupMenu(client, false, selected_position);
     } else if (StrEqual(selected_info, "enabled_multi1v1")) {
         SetConVarInt(g_EnabledCvar, 1);
-        GiveSetupMenu(client, false, selected_position);
+        PugSetup_GiveSetupMenu(client, false, selected_position);
     }
 }
 #endif
