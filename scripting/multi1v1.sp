@@ -427,7 +427,9 @@ public Action Event_OnFullConnect(Event event, const char[] name, bool dontBroad
         return;
 
     int client = GetClientOfUserId(event.GetInt("userid"));
-    SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
+    if (IsPlayer(client)) {
+        SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
+    }
 }
 
 /**
