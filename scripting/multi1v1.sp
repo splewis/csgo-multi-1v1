@@ -228,7 +228,7 @@ public void OnPluginStart() {
     AutoExecConfig(true, "multi1v1", "sourcemod/multi1v1");
 
     /** Version cvar **/
-    g_VersionCvar = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
+    g_VersionCvar = CreateConVar("sm_multi1v1_version", PLUGIN_VERSION, "Current multi1v1 version", FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY|FCVAR_DONTRECORD);
     SetConVarString(g_VersionCvar, PLUGIN_VERSION);
 
     /** Find default game cvars **/
