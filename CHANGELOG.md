@@ -1,3 +1,8 @@
+1.1.2:
+- update pugsetup integration to pugsetup 2.0.0 api
+- add multi1v1_spawninfo command for dumping spawn info
+- add cvar sm_multi1v1_randomize_arena_order to randomize arena order
+
 1.1.1:
 - correct ``sm_multi1v1_mute_other_arenas`` behavior to not mute gunshots when the plugin is disabled
 - update polish translations (thanks spyrek)
