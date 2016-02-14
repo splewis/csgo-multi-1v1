@@ -22,26 +22,29 @@ public void DB_Connect() {
         LogError("Could not connect: %s", error);
     } else {
         db.SetCharset("utf8");
-        SQL_LockDatabase(db);
+        // Auto-create tables/update columns.
+        if (g_AutoCreateTablesCvar.IntValue != 0) {
+            SQL_LockDatabase(db);
 
-        // Create the table if needed.
-        SQL_CreateTable(db, TABLE_NAME, g_TableFormat, sizeof(g_TableFormat));
+            // Create the player stats table.
+            SQL_CreateTable(db, TABLE_NAME, g_TableFormat, sizeof(g_TableFormat));
 
-        // Add new columns/key for backwards compatability reaons.
-        SQL_AddColumn(db, TABLE_NAME, "serverID INT NOT NULL default 0");
-        SQL_AddColumn(db, TABLE_NAME, "recentRounds INT default 0 NOT NULL");
-        for (int i = 0; i < g_numRoundTypes; i++) {
-            if (HasRoundTypeSpecificRating(i)) {
-                char buffer[255];
-                Format(buffer, sizeof(buffer), "%s FLOAT NOT NULL default 1500.0", g_RoundTypeFieldNames[i]);
-                SQL_AddColumn(db, TABLE_NAME, buffer);
+            // Add new columns/key for backwards compatability reaons.
+            SQL_AddColumn(db, TABLE_NAME, "serverID INT NOT NULL default 0");
+            SQL_AddColumn(db, TABLE_NAME, "recentRounds INT default 0 NOT NULL");
+            for (int i = 0; i < g_numRoundTypes; i++) {
+                if (HasRoundTypeSpecificRating(i)) {
+                    char buffer[255];
+                    Format(buffer, sizeof(buffer), "%s FLOAT NOT NULL default 1500.0", g_RoundTypeFieldNames[i]);
+                    SQL_AddColumn(db, TABLE_NAME, buffer);
+                }
             }
+
+            // Update primary keys for backwards compatibility.
+            SQL_UpdatePrimaryKey(db, TABLE_NAME, "`accountID`,`serverID`");
+
+            SQL_UnlockDatabase(db);
         }
-
-        // Update primary keys for backwards compatibility.
-        SQL_UpdatePrimaryKey(db, TABLE_NAME, "`accountID`,`serverID`");
-
-        SQL_UnlockDatabase(db);
     }
 }
 

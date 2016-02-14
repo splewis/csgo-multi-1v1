@@ -37,6 +37,7 @@
 ConVar g_EnabledCvar;
 bool g_Enabled = true;
 
+ConVar g_AutoCreateTablesCvar;
 ConVar g_AutoGunsMenuBehaviorCvar;
 ConVar g_AutoUpdateCvar;
 ConVar g_BlockRadioCvar;
@@ -201,6 +202,7 @@ public void OnPluginStart() {
     /** ConVars **/
     g_EnabledCvar = CreateConVar("sm_multi1v1_enabled", "1", "Whether the multi1v1 gamemode is enabled or not");
 
+    g_AutoCreateTablesCvar = CreateConVar("sm_multi1v1_auto_create_tables", "1", "Whether MySQL tables will be automatically created and if columsn will be auto-added if needed");
     g_AutoGunsMenuBehaviorCvar = CreateConVar("sm_multi1v1_menu_open_behavior", "0", "Determines auto-open behavior of the guns menu. 0=never auto-open, 1=open if the client has no preference cookies saved, 2=always open on client connect");
     g_AutoUpdateCvar = CreateConVar("sm_multi1v1_autoupdate", "0", "Whether the plugin attempts to auto-update. Requies the \"Updater\" plugin");
     g_BlockRadioCvar = CreateConVar("sm_multi1v1_block_radio", "1", "Should the plugin block radio commands from being broadcasted");
