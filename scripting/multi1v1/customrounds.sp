@@ -21,8 +21,10 @@ public void AddCustomRounds() {
 
             bool armor = !!kv.GetNum("armor", 1);
             bool helmet = !!kv.GetNum("helmet", 1);
+            int health = kv.GetNum("health", 100);
             g_RoundTypeKevlar[roundType] = armor;
             g_RoundTypeHelmet[roundType] = helmet;
+            g_RoundTypeHealth[roundType] = health;
 
             g_RoundTypeWeaponLists[roundType].Clear();
             if (kv.JumpToKey("weapons")) {
@@ -58,4 +60,5 @@ public void CustomWeaponHandler(int client) {
 
     Client_SetArmor(client, g_RoundTypeKevlar[roundType] ? 100 : 0);
     Client_SetHelmet(client, g_RoundTypeHelmet[roundType]);
+    Entity_SetHealth(client, g_RoundTypeHealth[roundType]);
 }

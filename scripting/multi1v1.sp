@@ -117,6 +117,7 @@ int g_RoundsLeader[MAXPLAYERS+1] = 0;
 ArrayList g_RoundTypeWeaponLists[MAX_ROUND_TYPES];
 bool g_RoundTypeKevlar[MAX_ROUND_TYPES];
 bool g_RoundTypeHelmet[MAX_ROUND_TYPES];
+int g_RoundTypeHealth[MAX_ROUND_TYPES];
 
 /** Overall global variables **/
 int g_arenaOffsetValue = 0;
