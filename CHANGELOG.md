@@ -1,3 +1,8 @@
+1.1.3:
+- update spawn-arena-finding code to work post 2/17/2015 update
+- add cvar ``sm_multi1v1_auto_create_tables`` (default 1) to allow disabling auto MySQL table creation/updates
+- add "health" field in custom round configs (defaults to 100)
+
 1.1.2:
 - update pugsetup integration to pugsetup 2.0.0 api
 - add multi1v1_spawninfo command for dumping spawn info
