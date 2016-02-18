@@ -13,36 +13,8 @@ public void Spawns_MapStart() {
     g_CTSpawnsList = new ArrayList();
     g_CTAnglesList = new ArrayList();
 
-    bool verbose = g_VerboseSpawnModeCvar.IntValue != 0;
-
-    int maxEnt = GetMaxEntities();
-    char sClassName[64];
-    float spawn[3];
-    float angle[3];
-
-    // Check if each entity is a spawn and add it
-    for (int i = MaxClients; i < maxEnt; i++) {
-        bool valid = IsValidEdict(i) && IsValidEntity(i);
-        if (valid && GetEdictClassname(i, sClassName, sizeof(sClassName))) {
-
-            if (StrEqual(sClassName, "info_player_terrorist")) {
-                GetEntPropVector(i, Prop_Data, "m_vecOrigin", spawn);
-                GetEntPropVector(i, Prop_Data, "m_angRotation", angle);
-                AddSpawn(spawn, angle, g_TSpawnsList, g_TAnglesList);
-                if (verbose)
-                    LogMessage("T spawn (ent %d) %f %f %f",
-                               i, spawn[0], spawn[1], spawn[2]);
-
-            }  else if (StrEqual(sClassName, "info_player_counterterrorist")) {
-                GetEntPropVector(i, Prop_Data, "m_vecOrigin", spawn);
-                GetEntPropVector(i, Prop_Data, "m_angRotation", angle);
-                AddSpawn(spawn, angle, g_CTSpawnsList, g_CTAnglesList);
-                if (verbose)
-                    LogMessage("CT spawn (ent %d) %f %f %f",
-                               i, spawn[0], spawn[1], spawn[2]);
-            }
-        }
-    }
+    AddTeamSpawns("info_player_terrorist", g_TSpawnsList, g_TAnglesList);
+    AddTeamSpawns("info_player_counterterrorist", g_CTSpawnsList, g_CTAnglesList);
 
     int ct = GetArraySize(g_CTSpawnsList);
     int t = GetArraySize(g_TSpawnsList);
@@ -90,6 +62,7 @@ public void Spawns_MapStart() {
     Call_Finish();
 
     // More Helpful logging for map developers
+    bool verbose = g_VerboseSpawnModeCvar.IntValue != 0;
     if (verbose) {
         for (int i = 0; i < g_maxArenas; i++) {
             LogMessage("Arena %d:", i + 1);
@@ -113,6 +86,22 @@ public void Spawns_MapStart() {
 
     if (g_maxArenas <= 0) {
         LogError("No arenas could be found for this map!");
+    }
+}
+
+static void AddTeamSpawns(const char[] className, ArrayList spawnList, ArrayList angleList) {
+    bool verbose = g_VerboseSpawnModeCvar.IntValue != 0;
+    float spawn[3];
+    float angle[3];
+
+    int ent = -1;
+    while ((ent = FindEntityByClassname(ent, className)) != -1) {
+        GetEntPropVector(ent, Prop_Data, "m_vecOrigin", spawn);
+        GetEntPropVector(ent, Prop_Data, "m_angRotation", angle);
+        AddSpawn(spawn, angle, spawnList, angleList);
+        if (verbose)
+            LogMessage("%s spawn (ent %d) %f %f %f",
+                       className, ent, spawn[0], spawn[1], spawn[2]);
     }
 }
 
