@@ -1,5 +1,5 @@
 1.1.3:
-- update spawn-arena-finding code to work post 2/17/2015 update
+- update spawn-arena-finding code to work post 2/17/2016 update
 - add cvar ``sm_multi1v1_auto_create_tables`` (default 1) to allow disabling auto MySQL table creation/updates
 - add "health" field in custom round configs (defaults to 100)
 
