@@ -60,5 +60,5 @@ public void CustomWeaponHandler(int client) {
 
     Client_SetArmor(client, g_RoundTypeKevlar[roundType] ? 100 : 0);
     Client_SetHelmet(client, g_RoundTypeHelmet[roundType]);
-    Entity_SetHealth(client, g_RoundTypeHealth[roundType]);
+    Entity_SetHealth(client, g_RoundTypeHealth[roundType], true);
 }
