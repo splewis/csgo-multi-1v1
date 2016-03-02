@@ -32,7 +32,7 @@ before_script:
     - wget https://raw.githubusercontent.com/splewis/csgo-pug-setup/master/scripting/include/pugsetup.inc
 
     # install smlib
-    - git clone https://github.com/smlib/smlib
+    - git clone https://github.com/splewis/smlib
     - cp -r smlib/scripting/include/* .
     - cd ../../../..
 
