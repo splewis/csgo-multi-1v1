@@ -315,7 +315,7 @@ stock bool SplitStringRight(const char[] source, const char[] split, char[] part
 }
 
 stock void Client_SetHelmet(int client, bool helmet) {
-    int offset = FindSendPropOffs("CCSPlayer", "m_bHasHelmet");
+    int offset = FindSendPropInfo("CCSPlayer", "m_bHasHelmet");
     SetEntData(client, offset, helmet);
 }
 
