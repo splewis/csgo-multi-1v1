@@ -122,8 +122,7 @@ public void RifleHandler(int client) {
         g_DefaultPistolCvar.GetString(defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
     }
-
-    GivePlayerItem(client, "weapon_knife");
+    Multi1v1_GivePlayerKnife(client);
 }
 
 public void PistolHandler(int client) {
@@ -135,7 +134,7 @@ public void PistolHandler(int client) {
     } else {
         Client_SetArmor(client, 0);
     }
-    GivePlayerItem(client, "weapon_knife");
+    Multi1v1_GivePlayerKnife(client);
 }
 
 public void AwpHandler(int client) {
@@ -150,5 +149,5 @@ public void AwpHandler(int client) {
         g_DefaultPistolCvar.GetString(defaultPistol, sizeof(defaultPistol));
         GiveWeapon(client,  defaultPistol);
     }
-    GivePlayerItem(client, "weapon_knife");
+    Multi1v1_GivePlayerKnife(client);
 }

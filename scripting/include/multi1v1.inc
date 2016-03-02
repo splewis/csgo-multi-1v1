@@ -454,6 +454,11 @@ native bool Multi1v1_IsHidingStats(int client);
  */
 native void Multi1v1_GiveWeaponsMenu(int client, int pos=0);
 
+/**
+ * Gives a player a knife.
+ */
+native void Multi1v1_GivePlayerKnife(int cilent);
+
 public SharedPlugin:__pl_multi1v1 = {
     name = "multi1v1",
     file = "multi1v1.smx",
@@ -513,5 +518,6 @@ public __pl_multi1v1_SetNTVOptional() {
     MarkNativeAsOptional("Multi1v1_DisableRoundType");
     MarkNativeAsOptional("Multi1v1_GiveWeaponsMenu");
     MarkNativeAsOptional("Multi1v1_GetRoundTypeDisplayName");
+    MarkNativeAsOptional("Multi1v1_GivePlayerKnife");
 }
 #endif

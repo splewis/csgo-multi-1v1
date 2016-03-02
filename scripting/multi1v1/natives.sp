@@ -54,6 +54,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNative("Multi1v1_DisableRoundType", Native_DisableRoundType);
     CreateNative("Multi1v1_GiveWeaponsMenu", Native_GiveWeaponsMenu);
     CreateNative("Multi1v1_GetRoundTypeDisplayName", Native_GetRoundTypeDisplayName);
+    CreateNative("Multi1v1_GivePlayerKnife", Native_GivePlayerKnife);
     RegPluginLibrary("multi1v1");
     return APLRes_Success;
 }
@@ -475,4 +476,13 @@ public int Native_GetRoundTypeDisplayName(Handle plugin, int numParams) {
     CHECK_ROUNDTYPE(roundType);
     int bufferLength = GetNativeCell(3);
     SetNativeString(2, g_RoundTypeDisplayNames[roundType], bufferLength);
+}
+
+public int Native_GivePlayerKnife(Handle plugin, int numParams) {
+    int client = GetNativeCell(1);
+    CHECK_CONNECTED(client);
+    if (GetClientTeam(client) == CS_TEAM_T)
+        GivePlayerItem(client, "weapon_knife_t");
+    else
+        GivePlayerItem(client, "weapon_knife");
 }
