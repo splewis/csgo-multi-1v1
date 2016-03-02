@@ -59,7 +59,7 @@ stock void InitDebugLog(const char[] convarName, const char[] debugTag, int admi
 
 	char convarDescription[512];
 	Format(convarDescription, sizeof(convarDescription), "Add up values to enable debug logging to those locations\n  1 = server console\n  2 = all clients' consoles\n  4 = consoles of admins with '%s' flag%s or access to '%s' override\n  8 = all clients' chat\n  16 = chat of admins with '%s' flag%s or access to '%s' override\n  32 = debug log file %s", flagChars, flagChars[1] == '\0' ? "" : "s", convarName, flagChars, flagChars[1] == '\0' ? "" : "s", convarName, g_DebugLogFileName);
-	g_cvarDebugMode = CreateConVar(convarName, "0", convarDescription, FCVAR_PLUGIN, true, 0.0, true, 63.0);
+	g_cvarDebugMode = CreateConVar(convarName, "0", convarDescription, 0, true, 0.0, true, 63.0);
 
 	strcopy(g_DebugTag, sizeof(g_DebugTag), debugTag);
 	strcopy(g_DebugCvarName, sizeof(g_DebugCvarName), convarName);
