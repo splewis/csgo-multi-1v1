@@ -51,6 +51,14 @@
 	{
 		"en"		"Player stats are now being displayed."
 	}
+	"AutoSpecOn"
+	{
+		"en"		"You have enabled auto-specate."
+	}
+	"AutoSpecOff"
+	{
+		"en"		"You have disabled auto-spectate."
+	}
 	"ArenaClanTag"
 	{
 		"#format"	"{1:d}"
