@@ -248,12 +248,13 @@ public void OnPluginStart() {
     HookEvent("player_connect_full", Event_OnFullConnect);
     HookEvent("player_spawn", Event_OnPlayerSpawn);
     HookEvent("player_death", Event_OnPlayerDeath);
-    HookEvent("player_death", UpdateAutoSpecTargets, EventHookMode_Post);
     HookEvent("round_prestart", Event_OnRoundPreStart);
     HookEvent("round_poststart", Event_OnRoundPostStart);
     HookEvent("round_end", Event_OnRoundEnd);
     HookEvent("cs_win_panel_match", Event_MatchOver);
     AddTempEntHook("Shotgun Shot", Hook_ShotgunShot);
+
+    CreateTimer(0.5, Timer_UpdateAutoSpecTargets, _ , TIMER_REPEAT);
 
     /** Commands **/
     AddCommandListener(Command_JoinTeam, "jointeam");
@@ -261,6 +262,7 @@ public void OnPluginStart() {
     RegConsoleCmd("multi1v1_spawninfo", Command_SpawnInfo, "Displays map spawn info");
     RegConsoleCmd("sm_guns", Command_Guns, "Displays gun/round selection menu");
     RegConsoleCmd("sm_hidestats", Command_Hidestats, "Hides player stats/ratings");
+    RegConsoleCmd("sm_autospec", Command_Autospec, "Enables/disables autospec");
     RegAdminCmd("sm_reloadroundtypes", Command_ReloadRoundTypes, ADMFLAG_CHANGEMAP, "Reloads multi1v1 round types");
 
     /** Fowards **/
@@ -1186,10 +1188,13 @@ public void PugSetup_OnSetupMenuSelect(Menu menu, int client, const char[] selec
 }
 #endif
 
-
-public Action UpdateAutoSpecTargets(Event event, const char[] name, bool dontBroadcast) {
+// TODO: this works okay, but can yield varying switch times after a player dies
+// since it runs on a repeating timer.
+// Ideally, this would always switch from a player a fixed amount of time after the
+// arena finished.
+public Action Timer_UpdateAutoSpecTargets(Handle timer) {
     if (!g_Enabled)
-        return;
+        return Plugin_Continue;
 
     // Find a client in the current highest active arena.
     int highest_active_target = -1;
@@ -1211,4 +1216,5 @@ public Action UpdateAutoSpecTargets(Event event, const char[] name, bool dontBro
         }
     }
 
+    return Plugin_Continue;
 }
