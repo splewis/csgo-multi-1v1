@@ -53,7 +53,7 @@
 	}
 	"AutoSpecOn"
 	{
-		"en"		"You have enabled auto-specate."
+		"en"		"You have enabled auto-spectate."
 	}
 	"AutoSpecOff"
 	{
