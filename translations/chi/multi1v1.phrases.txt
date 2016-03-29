@@ -44,6 +44,14 @@
 	{
 		"chi"		"玩家资料目前是公开的。"
 	}
+	"AutoSpecOn"
+	{
+		"chi"		"你已启用自动观看。"
+	}
+	"AutoSpecOff"
+	{
+		"chi"		"你已关闭自动观看。"
+	}
 	"ArenaClanTag"
 	{
 		"chi"		"竞技场 {1}"
