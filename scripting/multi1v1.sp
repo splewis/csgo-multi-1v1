@@ -96,6 +96,7 @@ bool g_BlockStatChanges[MAXPLAYERS+1];
 bool g_BlockChatMessages[MAXPLAYERS+1];
 bool g_BlockMVPStars[MAXPLAYERS+1];
 bool g_BlockArenaDones[MAXPLAYERS+1];
+int g_LastClientDeathTime[MAXPLAYERS+1];
 
 /** Round-type data **/
 int g_numRoundTypes = 0;
@@ -783,6 +784,10 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
     int attacker = GetClientOfUserId(event.GetInt("attacker"));
     int arena = g_Ranking[victim];
 
+    if (victim != -1) {
+        g_LastClientDeathTime[victim] = GetTime();
+    }
+
     // If we've already decided the arena, don't worry about anything else in it
     if (g_ArenaStatsUpdated[arena])
         return;
@@ -1210,8 +1215,13 @@ public Action Timer_UpdateAutoSpecTargets(Handle timer) {
     if (highest_active_target != -1) {
         // Update all dead clients with autopec enabled to observe this target.
         for (int i = 1; i <= MaxClients; i++) {
-            if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i)) {
-                SetEntPropEnt(i, Prop_Send, "m_hObserverTarget", highest_active_target);
+            int dt = GetTime() - g_LastClientDeathTime[i];
+            if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i) && dt >= 5) {
+                int prevTarget = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
+                if (prevTarget != highest_active_target) {
+                    Multi1v1_Message(i, "Autoswitching to spectate arena %d", g_Ranking[highest_active_target]);
+                    SetEntPropEnt(i, Prop_Send, "m_hObserverTarget", highest_active_target);
+                }
             }
         }
     }
