@@ -5,6 +5,10 @@
 		"#format"	"{1:i}"
 		"en"		"You are in arena {GREEN}{1} {NORMAL}with {DARK_RED}no opponent."
 	}
+	"NoOpponentHint"
+	{
+		"en"		"<font size='22' color='#FF0000'>You have no opponent.</font>"
+	}
 	"FacingOff"
 	{
 		"#format"	"{1:i},{2:N}"
@@ -42,6 +46,10 @@
 	"OpponentLeft"
 	{
 		"en"		"{GREEN}Your opponent left."
+	}
+	"OpponentLeftHint"
+	{
+		"en"		"<font size='22' color='#00FF00'>Your opponent left.</font>"
 	}
 	"HideStats"
 	{

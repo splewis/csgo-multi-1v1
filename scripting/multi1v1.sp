@@ -664,10 +664,18 @@ public Action Event_OnRoundPostStart(Event event, const char[] name, bool dontBr
             Multi1v1_Message(i, "%t", "FacingOff", arena - g_arenaOffsetValue, other);
         } else {
             Multi1v1_Message(i, "%t", "NoOpponent", arena - g_arenaOffsetValue);
+            CreateTimer(1.0, Timer_NoOpponentHint, GetClientSerial(i));
         }
     }
 
     CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
+}
+
+public Action Timer_NoOpponentHint(Handle timer, int serial) {
+    int client = GetClientFromSerial(serial);
+    if (IsPlayer(client)) {
+        PrintHintText(client, "%t", "NoOpponentHint");
+    }
 }
 
 /**
@@ -1146,8 +1154,11 @@ public void UpdateArena(int arena, int disconnected) {
 
 static void PlayerLeft(int arena, int player, int left) {
     if (!g_ArenaStatsUpdated[arena]) {
+        Multi1v1_Message(player, "%t", "OpponentLeft");
+        PrintHintText(player, "%t", "OpponentLeftHint");
         DB_RoundUpdate(player, left, false);
     }
+
     g_ArenaWinners[arena] = player;
     g_ArenaLosers[arena] = -1;
     g_ArenaStatsUpdated[arena] = true;
