@@ -1214,7 +1214,7 @@ public Action Timer_UpdateAutoSpecTargets(Handle timer) {
 
     // Find a client in the current highest active arena.
     int highest_active_target = -1;
-    for (int i = 1; i < g_arenas; i++) {
+    for (int i = 1 + g_arenaOffsetValue; i < g_arenas; i++) {
         int p1 = g_ArenaPlayer1[i];
         int p2 = g_ArenaPlayer2[i];
         if (IsPlayer(p1) && IsPlayer(p2) && IsPlayerAlive(p1) && IsPlayerAlive(p2)) {
@@ -1230,7 +1230,7 @@ public Action Timer_UpdateAutoSpecTargets(Handle timer) {
             if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i) && dt >= 5) {
                 int prevTarget = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
                 if (prevTarget != highest_active_target) {
-                    Multi1v1_Message(i, "Autoswitching to spectate arena %d", g_Ranking[highest_active_target]);
+                    Multi1v1_Message(i, "%t", "AutoSpecSwitch", g_Ranking[highest_active_target] + g_arenaOffsetValue);
                     SetEntPropEnt(i, Prop_Send, "m_hObserverTarget", highest_active_target);
                 }
             }

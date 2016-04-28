@@ -67,6 +67,11 @@
 	{
 		"en"		"You have disabled auto-spectate."
 	}
+	"AutoSpecSwitch"
+	{
+		"#format"		"{1:d}"
+		"en"		"Autoswitching to spectate arena {1}."
+	}
 	"ArenaClanTag"
 	{
 		"#format"	"{1:d}"
