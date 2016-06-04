@@ -1227,7 +1227,7 @@ public Action Timer_UpdateAutoSpecTargets(Handle timer) {
         // Update all dead clients with autopec enabled to observe this target.
         for (int i = 1; i <= MaxClients; i++) {
             int dt = GetTime() - g_LastClientDeathTime[i];
-            if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i) && dt >= 5) {
+            if (g_AutoSpec[i] && IsPlayer(i) && !IsPlayerAlive(i) && dt >= 6) {
                 int prevTarget = GetEntPropEnt(i, Prop_Send, "m_hObserverTarget");
                 if (prevTarget != highest_active_target) {
                     Multi1v1_Message(i, "%t", "AutoSpecSwitch", g_Ranking[highest_active_target] + g_arenaOffsetValue);
