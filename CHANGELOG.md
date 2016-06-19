@@ -1,3 +1,10 @@
+1.1.4:
+- add sm_autospec command for players to automatically spectate active arenas while dead
+- give the proper knife (weapon_knife_t) to players on the T side
+- update chinese translations (thanks 872517414)
+- add hint text messages when an opponent leaves in an active arena or when you have no opponent
+- replace sv_alltalk with new cvars in game_cvars.cfg
+
 1.1.3:
 - update spawn-arena-finding code to work post 2/17/2016 update
 - add cvar ``sm_multi1v1_auto_create_tables`` (default 1) to allow disabling auto MySQL table creation/updates
