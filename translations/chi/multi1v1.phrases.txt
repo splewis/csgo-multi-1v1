@@ -4,6 +4,10 @@
 	{
 		"chi"			"你目前在战场{GREEN}{1}{NORMAL}但{DARK_RED}没有对手。"
 	}
+	"NoOpponentHint"
+	{
+		"chi"		"<font size='22' color='#FF0000'>你没有对手。</font>"
+	}
 	"FacingOff"
 	{
 		"chi"			"你目前在战场{GREEN}{1}{NORMAL}，与{PURPLE}{2}{NORMAL}决战！"
@@ -36,6 +40,10 @@
 	{
 		"chi"		"{GREEN}你的对手离开了。"
 	}
+	"OpponentLeftHint"
+	{
+		"chi"		"<font size='22' color='#00FF00'>你的对手离开了。</font>"
+	}
 	"HideStats"
 	{
 		"chi"		"玩家资料目前是隐藏的。"
@@ -51,6 +59,10 @@
 	"AutoSpecOff"
 	{
 		"chi"		"你已关闭自动观看。"
+	}
+	"AutoSpecSwitch"
+	{
+		"chi"		"自动切换旁观视角到竞技场 {1}。"
 	}
 	"ArenaClanTag"
 	{
