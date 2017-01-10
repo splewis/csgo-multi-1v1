@@ -68,7 +68,7 @@ forward void Multi1v1_OnRoundWon(int winner, int loser, bool forceLoss);
 forward void Multi1v1_OnStatsCached(int client);
 
 /**
- * Called after a player finishes going through the weapons menu.
+ * Called after the menu is built, but before it's displayed to the client
  * Note that the info strings used by the weapons menu are
  * "rifle", "pistol", "pref", and "allowx" (where x is an integer),
  * so you should avoid adding these into the menu.
@@ -136,17 +136,17 @@ native bool Multi1v1_IsInArena(int client);
  * @param format Format string
  * @error Client not connected.
  */
-native void Multi1v1_Message(int client, const char[] format, any:...);
+native void Multi1v1_Message(int client, const char[] format, any ...);
 
 /**
  * Prints a plugin-formatted message to all clients.
  *
  * @param format Format string
  */
-native void Multi1v1_MessageToAll(const char[] format, any:...);
+native void Multi1v1_MessageToAll(const char[] format, any ...);
 
 /**
- * Returns the maximum number of areans the map allows.
+ * Returns the maximum number of arenas the map allows.
  */
 native int Multi1v1_GetMaximumArenas();
 
