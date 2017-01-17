@@ -53,6 +53,7 @@ ConVar g_PreferenceWeightCvar;
 ConVar g_RandomizeArenaOrderCvar;
 ConVar g_RifleMenuCvar;
 ConVar g_RoundTimeCvar;
+ConVar g_SpectateFlagsCvar;
 ConVar g_UseAssistsCvar;
 ConVar g_UseChatPrefixCvar;
 ConVar g_UseDatabaseCvar;
@@ -223,6 +224,7 @@ public void OnPluginStart() {
     g_RandomizeArenaOrderCvar = CreateConVar("sm_multi1v1_randomize_arena_order", "0", "Whether the randomize the ordering of the arenas each round");
     g_RifleMenuCvar = CreateConVar("sm_multi1v1_show_rifle_menu", "1", "Whether the rifle choice menu should be included in the guns menu");
     g_RoundTimeCvar = CreateConVar("sm_multi1v1_roundtime", "30", "Roundtime (in seconds)", _, true, 5.0);
+    g_SpectateFlagsCvar = CreateConVar("sm_multi1v1_spectate_flags", "", "Admin flags required to join spectate. Empty means anyone can join spectate.");
     g_UseAssistsCvar = CreateConVar("sm_multi1v1_use_assists", "0", "Whether assists are updated to reflect a player's number of rounds in arena 1");
     g_UseChatPrefixCvar = CreateConVar("sm_multi1v1_use_chat_prefix", "1", "Whether to use a [Multi1v1] tag in chat messages");
     g_UseDatabaseCvar = CreateConVar("sm_multi1v1_use_database", "1", "Whether a database is used to store player statistics");
@@ -931,6 +933,13 @@ public Action Command_JoinTeam(int client, const char[] command, int argc) {
 
     } else if (team_to == CS_TEAM_SPECTATOR) {
         // player voluntarily joining spec
+        char flagString[32];
+        g_SpectateFlagsCvar.GetString(flagString, sizeof(flagString));
+        int flags = ReadFlagString(flagString);
+        if (!StrEqual(flagString, "") && GetUserFlagBits(client) & flags != flags) {
+            return Plugin_Handled;
+        }
+
         SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
         int arena = g_Ranking[client];
         UpdateArena(arena, client);
