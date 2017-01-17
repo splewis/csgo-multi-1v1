@@ -2,7 +2,6 @@
 {
 	"NoOpponent"
 	{
-		"#format"	"{1:i}"
 		"ru"		"Вы в арене {GREEN}{1} {DARK_RED}без противника."
 	}
 	"NoOpponentHint"
@@ -11,7 +10,6 @@
 	}
 	"FacingOff"
 	{
-		"#format"	"{1:i},{2:N}"
 		"ru"		"Арена: {GREEN}{1}{NORMAL}, противник: {PURPLE}{2}{NORMAL}."
 	}
 	"ArenasFull"
@@ -20,27 +18,22 @@
 	}
 	"QueuePosition"
 	{
-		"#format"	"{1:i}"
 		"ru"		"Вы {GREEN}{1} {NORMAL}в очереди ожидания."
 	}
 	"WonMessage"
 	{
-		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
 		"ru"		"{GREEN}Вы {NORMAL}(рейтинг {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) победили {PURPLE}{3} {NORMAL}(рейтинг {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
 	}
 	"LossMessage"
 	{
-		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
 		"ru"		"{GREEN}Вы {NORMAL}(рейтинг {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}проиграли {PURPLE}{3} {NORMAL}(рейтинг {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
 	"TimeRanOut"
 	{
-		"#format"	"{1:i},{2:.1f}"
 		"ru"		"{GREEN}Вы {NORMAL}(рейтинг {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) позволили времени выйти."
 	}
 	"MostWins"
 	{
-		"#format"	"{1:N},{2:d}"
 		"ru"		"{GREEN}У {1} {NORMAL}наибольшее количество побед {PURPLE}({2}) {NORMAL}в первой арене этой карты."
 	}
 	"OpponentLeft"
@@ -69,12 +62,10 @@
 	}
 	"AutoSpecSwitch"
 	{
-		"#format"		"{1:d}"
 		"ru"		"Автопереключение для наблюдения за ареной {1}."
 	}
 	"ArenaClanTag"
 	{
-		"#format"	"{1:d}"
 		"ru"		"Арена {1}"
 	}
 	"Disabled"
@@ -91,17 +82,14 @@
 	}
 	"WeaponsMenuRifle"
 	{
-		"#format"		"{1:s}"
 		"ru"		"Винтовка: {1}"
 	}
 	"WeaponsMenuPistol"
 	{
-		"#format"		"{1:s}"
 		"ru"		"Пистолет: {1}"
 	}
 	"WeaponsMenuRoundTypeEnabled"
 	{
-		"#format"		"{1:s},{2:s}"
 		"ru"		"{1} раунды: {2}"
 	}
 	"WeaponsMenuPreferenceTitle"
@@ -110,7 +98,6 @@
 	}
 	"WeaponsMenuPreference"
 	{
-		"#format"		"{1:s}"
 		"ru"		"Предпочтение: {1} раунды"
 	}
 	"WeaponsMenuPreferenceNone"
@@ -123,7 +110,6 @@
 	}
 	"WeaponsMenuPreferenceChoice"
 	{
-		"#format"		"{1:s}"
 		"ru"		"{1} раунды"
 	}
 	"WeaponsMenuSelection"
