@@ -14,7 +14,7 @@
  * @param rankingQueue empty adt array to be used for arena placement
  * @noreturn
  */
-forward void Multi1v1_OnPreArenaRankingsSet(Handle rankingQueue);
+forward void Multi1v1_OnPreArenaRankingsSet(ArrayList rankingQueue);
 
 /**
  * Called after the plugin is done putting players into the ranking queue.
@@ -22,7 +22,7 @@ forward void Multi1v1_OnPreArenaRankingsSet(Handle rankingQueue);
  * @param rankingQueue adt array of the players in order of their arena placement
  * @noreturn
  */
-forward void Multi1v1_OnPostArenaRankingsSet(Handle rankingQueue);
+forward void Multi1v1_OnPostArenaRankingsSet(ArrayList rankingQueue);
 
 /**
  * Called when all players have been placed into their arena.
