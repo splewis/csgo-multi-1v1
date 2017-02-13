@@ -1,4 +1,4 @@
-#define UPDATE_URL "https://dl.dropboxusercontent.com/u/76035852/multi1v1-v1.1.x/csgo-multi-1v1.txt"
+#define UPDATE_URL "http://dl.whiffcity.com/plugins/multi1v1/csgo-multi-1v1.txt"
 
 #include <sourcemod>
 #include <sdkhooks>
