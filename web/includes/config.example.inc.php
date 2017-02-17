@@ -7,14 +7,14 @@
  * =============================================================================
  */
 
-$mysql_host = '127.0.0.1';
-$mysql_user = 'ryan';
-$mysql_pass = 'cr0wdcontr0l!';
-$mysql_db = 'csgo_server';
+$mysql_host = 'localhost';
+$mysql_user = 'root';
+$mysql_pass = '';
+$mysql_db = '';
 $mysql_table = 'multi1v1_stats'; //Default table set by game plugin. Do not change this if you don't know what you are doing.
 
 $page_title = "Multi 1v1 Arena";
-$SteamAPI_Key = "6B8C3DF74E2AC40E779F5FB56B4F2112"; //https://steamcommunity.com/dev/apikey
+$SteamAPI_Key = ""; //https://steamcommunity.com/dev/apikey
 $antisquatter_rate_loss = 40; //Rate loss constant. A higher value equals a higher rate loss per day of inactivity.
 $log_antisquatter = true; //Keep IP logs and the number of player stats changes. For debugging and testing purposes only.
 $anti_squatter_pass = ""; //Used to access anti-squatter.php
