@@ -1,3 +1,4 @@
 *.smx
 *.zip
 builds
+web/includes/config.inc.php
