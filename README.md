@@ -49,8 +49,7 @@ Download the archive and extract the files to the game server. From the download
 - ``addons/sourcemod/translations``
 - ``cfg/sourcemod/multi1v1``
 
-If you are going to use a web-stats interface, you should also add the ``multi1v1_online_stats_viewer.smx`` plugin, which is under the ``plugins/disabled`` directory by default.
-
+If you are going to use a web-stats interface, you should also add the ``multi1v1_online_stats_viewer.smx`` plugin, which is under the ``plugins/disabled`` directory by default. **Note:** you still have to create a website for this. This project only provides the game server plugin.
 
 
 #### Configuration
@@ -69,9 +68,6 @@ Here is a brief list of **some** cvars available. See the auto-generated ``cfg/s
 
 ``addons/sourcemod/configs/multi1v1_weapons.cfg`` contains the list of weapons that are available under the rifle and pistol menus. You are free to add or remove weapons from this as long as they match the correct format. Note that the ``team`` part is only for making sure the player gets the correct weapon skin, otherwise it has no effect.
 
-
-## Web Interface
-There is a work-in-progress open-source web interface being developed under the [web](web) directory. Check its [readme](web/readme.md) for more details.
 
 ## More help on setting up the stats system
 There is a [wiki page](https://github.com/splewis/csgo-multi-1v1/wiki/Standard-stats-setup) that explains how to setup the stats system with the provided components.
