@@ -1,3 +1,13 @@
+1.1.6:
+- cleanup include for new syntax more (thanks headline22)
+- fix for 2017/08/17 update introducing a change breaking arena muting (thanks Kinsi and Technoblazed)
+
+1.1.5:
+- update russian translations
+- update chinese translations
+- move auto-update url off public dropbox urls
+- cleanup multi1v1 include [thanks headline22]
+
 1.1.4:
 - add sm_autospec command for players to automatically spectate active arenas while dead
 - give the proper knife (weapon_knife_t) to players on the T side
