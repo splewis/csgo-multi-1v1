@@ -60,7 +60,7 @@ public Action Hook_ShotgunShot(const char[] te_name, const int[] players, int nu
     TE_WriteVector("m_vecOrigin", vTemp);
     TE_WriteFloat("m_vecAngles[0]", TE_ReadFloat("m_vecAngles[0]"));
     TE_WriteFloat("m_vecAngles[1]", TE_ReadFloat("m_vecAngles[1]"));
-    TE_WriteNum("m_iWeaponID", TE_ReadNum("m_iWeaponID"));
+    TE_WriteNum("m_weapon", TE_ReadNum("m_weapon"));
     TE_WriteNum("m_iMode", TE_ReadNum("m_iMode"));
     TE_WriteNum("m_iSeed", TE_ReadNum("m_iSeed"));
     TE_WriteNum("m_iPlayer", TE_ReadNum("m_iPlayer"));
