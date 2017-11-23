@@ -102,11 +102,18 @@ stock bool GetMenuBool(Menu menu, int param2) {
  * Returns a handle to a cookie with the given name, creating it if it doesn't exist.
  */
 stock Handle FindNamedCookie(const char[] cookieName) {
-    Handle cookie = FindClientCookie(cookieName);
-    if (cookie == INVALID_HANDLE) {
-        cookie = RegClientCookie(cookieName, "multi1v1 cookie", CookieAccess_Protected);
+    static StringMap cookieMap;
+    if (!cookieMap) {
+        cookieMap = new StringMap();
     }
-    return cookie;
+
+    Handle cookie;
+    if (!cookieMap.GetValue(cookieName, cookie) || !cookie) {
+        cookie = RegClientCookie(cookieName, "multi1v1 cookie", CookieAccess_Protected);
+        cookieMap.SetValue(cookieName, cookie);
+    }
+
+    return CloneHandle(cookie);
 }
 
 /**
