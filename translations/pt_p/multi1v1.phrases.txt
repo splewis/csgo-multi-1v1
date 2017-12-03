@@ -22,10 +22,10 @@
 	}
 	"LossMessage"
 	{
-		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}perdeu para {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+		"pt_p"			"{GREEN}Você {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}perdeu para {PURPLE}{3} {NORMAL}(ELO {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
 	}
 	"TimeRanOut"
 	{
-		"pt_p"			"{GREEN}Voçê {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) deixou o tempo acabar."
+		"pt_p"			"{GREEN}Você {NORMAL}(ELO {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) deixou o tempo acabar."
 	}
 }
