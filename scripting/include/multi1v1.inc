@@ -87,6 +87,7 @@ forward void Multi1v1_GunsMenuCallback(Menu menu, MenuAction action, int param1,
 
 /**
  * Called each map start after the standard round types have been added.
+ * You should use this to add round types via Multi1v1_AddRoundType.
  *
  * @noreturn
  */
@@ -366,6 +367,7 @@ typedef RoundTypeMenuHandler = function void (int client);
 
 /**
  * Registers a new round type within the plugin.
+ * NOTE: this should only be called within the Multi1v1_OnRoundTypesAdded forward.
  *
  * @param displayName The name to be shown to clients on the weapons menu
  * @param internalName The unique name used for internal mechanisms (e.g. cookies)

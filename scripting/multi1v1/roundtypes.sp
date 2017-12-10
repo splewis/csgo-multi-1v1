@@ -8,6 +8,13 @@ public void LoadRoundTypes() {
     AddCustomRounds();
     Call_StartForward(g_hOnRoundTypesAdded);
     Call_Finish();
+
+    for (int i = 0; i < g_numRoundTypes; i++) {
+        char cookieName[128];
+        Format(cookieName, sizeof(cookieName), "multi1v1_allow%s", g_RoundTypeNames[i]);
+        g_AllowedRoundTypeCookies[i] = RegClientCookie(cookieName,
+            "multi1v1 cookie", CookieAccess_Protected);
+    }
 }
 
 /**
@@ -91,10 +98,6 @@ public int AddRoundType(Handle pluginSource, const char[] displayName, const cha
     g_RoundTypeEnabled[g_numRoundTypes] = enabled;
     g_numRoundTypes++;
     return g_numRoundTypes - 1;
-}
-
-public void GetRoundCookieName(int roundType, char[] buffer, int length) {
-    Format(buffer, length, "multi1v1_allow%s", g_RoundTypeNames[roundType]);
 }
 
 /*************************

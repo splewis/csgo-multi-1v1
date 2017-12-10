@@ -99,68 +99,6 @@ stock bool GetMenuBool(Menu menu, int param2) {
 }
 
 /**
- * Returns a handle to a cookie with the given name, creating it if it doesn't exist.
- */
-stock Handle FindNamedCookie(const char[] cookieName) {
-    Handle cookie = FindClientCookie(cookieName);
-    if (cookie == INVALID_HANDLE) {
-        cookie = RegClientCookie(cookieName, "multi1v1 cookie", CookieAccess_Protected);
-    }
-    return cookie;
-}
-
-/**
- * Sets the value of a client cookie given the cookie name.
- */
-stock void SetCookieStringByName(int client, const char[] cookieName, const char[] value) {
-    Handle cookie = FindNamedCookie(cookieName);
-    SetClientCookie(client, cookie, value);
-    CloseHandle(cookie);
-}
-
-/**
- * Gets the value of a client cookie given the cookie name.
- */
-stock void GetCookieStringByName(int client, const char[] cookieName, char[] buffer, int length) {
-    Handle cookie = FindNamedCookie(cookieName);
-    GetClientCookie(client, cookie, buffer, length);
-    CloseHandle(cookie);
-}
-
-/**
- * Sets a cookie to an integer value by converting it to a string.
- */
-stock void SetCookieIntByName(int client, const char[] cookieName, int value) {
-    char buffer[INTEGER_STRING_LENGTH];
-    IntToString(value, buffer, sizeof(buffer));
-    SetCookieStringByName(client, cookieName, buffer);
-}
-
-/**
- * Fetches the value of a cookie that is an integer.
- */
-stock int GetCookieIntByName(int client, const char[] cookieName) {
-    char buffer[INTEGER_STRING_LENGTH];
-    GetCookieStringByName(client, cookieName, buffer, sizeof(buffer));
-    return StringToInt(buffer);
-}
-
-/**
- * Sets a cookie to a boolean value.
- */
-stock void SetCookieBoolByName(int client, const char[] cookieName, bool value) {
-    int convertedInt = value ? 1 : 0;
-    SetCookieIntByName(client, cookieName, convertedInt);
-}
-
-/**
- * Gets a cookie that represents a boolean.
- */
-stock bool GetCookieBoolByName(int client, const char[] cookieName) {
-    return GetCookieIntByName(client, cookieName) != 0;
-}
-
-/**
  * Sets a cookie to an integer value by converting it to a string.
  */
 stock void SetCookieInt(int client, Handle cookie, int value) {

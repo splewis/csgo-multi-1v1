@@ -93,6 +93,10 @@ Handle g_SavedCvars = INVALID_HANDLE;
 int g_Preference[MAXPLAYERS+1];
 char g_PrimaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
 char g_SecondaryWeapon[MAXPLAYERS+1][WEAPON_LENGTH];
+Handle g_PreferenceCookie = INVALID_HANDLE;
+Handle g_PrimaryWeaponCookie = INVALID_HANDLE;
+Handle g_SecondaryWeaponCookie = INVALID_HANDLE;
+
 bool g_BlockStatChanges[MAXPLAYERS+1];
 bool g_BlockChatMessages[MAXPLAYERS+1];
 bool g_BlockMVPStars[MAXPLAYERS+1];
@@ -110,6 +114,7 @@ bool g_RoundTypeEnabled[MAX_ROUND_TYPES];
 char g_RoundTypeFieldNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
 Handle g_RoundTypeSourcePlugin[MAX_ROUND_TYPES];
 bool g_AllowedRoundTypes[MAXPLAYERS+1][MAX_ROUND_TYPES];
+Handle g_AllowedRoundTypeCookies[MAX_ROUND_TYPES];
 
 /** Arena arrays **/
 bool g_ArenaStatsUpdated[MAXPLAYERS+1];
@@ -295,6 +300,12 @@ public void OnPluginStart() {
 
     g_HideStatsCookie = RegClientCookie("multi1v1_hidestats", "Whether multi1v1 stats are hidden", CookieAccess_Public);
     g_AutoSpecCookie = RegClientCookie("multi1v1_autospec", "Whether multi1v1 will automatically switch to targets to spectate", CookieAccess_Public);
+    g_PreferenceCookie = RegClientCookie("multi1v1_preference", "multi1v1 round type prefernece", CookieAccess_Public);
+    g_PrimaryWeaponCookie = RegClientCookie("multi1v1_rifle", "multi1v1 rifle choice", CookieAccess_Public);
+    g_SecondaryWeaponCookie = RegClientCookie("multi1v1_pistol", "multi1v1 pistol choice", CookieAccess_Public);
+
+    Weapons_Init();
+    LoadRoundTypes();
 }
 
 public void OnPluginEnd() {
@@ -355,9 +366,6 @@ static void AddUpdater() {
 
 public void OnMapStart() {
     Spawns_MapStart();
-    Weapons_MapStart();
-    LoadRoundTypes();
-
     Queue_Clear(g_waitingQueue);
 
     g_arenaOffsetValue = 0;

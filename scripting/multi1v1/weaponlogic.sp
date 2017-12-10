@@ -2,7 +2,7 @@
  * Initializes weapon-related data on map start.
  * This includes the server-specific weapon config file configs/multi1v1_weapons.cfg.
  */
-public void Weapons_MapStart() {
+public void Weapons_Init() {
     g_numPistols = 0;
     g_numRifles = 0;
 
@@ -111,21 +111,19 @@ public int GetWeaponTeam(const char[] weapon) {
  */
 public void UpdatePreferencesOnCookies(int client) {
     for (int i = 0; i < g_numRoundTypes; i++) {
-        char cookieName[128];
-        Format(cookieName, sizeof(cookieName), "multi1v1_allow%s", g_RoundTypeNames[i]);
-        g_AllowedRoundTypes[client][i] = GetCookieBoolByName(client, cookieName);
+        g_AllowedRoundTypes[client][i] = GetCookieBool(client, g_AllowedRoundTypeCookies[i]);
     }
 
     char cookieValue[WEAPON_LENGTH];
-    GetCookieStringByName(client, "multi1v1_rifle", cookieValue, sizeof(cookieValue));
+    GetClientCookie(client, g_PrimaryWeaponCookie, cookieValue, sizeof(cookieValue));
     if (IsAllowedRifle(cookieValue))
         strcopy(g_PrimaryWeapon[client], WEAPON_LENGTH, cookieValue);
 
-    GetCookieStringByName(client, "multi1v1_pistol", cookieValue, sizeof(cookieValue));
+    GetClientCookie(client, g_SecondaryWeaponCookie, cookieValue, sizeof(cookieValue));
     if (IsAllowedPistol(cookieValue))
         strcopy(g_SecondaryWeapon[client], WEAPON_LENGTH, cookieValue);
 
-    GetCookieStringByName(client, "multi1v1_preference", cookieValue, sizeof(cookieValue));
+    GetClientCookie(client, g_PreferenceCookie, cookieValue, sizeof(cookieValue));
     g_Preference[client] = Multi1v1_GetRoundTypeIndex(cookieValue);
 
     g_HideStats[client] = GetCookieBool(client, g_HideStatsCookie, HIDESTATS_DEAFULT);

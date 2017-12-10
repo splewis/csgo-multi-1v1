@@ -71,11 +71,7 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int param1, int para
         } else if (StrContains(buffer, "allow") == 0) {
             int roundType = StringToInt(buffer[5]);
             g_AllowedRoundTypes[client][roundType] = !g_AllowedRoundTypes[client][roundType];
-
-            char cookieName[128];
-            GetRoundCookieName(roundType, cookieName, sizeof(cookieName));
-            SetCookieBoolByName(client, cookieName, g_AllowedRoundTypes[client][roundType]);
-
+            SetCookieBool(client, g_AllowedRoundTypeCookies[roundType], g_AllowedRoundTypes[client][roundType]);
             GiveWeaponsMenu(client, pos);
         }
     } else if (action == MenuAction_End) {
@@ -128,9 +124,9 @@ public int MenuHandler_Preference(Menu menu, MenuAction action, int param1, int 
         g_Preference[client] = choice;
 
         if (choice == -1) {
-            SetCookieStringByName(client, "multi1v1_preference", "none");
+            SetClientCookie(client, g_PreferenceCookie, "none");
         } else {
-            SetCookieStringByName(client, "multi1v1_preference", g_RoundTypeNames[choice]);
+            SetClientCookie(client, g_PreferenceCookie, g_RoundTypeNames[choice]);
         }
 
         GiveWeaponsMenu(client);
@@ -163,7 +159,7 @@ public int MenuHandler_RifleChoice(Menu menu, MenuAction action, int param1, int
     if (action == MenuAction_Select) {
         int client = param1;
         GetMenuItem(menu, param2, g_PrimaryWeapon[client], WEAPON_LENGTH);
-        SetCookieStringByName(client, "multi1v1_rifle", g_PrimaryWeapon[client]);
+        SetClientCookie(client, g_PrimaryWeaponCookie, g_PrimaryWeapon[client]);
         GiveWeaponsMenu(client);
     } else if (action == MenuAction_Cancel && param2 == MenuCancel_ExitBack) {
         int client = param1;
@@ -194,7 +190,7 @@ public int MenuHandler_PistolChoice(Menu menu, MenuAction action, int param1, in
     if (action == MenuAction_Select) {
         int client = param1;
         GetMenuItem(menu, param2, g_SecondaryWeapon[client], WEAPON_LENGTH);
-        SetCookieStringByName(client, "multi1v1_pistol", g_SecondaryWeapon[client]);
+        SetClientCookie(client, g_SecondaryWeaponCookie, g_SecondaryWeapon[client]);
         GiveWeaponsMenu(client);
     } else if (action == MenuAction_Cancel && param2 == MenuCancel_ExitBack) {
         int client = param1;
