@@ -55,7 +55,13 @@ public void CustomWeaponHandler(int client) {
   for (int i = 0; i < weapons.Length; i++) {
     char weapon[WEAPON_NAME_LENGTH];
     weapons.GetString(i, weapon, sizeof(weapon));
-    GiveWeapon(client, weapon);
+    if (StrEqual(weapon, "rifle_preference")) {
+      GiveWeapon(client, g_PrimaryWeapon[client]);
+    } else if (StrEqual(weapon, "pistol_preference")) {
+      GiveWeapon(client, g_SecondaryWeapon[client]);
+    } else {
+      GiveWeapon(client, weapon);
+    }
   }
 
   Client_SetArmor(client, g_RoundTypeKevlar[roundType] ? 100 : 0);
