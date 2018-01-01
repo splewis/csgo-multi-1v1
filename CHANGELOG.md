@@ -1,3 +1,10 @@
+1.1.8:
+- change ``Multi1v1_OnRoundTypesAdded`` to be called in OnPluginStart instead of OnMapStart, this fixes a cookie issue where clientprefs cookies aren't always saved
+- add support for "rifle_preference" and "pistol_preference" in customrounds.cfg file
+
+1.1.7:
+- no significant changes
+
 1.1.6:
 - cleanup include for new syntax more (thanks headline22)
 - fix for 2017/08/17 update introducing a change breaking arena muting (thanks Kinsi and Technoblazed)
