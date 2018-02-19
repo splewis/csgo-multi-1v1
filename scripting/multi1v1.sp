@@ -361,6 +361,9 @@ public void OnPluginStart() {
       RegClientCookie("multi1v1_pistol", "multi1v1 pistol choice", CookieAccess_Public);
 
   Weapons_Init();
+}
+
+public void OnAllPluginsLoaded() {
   LoadRoundTypes();
 }
 
