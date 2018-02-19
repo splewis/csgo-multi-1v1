@@ -39,7 +39,7 @@ You may also download the [latest development build](http://ci.splewis.net/job/c
 
 #### Requirements
 
-**Only Sourcemod 1.7 is supported.** Releases are compiled using the 1.7 compiler and will not work on a server using an older version.
+**Only Sourcemod 1.7 or later is supported.** Releases are compiled using the 1.7 compiler and will not work on a server using an older version.
 
 
 #### Instructions
