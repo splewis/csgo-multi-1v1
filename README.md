@@ -39,8 +39,7 @@ You may also download the [latest development build](http://ci.splewis.net/job/c
 
 #### Requirements
 
-**Only Sourcemod 1.7 or later is supported.** Releases are compiled using the 1.7 compiler and will not work on a server using an older version.
-
+Sourcemod 1.7 or later.
 
 #### Instructions
 Download the archive and extract the files to the game server. From the download, you should have installed the following (to the ``csgo`` directory):
