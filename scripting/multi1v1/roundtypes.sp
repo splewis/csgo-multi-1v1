@@ -3,11 +3,13 @@
  */
 
 public void LoadRoundTypes() {
+  g_InOnRoundsAddedCallback = true;
   Multi1v1_ClearRoundTypes();
   Multi1v1_AddStandardRounds();
   AddCustomRounds();
   Call_StartForward(g_hOnRoundTypesAdded);
   Call_Finish();
+  g_InOnRoundsAddedCallback = false;
 
   for (int i = 0; i < g_numRoundTypes; i++) {
     char cookieName[128];
@@ -51,14 +53,12 @@ public int GetRoundType(int arena, int client1, int client2) {
   }
   delete types;
 
-  g_InOnRoundsAddedCallback = true;
   Call_StartForward(g_hOnRoundTypeDecided);
   Call_PushCell(arena);
   Call_PushCell(client1);
   Call_PushCell(client2);
   Call_PushCellRef(choice);
   Call_Finish();
-  g_InOnRoundsAddedCallback = false;
 
   return choice;
 }
