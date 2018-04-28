@@ -366,6 +366,13 @@ public int Native_ClearRoundTypes(Handle plugin, int numParams) {
 }
 
 public int Native_AddRoundType(Handle plugin, int numParams) {
+  if (!g_InOnRoundsAddedCallback) {
+    ThrowNativeError(
+        SP_ERROR_PARAM,
+        "Multi1v1_AddRoundType may only be called from the Multi1v1_OnRoundTypesAdded forward");
+    return -1;
+  }
+
   if (g_numRoundTypes >= MAX_ROUND_TYPES) {
     ThrowNativeError(SP_ERROR_PARAM, "Tried to add new round when %d round types already added",
                      MAX_ROUND_TYPES);

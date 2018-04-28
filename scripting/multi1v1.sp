@@ -116,6 +116,7 @@ char g_RoundTypeFieldNames[MAX_ROUND_TYPES][ROUND_TYPE_NAME_LENGTH];
 Handle g_RoundTypeSourcePlugin[MAX_ROUND_TYPES];
 bool g_AllowedRoundTypes[MAXPLAYERS + 1][MAX_ROUND_TYPES];
 Handle g_AllowedRoundTypeCookies[MAX_ROUND_TYPES];
+bool g_InOnRoundsAddedCallback = false;
 
 /** Arena arrays **/
 bool g_ArenaStatsUpdated[MAXPLAYERS + 1];
