@@ -14,7 +14,6 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-
 // clang-format off
 public Plugin myinfo = {
   name = "CS:GO Multi1v1: knife round addon",

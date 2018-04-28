@@ -961,11 +961,13 @@ public Action Event_MatchOver(Event event, const char[] name, bool dontBroadcast
  * teamjoin hook - marks a player as waiting or moves them to spec if appropriate.
  */
 public Action Command_JoinTeam(int client, const char[] command, int argc) {
-  if (!g_Enabled)
+  if (!g_Enabled) {
     return Plugin_Continue;
+  }
 
-  if (!IsValidClient(client))
+  if (!IsValidClient(client)) {
     return Plugin_Handled;
+  }
 
   // auto-give the guns menu if desired
   if (!g_GivenGunsMenu[client]) {
@@ -1001,8 +1003,9 @@ public Action Command_JoinTeam(int client, const char[] command, int argc) {
     SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
     int arena = g_Ranking[client];
     UpdateArena(arena, client);
-    if (g_UseTeamTagsCvar.IntValue != 0)
+    if (g_UseTeamTagsCvar.IntValue != 0) {
       CS_SetClientClanTag(client, "");
+    }
 
   } else {
     // Player first joining the game, mark them as waiting to join
@@ -1017,8 +1020,9 @@ public Action Command_JoinTeam(int client, const char[] command, int argc) {
  * Hook for player chat actions, gives player the guns menu.
  */
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs) {
-  if (!g_Enabled)
+  if (!g_Enabled) {
     return Plugin_Continue;
+  }
 
   // To avoid cluttering up chat, these commands are hidden
   char gunsChatCommands[][] = {"gun", "guns", ".gun", ".guns", "!gun", "!guns", "gnus"};
@@ -1036,16 +1040,18 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 
 /** sm_guns command **/
 public Action Command_Guns(int client, int args) {
-  if (!g_Enabled)
+  if (!g_Enabled) {
     return Plugin_Continue;
+  }
 
   GiveWeaponsMenu(client);
   return Plugin_Handled;
 }
 
 public Action Command_Hidestats(int client, int args) {
-  if (!g_Enabled)
+  if (!g_Enabled) {
     return Plugin_Continue;
+  }
 
   g_HideStats[client] = !g_HideStats[client];
   SetCookieBool(client, g_HideStatsCookie, g_HideStats[client]);
@@ -1059,8 +1065,9 @@ public Action Command_Hidestats(int client, int args) {
 }
 
 public Action Command_Autospec(int client, int args) {
-  if (!g_Enabled)
+  if (!g_Enabled) {
     return Plugin_Continue;
+  }
 
   g_AutoSpec[client] = !g_AutoSpec[client];
   SetCookieBool(client, g_AutoSpecCookie, g_AutoSpec[client]);
@@ -1108,8 +1115,9 @@ public void SwitchPlayerTeam(int client, int team) {
  */
 public Action Timer_CheckRoundComplete(Handle timer) {
   // This is a check in case the round ended naturally, we won't force another end
-  if (g_roundFinished)
+  if (g_roundFinished) {
     return Plugin_Stop;
+  }
 
   // check every arena, if it is still ongoing mark allDone as false
   int nPlayers = 0;
