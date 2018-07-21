@@ -5,8 +5,7 @@ addons:
         - lib32stdc++6  # needed for spcomp
 
 env:
-    - SMVERSION=1.7
-    - SMVERSION=1.8
+    - SMVERSION=1.9
 
 before_script:
     # install smbuilder
@@ -32,7 +31,7 @@ before_script:
     - wget https://raw.githubusercontent.com/splewis/csgo-pug-setup/master/scripting/include/pugsetup.inc
 
     # install smlib
-    - git clone https://github.com/splewis/smlib
+    - git clone https://github.com/bcserv/smlib
     - cp -r smlib/scripting/include/* .
     - cd ../../../..
 
