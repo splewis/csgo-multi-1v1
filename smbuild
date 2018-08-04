@@ -1,24 +1,19 @@
 Plugin(source='scripting/multi1v1.sp')
 Plugin(source='scripting/multi1v1_flashbangs.sp', deps=['multi1v1'])
 Plugin(source='scripting/multi1v1_kniferounds.sp', deps=['multi1v1'])
-Plugin(source='scripting/multi1v1_online_stats_viewer.sp', deps=['multi1v1'])
 
 Package(name='multi1v1-base',
         plugins=['multi1v1'],
 )
 
 Package(name='multi1v1-all',
-        plugins=['multi1v1', 'multi1v1_flashbangs', 'multi1v1_online_stats_viewer', 'multi1v1_kniferounds'],
+        plugins=['multi1v1', 'multi1v1_flashbangs', 'multi1v1_kniferounds'],
 )
 
 Package(name='multi1v1-release',
         extends=['multi1v1-all'],
-        disabled_plugins=['multi1v1_flashbangs', 'multi1v1_online_stats_viewer', 'multi1v1_kniferounds'],
+        disabled_plugins=['multi1v1_flashbangs', 'multi1v1_kniferounds'],
         filegroups={
             '.': ['LICENSE' , 'CHANGELOG.md', 'README.md'],
         },
-)
-
-Package(name='multi1v1-stats',
-        plugins=['multi1v1', 'multi1v1_online_stats_viewer'],
 )

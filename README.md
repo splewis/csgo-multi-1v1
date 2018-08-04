@@ -51,8 +51,6 @@ Download the archive and extract the files to the game server. From the download
 - ``addons/sourcemod/translations``
 - ``cfg/sourcemod/multi1v1``
 
-If you are going to use a web-stats interface, you should also add the ``multi1v1_online_stats_viewer.smx`` plugin, which is under the ``plugins/disabled`` directory by default. **Note:** you still have to create a website for this. This project only provides the game server plugin.
-
 
 #### Configuration
 
