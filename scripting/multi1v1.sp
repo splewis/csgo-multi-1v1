@@ -925,8 +925,6 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
     return;
   }
 
-  CreateTimer(0.1, RemoveRadar, client);
-
   Call_StartForward(g_hAfterPlayerSpawn);
   Call_PushCell(client);
   Call_Finish();
