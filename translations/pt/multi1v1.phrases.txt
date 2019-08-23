@@ -1,0 +1,123 @@
+"Phrases"
+{
+	"NoOpponent"
+	{
+		"pt"		"Você está na arena {GREEN}{1} {NORMAL} {DARK_RED}sem oponente."
+	}
+	"NoOpponentHint"
+	{
+		"pt"		"<font size='22' color='#FF0000'>Você não tem oponente</font>"
+	}
+	"FacingOff"
+	{
+		"pt"		"Você está na arena {GREEN}{1}{NORMAL}, enfrentando{PURPLE} {2}{NORMAL}."
+	}
+	"ArenasFull"
+	{
+		"pt"		"Desculpe, todas as arenas estão atualmente {PURPLE}completas."
+	}
+	"QueuePosition"
+	{
+		"pt"		"Você está na posição {GREEN}{1} {NORMAL}na fila de espera."
+	}
+	"WonMessage"
+	{
+		"pt"		"{GREEN}Você {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) beat {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+	}
+	"LossMessage"
+	{
+		"pt"		"{GREEN}Você {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}lost to {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+	}
+	"TimeRanOut"
+	{
+		"pt"		"{GREEN}Você {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) deixou o tempo acabar."
+	}
+	"MostWins"
+	{
+		"pt"		"{GREEN}{1} {NORMAL}teve mais vitórias {PURPLE}({2}) {NORMAL}na arena 1 deste mapa."
+	}
+	"OpponentLeft"
+	{
+		"pt"		"{GREEN}Seu oponente saiu."
+	}
+	"OpponentLeftHint"
+	{
+		"pt"		"<font size='22' color='#00FF00'>Seu oponente saiu.</font>"
+	}
+	"HideStats"
+	{
+		"pt"		"Estatísticas dos players agora não estão sendo exibidas."
+	}
+	"ShowStats"
+	{
+		"pt"		"Estatísticas dos players agora estão sendo exibidas."
+	}
+	"AutoSpecOn"
+	{
+		"pt"		"Você ativou o auto-spectate."
+	}
+	"AutoSpecOff"
+	{
+		"pt"		"Você desabilitou o auto-spectate."
+	}
+	"AutoSpecSwitch"
+	{
+		"pt"		"Autoswitching to spectate arena {1}."
+	}
+	"ArenaClanTag"
+	{
+		"pt"		"Arena {1}"
+	}
+	"Disabled"
+	{
+		"pt"		"Desativado"
+	}
+	"Enabled"
+	{
+		"pt"		"Ativado"
+	}
+	"WeaponsMenuTitle"
+	{
+		"pt"		"Selecione suas preferências de armas:"
+	}
+	"WeaponsMenuRifle"
+	{
+		"pt"		"Rifle: {1}"
+	}
+	"WeaponsMenuPistol"
+	{
+		"pt"		"Pistol: {1}"
+	}
+	"WeaponsMenuRoundTypeEnabled"
+	{
+		"pt"		"{1} Rounds: {2}"
+	}
+	"WeaponsMenuPreferenceTitle"
+	{
+		"pt"		"Escolha o seu tipo de round preferido:"
+	}
+	"WeaponsMenuPreference"
+	{
+		"pt"		"Preferência: {1} Rounds"
+	}
+	"WeaponsMenuPreferenceNone"
+	{
+		"pt"		"Preferência: Nenhum"
+	}
+	"WeaponsMenuNoPreference"
+	{
+		"pt"		"Sem Preferência"
+	}
+	"WeaponsMenuPreferenceChoice"
+	{
+		"pt"		"{1} Rounds"
+	}
+	"WeaponsMenuSelection"
+	{
+		"pt"		"Escolha o seu rifle favorito:"
+	}
+	"PistolMenuTitle"
+	{
+		"pt"		"Escolha sua pistol favorita:"
+	}
+}
