@@ -1,0 +1,137 @@
+"Phrases"
+{
+	"NoOpponent"
+	{
+		"#format"	"{1:i}"
+		"tr"		"Bulunduğunuz arena {GREEN}{1} {NORMAL}, {DARK_RED}karşınızda rakip yok."
+	}
+	"NoOpponentHint"
+	{
+		"tr"		"<font size='22' color='#FF0000'>Karşınızda rakip yok.</font>"
+	}
+	"FacingOff"
+	{
+		"#format"	"{1:i},{2:N}"
+		"tr"		"Bulunduğunuz arena {GREEN}{1}{NORMAL}, rakibiniz {PURPLE}{2}{NORMAL}."
+	}
+	"ArenasFull"
+	{
+		"tr"		"Malesef şu anda tüm arenalar {PURPLE}dolu."
+	}
+	"QueuePosition"
+	{
+		"#format"	"{1:i}"
+		"tr"		"Bekleme kuyruğundaki sıranız {GREEN}{1}"
+	}
+	"WonMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"tr"		"{GREEN}Sen {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}), {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL}) oyuncusunu yendin."
+	}
+	"LossMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"tr"		"{GREEN}Sen {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}, {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL}) oyuncusuna yenildin."
+	}
+	"TimeRanOut"
+	{
+		"#format"	"{1:i},{2:.1f}"
+		"tr"		"{GREEN}Sen {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) sürenin bitmesine izin verdin."
+	}
+	"MostWins"
+	{
+		"#format"	"{1:N},{2:d}"
+		"tr"		"{GREEN}{1} {NORMAL} bu haritadaki arena 1de en çok kazanmaya {PURPLE}({2}) {NORMAL}sahip. "
+	}
+	"OpponentLeft"
+	{
+		"tr"		"{GREEN}Rakibiniz ayrıldı."
+	}
+	"OpponentLeftHint"
+	{
+		"tr"		"<font size='22' color='#00FF00'>Rakibiniz ayrıldı.</font>"
+	}
+	"HideStats"
+	{
+		"tr"		"Oyuncu istatistikleri gösterilmeyecek."
+	}
+	"ShowStats"
+	{
+		"tr"		"Oyuncu istatistikleri artık gösterilecek."
+	}
+	"AutoSpecOn"
+	{
+		"tr"		"Otomatik izlemeyi aktif hale getirdiniz."
+	}
+	"AutoSpecOff"
+	{
+		"tr"		"Otomatik izlemeyi devre dışı bıraktınız."
+	}
+	"AutoSpecSwitch"
+	{
+		"#format"		"{1:d}"
+		"tr"		"Otomatik izleme için ışınlanan harita {1}."
+	}
+	"ArenaClanTag"
+	{
+		"#format"	"{1:d}"
+		"tr"		"Arena {1}"
+	}
+	"Disabled"
+	{
+		"tr"		"devre dışı"
+	}
+	"Enabled"
+	{
+		"tr"		"etkin"
+	}
+	"WeaponsMenuTitle"
+	{
+		"tr"		"Silah seçeneklerinizi ayarlayın:"
+	}
+	"WeaponsMenuRifle"
+	{
+		"#format"		"{1:s}"
+		"tr"		"Tüfek: {1}"
+	}
+	"WeaponsMenuPistol"
+	{
+		"#format"		"{1:s}"
+		"tr"		"Tabanca: {1}"
+	}
+	"WeaponsMenuRoundTypeEnabled"
+	{
+		"#format"		"{1:s},{2:s}"
+		"tr"		"{1} el: {2}"
+	}
+	"WeaponsMenuPreferenceTitle"
+	{
+		"tr"		"İstediğiniz el tipini seçiniz:"
+	}
+	"WeaponsMenuPreference"
+	{
+		"#format"		"{1:s}"
+		"tr"		"Seçim: {1} el"
+	}
+	"WeaponsMenuPreferenceNone"
+	{
+		"tr"		"Seçim: yok"
+	}
+	"WeaponsMenuNoPreference"
+	{
+		"tr"		"Seçim yok"
+	}
+	"WeaponsMenuPreferenceChoice"
+	{
+		"#format"		"{1:s}"
+		"tr"		"{1} el"
+	}
+	"WeaponsMenuSelection"
+	{
+		"tr"		"Favori tüfeğinizi seçiniz:"
+	}
+	"PistolMenuTitle"
+	{
+		"tr"		"Favori tabancanızı seçiniz:"
+	}
+}
