@@ -1,5 +1,4 @@
 #define MESSAGE_PREFIX "[\x05Multi1v1\x01] "
-#define HIDE_RADAR_BIT 1 << 12
 #define DEBUG_CVAR "sm_multi1v1_debug"
 #define INTEGER_STRING_LENGTH 20  // max number of digits a 64-bit integer can use up as a string
 // this is for converting ints to strings when setting menu values/cookies
@@ -16,17 +15,6 @@ char g_ColorCodes[][] = {"\x01", "\x02", "\x03", "\x04", "\x05", "\x06",
 #define SPECMODE_FIRSTPERSON 4
 #define SPECMODE_THIRDPERSON 5
 #define SPECMODE_FREELOOK 6
-
-/**
- * Removes the radar element from a client's HUD.
- */
-public Action RemoveRadar(Handle timer, int client) {
-  if (IsValidClient(client) && !IsFakeClient(client)) {
-    int flags = GetEntProp(client, Prop_Send, "m_iHideHUD");
-    SetEntProp(client, Prop_Send, "m_iHideHUD", flags | (HIDE_RADAR_BIT));
-  }
-  return Plugin_Continue;
-}
 
 /**
  * Function to identify if a client is valid and in game.
