@@ -92,7 +92,7 @@ public int WeaponsMenuHandler(Menu menu, MenuAction action, int param1, int para
 public void GivePreferenceMenu(int client) {
   Menu menu = new Menu(MenuHandler_Preference);
   menu.SetTitle("%T", "WeaponsMenuPreferenceTitle", client);
-  menu.ExitButton = false;
+  menu.ExitButton = true;
   menu.ExitBackButton = true;
   AddMenuInt(menu, -1, "%T", "WeaponsMenuNoPreference", client);
 
@@ -152,7 +152,7 @@ public int MenuHandler_Preference(Menu menu, MenuAction action, int param1, int 
 public void RifleChoiceMenu(int client) {
   Menu menu = new Menu(MenuHandler_RifleChoice);
   menu.SetTitle("%T", "WeaponsMenuSelection", client);
-  menu.ExitButton = false;
+  menu.ExitButton = true;
   menu.ExitBackButton = true;
   for (int i = 0; i < g_numRifles; i++) {
     menu.AddItem(g_Rifles[i][0], g_Rifles[i][1]);
@@ -182,7 +182,7 @@ public int MenuHandler_RifleChoice(Menu menu, MenuAction action, int param1, int
  */
 public void PistolChoiceMenu(int client) {
   Menu menu = new Menu(MenuHandler_PistolChoice);
-  menu.ExitButton = false;
+  menu.ExitButton = true;
   menu.ExitBackButton = true;
   menu.SetTitle("%T", "PistolMenuTitle", client);
   for (int i = 0; i < g_numPistols; i++) {
