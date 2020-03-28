@@ -333,7 +333,7 @@ static void ForceLossMessage(int client, float rating, float delta) {
     Multi1v1_Message(client, "%t", "TimeRanOut", RoundToNearest(rating), delta);
 }
 
-static bool HasRoundTypeSpecificRating(int roundType) {
+public bool HasRoundTypeSpecificRating(int roundType) {
   return g_RoundTypeRanked[roundType] && !StrEqual(g_RoundTypeFieldNames[roundType], "");
 }
 
