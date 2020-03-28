@@ -46,6 +46,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
   CreateNative("Multi1v1_FindArenaNumber", Native_FindArenaNumber);
   CreateNative("Multi1v1_GetRifleChoice", Native_GetRifleChoice);
   CreateNative("Multi1v1_GetPistolChoice", Native_GetPistolChoice);
+  CreateNative("Multi1v1_HasRoundTypeSpecificRating", Native_HasRoundTypeSpecificRating);
   CreateNative("Multi1v1_GetRoundTypeIndex", Native_GetRoundTypeIndex);
   CreateNative("Multi1v1_AddRoundType", Native_AddRoundType);
   CreateNative("Multi1v1_ClearRoundTypes", Native_ClearRoundTypes);
@@ -415,6 +416,12 @@ public int Native_AddRoundType(Handle plugin, int numParams) {
   return AddRoundType(plugin, displayName, internalName, weaponHandler, optional, ranked,
                       ratingFieldName, enabled);
 }
+
+public int Native_HasRoundTypeSpecificRating(Handle plugin, int numParams) {
+  int roundType = GetNativeCell(1);
+  CHECK_ROUNDTYPE(roundType);
+  return HasRoundTypeSpecificRating(roundType);
+}  
 
 public int Native_GetRoundTypeIndex(Handle plugin, int numParams) {
   char buffer[ROUND_TYPE_NAME_LENGTH];
