@@ -412,10 +412,16 @@ native int Multi1v1_GetRoundTypeIndex(const char[] internalName);
 // Helper null callback for round types that don't need to give players weapons on spawn.
 public void Multi1v1_NullWeaponHandler(int client) {}
 
+
+/**
+ * Returns if the plugin will do rating updates ( based on the config value sm_multi1v1_min_players_for_rating_changes )
+ */
+native bool Multi1v1_AreRatingChangesAllowed();
 native bool Multi1v1_IsRoundTypeEnabled(int roundType);
 native void Multi1v1_EnableRoundType(int roundType);
 native void Multi1v1_DisableRoundType(int roundType);
 native void Multi1v1_GetRoundTypeDisplayName(int roundType, char[] buffer, int bufferLength);
+
 
 /**
  * Returns the current round type in an arena.
@@ -514,6 +520,7 @@ public __pl_multi1v1_SetNTVOptional() {
   MarkNativeAsOptional("Multi1v1_PlayerAllowsRoundType");
   MarkNativeAsOptional("Multi1v1_PlayerPreference");
   MarkNativeAsOptional("Multi1v1_IsHidingStats");
+  MarkNativeAsOptional("Multi1v1_AreRatingChangesAllowed");
   MarkNativeAsOptional("Multi1v1_IsRoundTypeEnabled");
   MarkNativeAsOptional("Multi1v1_EnableRoundType");
   MarkNativeAsOptional("Multi1v1_DisableRoundType");
