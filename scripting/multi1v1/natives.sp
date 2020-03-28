@@ -55,6 +55,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
   CreateNative("Multi1v1_PlayerAllowsRoundType", Native_PlayerAllowsRoundType);
   CreateNative("Multi1v1_PlayerPreference", Native_PlayerPreference);
   CreateNative("Multi1v1_IsHidingStats", Native_IsHidingStates);
+  CreateNative("Multi1v1_AreRatingChangesAllowed", Native_AreRatingChangesAllowed);
   CreateNative("Multi1v1_IsRoundTypeEnabled", Native_IsRoundTypeEnabled);
   CreateNative("Multi1v1_EnableRoundType", Native_EnableRoundType);
   CreateNative("Multi1v1_DisableRoundType", Native_DisableRoundType);
@@ -462,6 +463,10 @@ public int Native_IsHidingStates(Handle plugin, int numParams) {
   int client = GetNativeCell(1);
   CHECK_CONNECTED(client);
   return g_HideStats[client];
+}
+
+public int Native_AreRatingChangesAllowed(Handle plugin, int numParams) {  
+  return AreRatingChangesAllowed();
 }
 
 public int Native_IsRoundTypeEnabled(Handle plugin, int numParams) {

@@ -267,7 +267,7 @@ public void Increment(int client, const char[] field) {
  * Fetches, if needed, and calculates the relevent players' new ratings.
  */
 static void UpdateRatings(int winner, int loser, bool forceLoss, int roundType) {
-  if (db != INVALID_HANDLE && CountActivePlayers() >= g_MinPlayersForRatingChangesCvar.IntValue) {
+  if (db != INVALID_HANDLE && AreRatingChangesAllowed()) {
     // go fetch the ratings if needed
     if (!g_FetchedPlayerInfo[winner]) {
       DB_FetchRatings(winner);
@@ -352,4 +352,8 @@ static int CountActivePlayers() {
     }
   }
   return count;
+}
+
+public bool AreRatingChangesAllowed() {
+  return CountActivePlayers() >= g_MinPlayersForRatingChangesCvar.IntValue;
 }
