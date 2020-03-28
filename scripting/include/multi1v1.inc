@@ -404,6 +404,9 @@ native void Multi1v1_ClearRoundTypes();
  */
 native void Multi1v1_AddStandardRounds();
 
+
+native bool Multi1v1_HasRoundTypeSpecificRating(int roundType);
+
 /**
  * Returns the unique identifier (the index) of a round type given its internal name.
  */
@@ -507,6 +510,7 @@ public __pl_multi1v1_SetNTVOptional() {
   MarkNativeAsOptional("Multi1v1_GetPistolChoice");
   MarkNativeAsOptional("Multi1v1_AddRoundType");
   MarkNativeAsOptional("Multi1v1_ClearRoundTypes");
+  MarkNativeAsOptional("Multi1v1_HasRoundTypeSpecificRating");
   MarkNativeAsOptional("Multi1v1_GetRoundTypeIndex");
   MarkNativeAsOptional("Multi1v1_AddStandardRounds");
   MarkNativeAsOptional("Multi1v1_GetCurrentRoundType");
