@@ -480,7 +480,7 @@ public SharedPlugin __pl_multi1v1 = {
 };
 
 #if !defined REQUIRE_PLUGIN
-public __pl_multi1v1_SetNTVOptional() {
+public void __pl_multi1v1_SetNTVOptional() {
   MarkNativeAsOptional("Multi1v1_IsInArena");
   MarkNativeAsOptional("Multi1v1_GetMaximumArenas");
   MarkNativeAsOptional("Multi1v1_GetNumActiveArenas");
