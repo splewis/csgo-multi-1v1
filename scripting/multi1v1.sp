@@ -27,8 +27,6 @@
  *                     *
  ***********************/
 
-#define DISTRIBUTION_SPREAD 1000.0
-#define K_FACTOR 8.0
 #define ROUND_TYPE_NAME_LENGTH 64
 #define DATABASE_CONFIG_NAME "multi1v1"
 #define TABLE_NAME "multi1v1_stats"
