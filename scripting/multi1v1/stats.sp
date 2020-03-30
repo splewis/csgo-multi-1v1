@@ -226,7 +226,7 @@ public void DB_RoundUpdate(int winner, int loser, bool forceLoss) {
 
     int arena = g_Ranking[winner];
     int roundType = g_roundTypes[arena];
-    if (!g_RoundTypeRanked[roundType])
+    if (!HasRoundTypeSpecificRating(roundType))
       return;
 
     g_Losses[loser]++;
