@@ -85,7 +85,7 @@ bool g_HideStats[MAXPLAYERS + 1];
 bool g_AutoSpec[MAXPLAYERS + 1];
 
 #define AUTOSPEC_DEFAULT false
-#define HIDESTATS_DEAFULT false
+#define HIDESTATS_DEFAULT false
 Handle g_HideStatsCookie;
 Handle g_AutoSpecCookie;
 
@@ -1201,7 +1201,7 @@ public void ResetClientVariables(int client) {
   g_Preference[client] = 0;
   g_PrimaryWeapon[client] = "weapon_ak47";
   g_SecondaryWeapon[client] = "weapon_glock";
-  g_HideStats[client] = HIDESTATS_DEAFULT;
+  g_HideStats[client] = HIDESTATS_DEFAULT;
   g_AutoSpec[client] = AUTOSPEC_DEFAULT;
 }
 
