@@ -410,7 +410,6 @@ native void Multi1v1_AddStandardRounds();
 
 /**
  * Returns if the given round type is ranked.
- *
  */
 native bool Multi1v1_IsRoundTypeRanked(int roundType);
 
