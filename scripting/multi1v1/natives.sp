@@ -34,6 +34,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
   CreateNative("Multi1v1_BlockRatingChanges", Native_BlockRatingChanges);
   CreateNative("Multi1v1_UnblockRatingChanges", Native_UnblockRatingChanges);
   CreateNative("Multi1v1_AreRatingChangesBlocked", Native_AreRatingChangesBlocked);
+  CreateNative("Multi1v1_HasRoundTypeSpecificRating", Native_HasRoundTypeSpecificRating);
   CreateNative("Multi1v1_BlockChatMessages", Native_BlockChatMessages);
   CreateNative("Multi1v1_UnblockChatMessages", Native_UnblockChatMessages);
   CreateNative("Multi1v1_AreChatMessagesBlocked", Native_AreChatMessagesBlocked);
