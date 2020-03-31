@@ -542,3 +542,4 @@ public void __pl_multi1v1_SetNTVOptional() {
   MarkNativeAsOptional("Multi1v1_GetRoundTypeDisplayName");
   MarkNativeAsOptional("Multi1v1_GivePlayerKnife");
 }
+#endif
