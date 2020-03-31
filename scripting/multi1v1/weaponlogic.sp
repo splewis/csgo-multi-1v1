@@ -127,7 +127,7 @@ public void UpdatePreferencesOnCookies(int client) {
   GetClientCookie(client, g_PreferenceCookie, cookieValue, sizeof(cookieValue));
   g_Preference[client] = Multi1v1_GetRoundTypeIndex(cookieValue);
 
-  g_HideStats[client] = GetCookieBool(client, g_HideStatsCookie, HIDESTATS_DEAFULT);
+  g_HideStats[client] = GetCookieBool(client, g_HideStatsCookie, HIDESTATS_DEFAULT);
   g_AutoSpec[client] = GetCookieBool(client, g_AutoSpecCookie, AUTOSPEC_DEFAULT);
 
   // This checks if the player has a preference set
