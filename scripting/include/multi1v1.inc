@@ -530,6 +530,7 @@ public void __pl_multi1v1_SetNTVOptional() {
   MarkNativeAsOptional("Multi1v1_AddRoundType");
   MarkNativeAsOptional("Multi1v1_ClearRoundTypes");
   MarkNativeAsOptional("Multi1v1_IsRoundTypeRanked");
+  MarkNativeAsOptional("Multi1v1_HasRoundTypeSpecificRating");
   MarkNativeAsOptional("Multi1v1_GetRoundTypeIndex");
   MarkNativeAsOptional("Multi1v1_AddStandardRounds");
   MarkNativeAsOptional("Multi1v1_GetCurrentRoundType");
