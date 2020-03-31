@@ -413,6 +413,9 @@ native void Multi1v1_AddStandardRounds();
  */
 native bool Multi1v1_IsRoundTypeRanked(int roundType);
 
+#pragma deprecated Use the Multi1v1_IsRoundTypeRanked() instead
+native bool Multi1v1_HasRoundTypeSpecificRating(int roundType);
+
 /**
  * Returns the unique identifier (the index) of a round type given its internal name.
  */
