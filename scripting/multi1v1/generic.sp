@@ -182,13 +182,13 @@ stock void CloseNestedList(ArrayList list) {
 stock void SQL_CreateTable(Handle db_connection, const char[] table_name, const char[][] fields,
                            int num_fields) {
   char buffer[1024];
-  Format(buffer, sizeof(buffer), "CREATE TABLE IF NOT EXISTS `%s` (`", table_name);
+  Format(buffer, sizeof(buffer), "CREATE TABLE IF NOT EXISTS %s (", table_name);
   for (int i = 0; i < num_fields; i++) {
     StrCat(buffer, sizeof(buffer), fields[i]);
     if (i != num_fields - 1)
-      StrCat(buffer, sizeof(buffer), "`, `");
+      StrCat(buffer, sizeof(buffer), ", ");
   }
-  StrCat(buffer, sizeof(buffer), "`)");
+  StrCat(buffer, sizeof(buffer), ")");
 
   if (!SQL_FastQuery(db_connection, buffer)) {
     char err[255];
@@ -202,7 +202,7 @@ stock void SQL_CreateTable(Handle db_connection, const char[] table_name, const 
  */
 stock void SQL_AddColumn(Handle db_connection, const char[] table_name, const char[] column_info) {
   char buffer[1024];
-  Format(buffer, sizeof(buffer), "ALTER TABLE `%s` ADD COLUMN `%s`, ADD INDEX (`%s`)", table_name, column_info, column_info);
+  Format(buffer, sizeof(buffer), "ALTER TABLE %s ADD COLUMN %s", table_name, column_info);
   if (!SQL_FastQuery(db_connection, buffer)) {
     char err[255];
     SQL_GetError(db_connection, err, sizeof(err));
@@ -218,7 +218,7 @@ stock void SQL_AddColumn(Handle db_connection, const char[] table_name, const ch
 stock void SQL_UpdatePrimaryKey(Handle db_connection, const char[] table_name,
                                 const char[] primary_key) {
   char buffer[1024];
-  Format(buffer, sizeof(buffer), "ALTER TABLE `%s` DROP PRIMARY KEY, ADD PRIMARY KEY (`%s`)",
+  Format(buffer, sizeof(buffer), "ALTER TABLE %s DROP PRIMARY KEY, ADD PRIMARY KEY (%s)",
          table_name, primary_key);
   if (!SQL_FastQuery(db_connection, buffer)) {
     char err[255];
