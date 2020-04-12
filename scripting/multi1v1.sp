@@ -850,20 +850,24 @@ public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcas
  * Player death event, updates g_arenaWinners/g_arenaLosers for the arena that was just decided.
  */
 public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
-  if (!g_Enabled)
+  if (!g_Enabled) {
     return;
+  }
 
   int victim = GetClientOfUserId(event.GetInt("userid"));
   int attacker = GetClientOfUserId(event.GetInt("attacker"));
-  int arena = g_Ranking[victim];
-
-  if (victim != -1) {
-    g_LastClientDeathTime[victim] = GetTime();
+  
+  if (victim < 0) {
+    return;
   }
 
+  g_LastClientDeathTime[victim] = GetTime();
+  int arena = g_Ranking[victim];
+
   // If we've already decided the arena, don't worry about anything else in it
-  if (g_ArenaStatsUpdated[arena])
+  if (g_ArenaStatsUpdated[arena]) {
     return;
+  }
 
   if (!IsValidClient(attacker) || attacker == victim) {
     int p1 = g_ArenaPlayer1[arena];
