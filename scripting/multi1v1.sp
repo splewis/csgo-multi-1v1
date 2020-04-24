@@ -517,8 +517,10 @@ public Action Event_OnPlayerTeam(Event event, const char[] name, bool dontBroadc
   if (!g_Enabled)
     return Plugin_Continue;
 
-  SetEventBroadcast(event, true);
-  return Plugin_Continue;
+  // Silent event without blocking it
+  event.SetBool("silent", true);
+
+  return Plugin_Changed;
 }
 
 /**
@@ -782,8 +784,15 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
   char buffer[32];
   Format(buffer, sizeof(buffer), "%T", "ArenaClanTag", LANG_SERVER, arena - g_arenaOffsetValue);
 
-  if (g_UseTeamTagsCvar.IntValue != 0)
-    CS_SetClientClanTag(client, buffer);
+  if (g_UseTeamTagsCvar.IntValue != 0) {
+    // Since I removed SetEventBroadcast call into player_team event we need this workaround
+    // I don't know exactly why but it seem to be how the engine works.
+    DataPack pack;
+    CreateDataTimer(0.1, Timer_UpdateClientArenaTag, pack);
+
+    pack.WriteCell(GetClientSerial(client));
+    pack.WriteString(buffer);
+  }
 
   if (g_UseMVPStarsCvar.IntValue != 0)
     CS_SetMVPCount(client, g_RoundsLeader[client]);
@@ -856,7 +865,7 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
 
   int victim = GetClientOfUserId(event.GetInt("userid"));
   int attacker = GetClientOfUserId(event.GetInt("attacker"));
-  
+
   if (victim < 0) {
     return;
   }
@@ -1314,6 +1323,29 @@ public Action Timer_UpdateAutoSpecTargets(Handle timer) {
       }
     }
   }
+
+  return Plugin_Continue;
+}
+
+/**
+ * Update the client's clan tag with the given one
+ *
+ * - First cell of the pack is the client serial
+ * - Second cell of the pack is the clan tag string
+ */
+public Action Timer_UpdateClientArenaTag(Handle timer, DataPack pack)
+{
+  pack.Reset();
+  int client = GetClientFromSerial(pack.ReadCell());
+
+  if (client == 0) {
+    return Plugin_Stop;
+  }
+
+  char clientTag[32];
+  pack.ReadString(clientTag, 32);
+
+  CS_SetClientClanTag(client, clientTag);
 
   return Plugin_Continue;
 }
