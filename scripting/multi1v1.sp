@@ -517,7 +517,7 @@ public Action Event_OnPlayerTeam(Event event, const char[] name, bool dontBroadc
   if (!g_Enabled)
     return Plugin_Continue;
 
-  SetEventBroadcast(event, true);
+  event.SetBool("silent", true);
   return Plugin_Continue;
 }
 
