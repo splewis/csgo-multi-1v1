@@ -517,8 +517,10 @@ public Action Event_OnPlayerTeam(Event event, const char[] name, bool dontBroadc
   if (!g_Enabled)
     return Plugin_Continue;
 
+  // Silent event without blocking it
   event.SetBool("silent", true);
-  return Plugin_Continue;
+
+  return Plugin_Changed;
 }
 
 /**
