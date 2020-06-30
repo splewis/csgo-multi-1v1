@@ -1107,7 +1107,7 @@ public void SwitchPlayerTeam(int client, int team) {
 
   g_PluginTeamSwitch[client] = true;
   if (team > CS_TEAM_SPECTATOR) {
-    CS_SwitchTeam(client, team);
+    ChangeClientTeam(client, team);
     CS_UpdateClientModel(client);
   } else {
     ChangeClientTeam(client, team);
