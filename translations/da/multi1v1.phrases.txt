@@ -1,0 +1,137 @@
+"Phrases"
+{
+	"NoOpponent"
+	{
+		"#format"	"{1:i}"
+		"da"		"Du er i arena {GREEN}{1} {NORMAL}uden {DARK_RED}en modstander."
+	}
+	"NoOpponentHint"
+	{
+		"da"		"<font size='22' color='#FF0000'>Du har ingen modstander.</font>"
+	}
+	"FacingOff"
+	{
+		"#format"	"{1:i},{2:N}"
+		"da"		"Du er i arenaen {GREEN}{1}{NORMAL}, hvor du skal møde {PURPLE}{2}{NORMAL}."
+	}
+	"ArenasFull"
+	{
+		"da"		"Beklager, alle arenaer er på nuværende tidspunkt {PURPLE}fulde."
+	}
+	"QueuePosition"
+	{
+		"#format"	"{1:i}"
+		"da"		"Du er nummer {GREEN}{1} {NORMAL}i køen, til at joine."
+	}
+	"WonMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"da"		"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_GREEN}+{2}{NORMAL}) slog {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {DARK_RED}-{5}{NORMAL})."
+	}
+	"LossMessage"
+	{
+		"#format"	"{1:i},{2:.1f},{3:N},{4:i},{5:.1f}"
+		"da"		"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) {NORMAL}tabte til {PURPLE}{3} {NORMAL}(rating {PURPLE}{4}, {LIGHT_GREEN}+{5}{NORMAL})."
+	}
+	"TimeRanOut"
+	{
+		"#format"	"{1:i},{2:.1f}"
+		"da"		"{GREEN}Du {NORMAL}(rating {GREEN}{1}, {LIGHT_RED}-{2}{NORMAL}) lod tiden løbe ud."
+	}
+	"MostWins"
+	{
+		"#format"	"{1:N},{2:d}"
+		"da"		"{GREEN}{1} {NORMAL}havde flest wins {PURPLE}({2}) {NORMAL}i arena 1 dette map."
+	}
+	"OpponentLeft"
+	{
+		"da"		"{GREEN}Din modstander forlod spillet."
+	}
+	"OpponentLeftHint"
+	{
+		"da"		"<font size='22' color='#00FF00'>Din modstander forlod spillet.</font>"
+	}
+	"HideStats"
+	{
+		"da"		"Spiller stats bliver nu skjult."
+	}
+	"ShowStats"
+	{
+		"da"		"Spiller stats bliver nu vist."
+	}
+	"AutoSpecOn"
+	{
+		"da"		"Du har tændt for auto-spectate."
+	}
+	"AutoSpecOff"
+	{
+		"da"		"Du har slukket for auto-spectate."
+	}
+	"AutoSpecSwitch"
+	{
+		"#format"		"{1:d}"
+		"da"		"Auto-skifter til tilskuer arena {1}."
+	}
+	"ArenaClanTag"
+	{
+		"#format"	"{1:d}"
+		"da"		"Arena {1}"
+	}
+	"Disabled"
+	{
+		"da"		"frakoblet"
+	}
+	"Enabled"
+	{
+		"da"		"tilkoblet"
+	}
+	"WeaponsMenuTitle"
+	{
+		"da"		"Vælg dine våben præferencer:"
+	}
+	"WeaponsMenuRifle"
+	{
+		"#format"		"{1:s}"
+		"da"		"Rifler: {1}"
+	}
+	"WeaponsMenuPistol"
+	{
+		"#format"		"{1:s}"
+		"da"		"Pistol: {1}"
+	}
+	"WeaponsMenuRoundTypeEnabled"
+	{
+		"#format"		"{1:s},{2:s}"
+		"da"		"{1} runder: {2}"
+	}
+	"WeaponsMenuPreferenceTitle"
+	{
+		"da"		"Væl din foretrukne våbentype:"
+	}
+	"WeaponsMenuPreference"
+	{
+		"#format"		"{1:s}"
+		"da"		"Preferencer: {1} runder"
+	}
+	"WeaponsMenuPreferenceNone"
+	{
+		"da"		"Preferencer: ingen"
+	}
+	"WeaponsMenuNoPreference"
+	{
+		"da"		"Ingen preferencer"
+	}
+	"WeaponsMenuPreferenceChoice"
+	{
+		"#format"		"{1:s}"
+		"da"		"{1} runder"
+	}
+	"WeaponsMenuSelection"
+	{
+		"da"		"Vælg dine foretrukne riffel:"
+	}
+	"PistolMenuTitle"
+	{
+		"da"		"Vælg din foretrukne pistol:"
+	}
+}
