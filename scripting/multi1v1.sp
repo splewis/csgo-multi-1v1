@@ -505,9 +505,22 @@ public Action Event_OnFullConnect(Event event, const char[] name, bool dontBroad
     return;
 
   int client = GetClientOfUserId(event.GetInt("userid"));
+
+  // this code might be useless now
   if (IsPlayer(client)) {
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
   }
+  
+  // workaround to fix stuck team menu on join
+  // basically it creates the panel & cancels it
+  Event TeamPanel = CreateEvent("player_team");
+  TeamPanel.SetInt("userid", GetClientUserId(client));
+  TeamPanel.FireToClient(client);
+  CancelCreatedEvent(TeamPanel);
+
+  // also make sure he's joining queue and not stuck on CS_TEAM_NONE
+  Queue_Enqueue(g_waitingQueue, client);
+  SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
 }
 
 /**
