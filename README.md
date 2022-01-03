@@ -3,6 +3,7 @@ csgo-multi-1v1
 
 [![Build status](http://ci.splewis.net/job/csgo-multi-1v1/badge/icon)](http://ci.splewis.net/job/csgo-multi-1v1/)
 [![GitHub Downloads](https://img.shields.io/github/downloads/splewis/csgo-multi-1v1/total.svg?style=flat-square&label=Downloads)](https://github.com/splewis/csgo-multi-1v1/releases/latest)
+[![Discord Chat](https://img.shields.io/discord/926309849673895966.svg)](https://discord.gg/)
 
 **Status: Supported.**
 
@@ -223,8 +224,11 @@ Note that the multi1v1 plugin will
 - create and update the column for the round-type stats if you set the round type as ranked and give a non-empty string as the ``ratingFieldName`` parameter ( note that these columns are only created on database-connections)
 - create and update the "allow x rounds" clientprefs cookie for you (it uses the interalName when naming the cookie)
 
+## Discord Chat
 
-## Contribution and Suggestions
+A [Discord](https://discord.gg/zmqEa4keCk) channel is available for general discussion.
+
+## Contributions and Suggestions
 First, check the [issue tracker](https://github.com/splewis/csgo-multi-1v1/issues?state=open) to ask questions or make a suggestion.
 If you have a suggestion you can mark it as an enhancement.
 

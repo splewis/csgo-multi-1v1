@@ -1,3 +1,9 @@
+* Removed custom radar removal logic, users should use `sv_disable_radar` in their `cfg/sourcemod/multi1v1/game_cvars.cfg` file now instead, as the default config now does
+* Silence all new radio commands
+* More translations
+* New forwards around ratings
+* **Fix an issue where players are stuck on team menus**
+
 1.1.8:
 - change ``Multi1v1_OnRoundTypesAdded`` to be called in OnPluginStart instead of OnMapStart, this fixes a cookie issue where clientprefs cookies aren't always saved
 - add support for "rifle_preference" and "pistol_preference" in customrounds.cfg file
