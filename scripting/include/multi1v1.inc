@@ -289,12 +289,16 @@ native void Multi1v1_GivePlayerArenaWeapons(int client, int roundType);
 // 'you are in arena %d facing off against %N' using these.
 native void Multi1v1_BlockRatingChanges(int client);
 native void Multi1v1_UnblockRatingChanges(int client);
+native void Multi1v1_AreRatingChangesBlocked(int client);
 native void Multi1v1_BlockChatMessages(int client);
 native void Multi1v1_UnblockChatMessages(int client);
+native void Multi1v1_AreChatMessagesBlocked(int client);
 native void Multi1v1_BlockMVPStars(int client);
 native void Multi1v1_UnblockMVPStars(int client);
+native void Multi1v1_AreMVPStarsBlocked(int client);
 native void Multi1v1_BlockArenaDones(int arena);
 native void Multi1v1_UnblockArenaDones(int arena);
+native void Multi1v1_AreArenaDonesBlocked(int arena);
 
 /**
  * Sets an offset value for arena numbering when giving
@@ -404,7 +408,12 @@ native void Multi1v1_ClearRoundTypes();
  */
 native void Multi1v1_AddStandardRounds();
 
+/**
+ * Returns if the given round type is ranked.
+ */
+native bool Multi1v1_IsRoundTypeRanked(int roundType);
 
+#pragma deprecated Use the Multi1v1_IsRoundTypeRanked() instead
 native bool Multi1v1_HasRoundTypeSpecificRating(int roundType);
 
 /**
@@ -501,12 +510,16 @@ public void __pl_multi1v1_SetNTVOptional() {
   MarkNativeAsOptional("Multi1v1_MessageToAll");
   MarkNativeAsOptional("Multi1v1_BlockRatingChanges");
   MarkNativeAsOptional("Multi1v1_UnblockRatingChanges");
+  MarkNativeAsOptional("Multi1v1_AreRatingChangesBlocked");
   MarkNativeAsOptional("Multi1v1_BlockChatMessages");
   MarkNativeAsOptional("Multi1v1_UnblockChatMessages");
+  MarkNativeAsOptional("Multi1v1_AreChatMessagesBlocked");
   MarkNativeAsOptional("Multi1v1_BlockMVPStars");
   MarkNativeAsOptional("Multi1v1_UnblockMVPStars");
+  MarkNativeAsOptional("Multi1v1_AreMVPStarsBlocked");
   MarkNativeAsOptional("Multi1v1_BlockArenaDones");
   MarkNativeAsOptional("Multi1v1_UnblockArenaDones");
+  MarkNativeAsOptional("Multi1v1_AreArenaDonesBlocked");
   MarkNativeAsOptional("Multi1v1_SetArenaOffsetValue");
   MarkNativeAsOptional("Multi1v1_ELORatingDelta");
   MarkNativeAsOptional("Multi1v1_GetNumSpawnsInArena");
@@ -516,6 +529,7 @@ public void __pl_multi1v1_SetNTVOptional() {
   MarkNativeAsOptional("Multi1v1_GetPistolChoice");
   MarkNativeAsOptional("Multi1v1_AddRoundType");
   MarkNativeAsOptional("Multi1v1_ClearRoundTypes");
+  MarkNativeAsOptional("Multi1v1_IsRoundTypeRanked");
   MarkNativeAsOptional("Multi1v1_HasRoundTypeSpecificRating");
   MarkNativeAsOptional("Multi1v1_GetRoundTypeIndex");
   MarkNativeAsOptional("Multi1v1_AddStandardRounds");

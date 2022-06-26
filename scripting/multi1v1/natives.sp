@@ -33,12 +33,16 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
   CreateNative("Multi1v1_MessageToAll", Native_Multi1v1MessageToAll);
   CreateNative("Multi1v1_BlockRatingChanges", Native_BlockRatingChanges);
   CreateNative("Multi1v1_UnblockRatingChanges", Native_UnblockRatingChanges);
+  CreateNative("Multi1v1_AreRatingChangesBlocked", Native_AreRatingChangesBlocked);
   CreateNative("Multi1v1_BlockChatMessages", Native_BlockChatMessages);
   CreateNative("Multi1v1_UnblockChatMessages", Native_UnblockChatMessages);
+  CreateNative("Multi1v1_AreChatMessagesBlocked", Native_AreChatMessagesBlocked);
   CreateNative("Multi1v1_BlockMVPStars", Native_BlockMVPStars);
   CreateNative("Multi1v1_UnblockMVPStars", Native_UnblockMVPStars);
+  CreateNative("Multi1v1_AreMVPStarsBlocked", Native_AreMVPStarsBlocked);
   CreateNative("Multi1v1_BlockArenaDones", Native_BlockArenaDones);
   CreateNative("Multi1v1_UnblockArenaDones", Native_UnblockArenaDones);
+  CreateNative("Multi1v1_Native_AreArenaDonesBlocked", Native_AreArenaDonesBlocked);
   CreateNative("Multi1v1_SetArenaOffsetValue", Native_SetArenaOffsetValue);
   CreateNative("Multi1v1_ELORatingDelta", Native_ELORatingDelta);
   CreateNative("Multi1v1_GetNumSpawnsInArena", Native_GetNumSpawnsInArena);
@@ -46,7 +50,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
   CreateNative("Multi1v1_FindArenaNumber", Native_FindArenaNumber);
   CreateNative("Multi1v1_GetRifleChoice", Native_GetRifleChoice);
   CreateNative("Multi1v1_GetPistolChoice", Native_GetPistolChoice);
-  CreateNative("Multi1v1_HasRoundTypeSpecificRating", Native_HasRoundTypeSpecificRating);
+  CreateNative("Multi1v1_IsRoundTypeRanked", Native_IsRoundTypeRanked);
+  CreateNative("Multi1v1_HasRoundTypeSpecificRating", Native_IsRoundTypeRanked);
   CreateNative("Multi1v1_GetRoundTypeIndex", Native_GetRoundTypeIndex);
   CreateNative("Multi1v1_AddRoundType", Native_AddRoundType);
   CreateNative("Multi1v1_ClearRoundTypes", Native_ClearRoundTypes);
@@ -55,7 +60,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
   CreateNative("Multi1v1_GetNumRoundTypes", Native_GetNumRoundTypes);
   CreateNative("Multi1v1_PlayerAllowsRoundType", Native_PlayerAllowsRoundType);
   CreateNative("Multi1v1_PlayerPreference", Native_PlayerPreference);
-  CreateNative("Multi1v1_IsHidingStats", Native_IsHidingStates);
+  CreateNative("Multi1v1_IsHidingStats", Native_IsHidingStats);
   CreateNative("Multi1v1_AreRatingChangesAllowed", Native_AreRatingChangesAllowed);
   CreateNative("Multi1v1_IsRoundTypeEnabled", Native_IsRoundTypeEnabled);
   CreateNative("Multi1v1_EnableRoundType", Native_EnableRoundType);
@@ -102,7 +107,7 @@ public int Native_GetRating(Handle plugin, int numParams) {
     return view_as<int>(g_Rating[client]);
   } else {
     CHECK_ROUNDTYPE(roundType);
-    if (g_RoundTypeRanked[roundType])
+    if (!HasRoundTypeSpecificRating(roundType))
       ThrowNativeError(SP_ERROR_PARAM, "Roundtype %d is not ranked", roundType);
 
     return view_as<int>(g_RoundTypeRating[client][roundType]);
@@ -257,6 +262,13 @@ public int Native_UnblockRatingChanges(Handle plugin, int numParams) {
   g_BlockStatChanges[client] = false;
 }
 
+public int Native_AreRatingChangesBlocked(Handle plugin, int numParams) {
+  int client = GetNativeCell(1);
+  CHECK_CONNECTED(client);
+  return g_BlockStatChanges[client];
+}
+
+
 public int Native_BlockChatMessages(Handle plugin, int numParams) {
   int client = GetNativeCell(1);
   CHECK_CONNECTED(client);
@@ -267,6 +279,12 @@ public int Native_UnblockChatMessages(Handle plugin, int numParams) {
   int client = GetNativeCell(1);
   CHECK_CONNECTED(client);
   g_BlockChatMessages[client] = false;
+}
+
+public int Native_AreChatMessagesBlocked(Handle plugin, int numParams) {
+  int client = GetNativeCell(1);
+  CHECK_CONNECTED(client);
+  return g_BlockChatMessages[client];
 }
 
 public int Native_BlockMVPStars(Handle plugin, int numParams) {
@@ -281,6 +299,12 @@ public int Native_UnblockMVPStars(Handle plugin, int numParams) {
   g_BlockMVPStars[client] = false;
 }
 
+public int Native_AreMVPStarsBlocked(Handle plugin, int numParams) {
+  int client = GetNativeCell(1);
+  CHECK_CONNECTED(client);
+  return g_BlockMVPStars[client];
+}
+
 public int Native_BlockArenaDones(Handle plugin, int numParams) {
   int arena = GetNativeCell(1);
   g_BlockArenaDones[arena] = true;
@@ -289,6 +313,12 @@ public int Native_BlockArenaDones(Handle plugin, int numParams) {
 public int Native_UnblockArenaDones(Handle plugin, int numParams) {
   int arena = GetNativeCell(1);
   g_BlockArenaDones[arena] = false;
+}
+
+public int Native_AreArenaDonesBlocked(Handle plugin, int numParams) {
+  int arena = GetNativeCell(1);
+  CHECK_ARENA(arena);
+  return g_BlockArenaDones[arena];
 }
 
 public int Native_SetArenaOffsetValue(Handle plugin, int numParams) {
@@ -418,7 +448,7 @@ public int Native_AddRoundType(Handle plugin, int numParams) {
                       ratingFieldName, enabled);
 }
 
-public int Native_HasRoundTypeSpecificRating(Handle plugin, int numParams) {
+public int Native_IsRoundTypeRanked(Handle plugin, int numParams) {
   int roundType = GetNativeCell(1);
   CHECK_ROUNDTYPE(roundType);
   return HasRoundTypeSpecificRating(roundType);
@@ -466,7 +496,7 @@ public int Native_PlayerPreference(Handle plugin, int numParams) {
   return g_Preference[client];
 }
 
-public int Native_IsHidingStates(Handle plugin, int numParams) {
+public int Native_IsHidingStats(Handle plugin, int numParams) {
   int client = GetNativeCell(1);
   CHECK_CONNECTED(client);
   return g_HideStats[client];
