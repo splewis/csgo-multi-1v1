@@ -75,7 +75,8 @@ stock ReloadPlugin(Handle plugin = INVALID_HANDLE) {
 }
 
 public SharedPlugin __pl_updater = {
-    name = "updater", file = "updater.smx",
+    name = "updater",
+    file = "updater.smx",
 #if defined REQUIRE_PLUGIN
     required = 1,
 #else

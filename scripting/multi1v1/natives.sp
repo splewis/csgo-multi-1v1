@@ -268,7 +268,6 @@ public int Native_AreRatingChangesBlocked(Handle plugin, int numParams) {
   return g_BlockStatChanges[client];
 }
 
-
 public int Native_BlockChatMessages(Handle plugin, int numParams) {
   int client = GetNativeCell(1);
   CHECK_CONNECTED(client);
@@ -452,7 +451,7 @@ public int Native_IsRoundTypeRanked(Handle plugin, int numParams) {
   int roundType = GetNativeCell(1);
   CHECK_ROUNDTYPE(roundType);
   return HasRoundTypeSpecificRating(roundType);
-}  
+}
 
 public int Native_GetRoundTypeIndex(Handle plugin, int numParams) {
   char buffer[ROUND_TYPE_NAME_LENGTH];
@@ -502,7 +501,7 @@ public int Native_IsHidingStats(Handle plugin, int numParams) {
   return g_HideStats[client];
 }
 
-public int Native_AreRatingChangesAllowed(Handle plugin, int numParams) {  
+public int Native_AreRatingChangesAllowed(Handle plugin, int numParams) {
   return AreRatingChangesAllowed();
 }
 

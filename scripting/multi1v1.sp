@@ -510,7 +510,7 @@ public Action Event_OnFullConnect(Event event, const char[] name, bool dontBroad
   if (IsPlayer(client)) {
     SetEntPropFloat(client, Prop_Send, "m_fForceTeam", 3600.0);
   }
-  
+
   // workaround to fix stuck team menu on join
   // basically it creates the panel & cancels it
   Event TeamPanel = CreateEvent("player_team");
@@ -869,7 +869,7 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
 
   int victim = GetClientOfUserId(event.GetInt("userid"));
   int attacker = GetClientOfUserId(event.GetInt("attacker"));
-  
+
   if (victim < 0) {
     return;
   }

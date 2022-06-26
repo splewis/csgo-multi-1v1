@@ -1,4 +1,4 @@
-
+// 
 #if defined _multi1v1_included
 #endinput
 #endif
@@ -119,7 +119,7 @@ forward void Multi1v1_OnRoundTypeDecided(int arena, int player1, int player2, in
  *       they have type ArrayList<ArrayList<float[3]>>
  *
  * @noreturn
-*/
+ */
 forward void Multi1v1_OnSpawnsFound(ArrayList ctOrigins, ArrayList ctAngles, ArrayList tOrigins,
                                     ArrayList tAngles);
 
@@ -424,16 +424,15 @@ native int Multi1v1_GetRoundTypeIndex(const char[] internalName);
 // Helper null callback for round types that don't need to give players weapons on spawn.
 public void Multi1v1_NullWeaponHandler(int client) {}
 
-
 /**
- * Returns if the plugin will do rating updates ( based on the config value sm_multi1v1_min_players_for_rating_changes )
+ * Returns if the plugin will do rating updates (based on the config value
+ * sm_multi1v1_min_players_for_rating_changes).
  */
 native bool Multi1v1_AreRatingChangesAllowed();
 native bool Multi1v1_IsRoundTypeEnabled(int roundType);
 native void Multi1v1_EnableRoundType(int roundType);
 native void Multi1v1_DisableRoundType(int roundType);
 native void Multi1v1_GetRoundTypeDisplayName(int roundType, char[] buffer, int bufferLength);
-
 
 /**
  * Returns the current round type in an arena.
@@ -480,7 +479,8 @@ native void Multi1v1_GiveWeaponsMenu(int client, int pos = 0);
 native void Multi1v1_GivePlayerKnife(int cilent);
 
 public SharedPlugin __pl_multi1v1 = {
-    name = "multi1v1", file = "multi1v1.smx",
+    name = "multi1v1",
+    file = "multi1v1.smx",
 #if defined REQUIRE_PLUGIN
     required = 1,
 #else

@@ -87,7 +87,9 @@ public void Spawns_MapStart() {
   }
 
   if (g_maxArenas * 2 < GetMaxHumanPlayers()) {
-    LogError("There may not be enough arenas for the server player count! Found %d arenas (enough for %d players), but max human players=%d", g_maxArenas, g_maxArenas*2, GetMaxHumanPlayers());
+    LogError(
+        "There may not be enough arenas for the server player count! Found %d arenas (enough for %d players), but max human players=%d",
+        g_maxArenas, g_maxArenas * 2, GetMaxHumanPlayers());
   }
 }
 
