@@ -77,12 +77,6 @@ There is a [wiki page](https://github.com/splewis/csgo-multi-1v1/wiki/Standard-s
 ## Building
 The build process is managed by my [smbuilder](https://github.com/splewis/sm-builder) project. You can still compile multi1v1.sp without it, however.
 
-To compile, you will need:
-- [SMLib](https://github.com/bcserv/smlib) (required)
-
-You should make sure you have a relatively recent version of smlib - some changes were made to accommodate sourcemod 1.7 changes.
-
-
 ## Maps
 I have a [workshop collection](http://steamcommunity.com/sharedfiles/filedetails/?id=249376192) of maps I know of. The "am_" prefix stands for aim_multi, reflecting the fact that the maps are similar to aim_ maps but there are multiple copies of them.
 

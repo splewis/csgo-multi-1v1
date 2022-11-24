@@ -202,7 +202,7 @@ public int Native_GivePlayerArenaWeapons(Handle plugin, int numParams) {
   } else {
     Handle pluginSource = g_RoundTypeSourcePlugin[roundType];
     RoundTypeWeaponHandler weaponHandler = g_RoundTypeWeaponHandlers[roundType];
-    Client_RemoveAllWeapons(client);
+    Client_RemoveAllMatchingWeapons(client);
     Call_StartFunction(pluginSource, weaponHandler);
     Call_PushCell(client);
     Call_Finish();

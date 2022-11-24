@@ -8,8 +8,8 @@
 
 #include "include/multi1v1.inc"
 #include "multi1v1/version.sp"
-#include <smlib>
 #include <sourcemod>
+#include <sdktools>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -29,6 +29,6 @@ public void Multi1v1_OnRoundTypesAdded() {
 }
 
 public void KnifeHandler(int client) {
-  Client_SetArmor(client, 100);
+  SetEntProp(client, Prop_Data, "m_ArmorValue", 100);
   GivePlayerItem(client, "weapon_knife");
 }

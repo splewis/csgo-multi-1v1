@@ -4,7 +4,6 @@
 #include <cstrike>
 #include <sdkhooks>
 #include <sdktools>
-#include <smlib>
 #include <sourcemod>
 
 #include "include/logdebug.inc"

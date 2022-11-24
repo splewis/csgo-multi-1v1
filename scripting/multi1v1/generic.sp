@@ -15,6 +15,7 @@ char g_ColorCodes[][] = {"\x01", "\x02", "\x03", "\x04", "\x05", "\x06",
 #define SPECMODE_FIRSTPERSON 4
 #define SPECMODE_THIRDPERSON 5
 #define SPECMODE_FREELOOK 6
+#define MAX_WEAPONS       48  // Max number of weapons availabl
 
 /**
  * Function to identify if a client is valid and in game.
@@ -250,14 +251,85 @@ stock bool SplitStringRight(const char[] source, const char[] split, char[] part
   return true;
 }
 
+stock ConVar FindCvarAndLogError(const char[] name) {
+  ConVar c = FindConVar(name);
+  if (c == null) {
+    LogError("ConVar \"%s\" could not be found");
+  }
+  return c;
+}
+
+stock void GetEnabledString(char[] buffer, int length, bool variable, int client = LANG_SERVER) {
+  if (variable)
+    Format(buffer, length, "%T", "Enabled", client);
+  else
+    Format(buffer, length, "%T", "Disabled", client);
+}
+
+stock float fmin(float x, float y) {
+  return (x < y) ? x : y;
+}
+
+stock float fmax(float x, float y) {
+  return (x < y) ? y : x;
+}
+
+stock void String_ToLower(const char[] input, char[] output, int size) {
+  size--;
+
+  int x=0;
+  while (input[x] != '\0' && x < size) {
+    output[x] = CharToLower(input[x]);
+    x++;
+  }
+
+  output[x] = '\0';
+}
+
+stock int Math_Min(int value, int min) {
+  if (value < min) {
+    value = min;
+  }
+  return value;
+}
+
 stock void Client_SetHelmet(int client, bool helmet) {
   int offset = FindSendPropInfo("CCSPlayer", "m_bHasHelmet");
   SetEntData(client, offset, helmet);
 }
 
-// Modified version of smlib's Client_RemoveAllWeapons with weapon substring matching
-stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude,
-                                          bool clearAmmo = false) {
+stock int Client_GetWeaponsOffset(int client)
+{
+  static int offset = -1;
+
+  if (offset == -1) {
+    offset = FindDataMapInfo(client, "m_hMyWeapons");
+  }
+
+  return offset;
+}
+
+stock void Client_SetActiveWeapon(int client, int weapon) {
+  SetEntPropEnt(client, Prop_Data, "m_hActiveWeapon", weapon);
+  ChangeEdictState(client, FindDataMapInfo(client, "m_hActiveWeapon"));
+}
+
+stock void Client_SetWeaponPlayerAmmoEx(int client, int weapon, int primaryAmmo=-1, int secondaryAmmo=-1) {
+  int offset_ammo = FindDataMapInfo(client, "m_iAmmo");
+
+  if (primaryAmmo != -1) {
+    int offset = offset_ammo + (Weapon_GetPrimaryAmmoType(weapon) * 4);
+    SetEntData(client, offset, primaryAmmo, 4, true);
+  }
+
+  if (secondaryAmmo != -1) {
+    int offset = offset_ammo + (Weapon_GetSecondaryAmmoType(weapon) * 4);
+    SetEntData(client, offset, secondaryAmmo, 4, true);
+  }
+}
+
+stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude = "",
+                                          bool clearAmmo = false, bool partialMatch=true) {
   int offset = Client_GetWeaponsOffset(client) - 4;
 
   int numWeaponsRemoved = 0;
@@ -270,7 +342,7 @@ stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude,
       continue;
     }
 
-    if (exclude[0] != '\0' && Entity_ClassNameMatches(weapon, exclude, true)) {
+    if (exclude[0] != '\0' && Entity_ClassNameMatches(weapon, exclude, partialMatch)) {
       Client_SetActiveWeapon(client, weapon);
       continue;
     }
@@ -289,25 +361,83 @@ stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude,
   return numWeaponsRemoved;
 }
 
-stock ConVar FindCvarAndLogError(const char[] name) {
-  ConVar c = FindConVar(name);
-  if (c == null) {
-    LogError("ConVar \"%s\" could not be found");
+stock bool Entity_ClassNameMatches(int entity, const char[] className, bool partialMatch=false) {
+  char entity_className[64];
+  Entity_GetClassName(entity, entity_className, sizeof(entity_className));
+
+  if (partialMatch) {
+    return (StrContains(entity_className, className) != -1);
   }
-  return c;
+
+  return StrEqual(entity_className, className);
 }
 
-stock void GetEnabledString(char[] buffer, int length, bool variable, int client = LANG_SERVER) {
-  if (variable)
-    Format(buffer, length, "%T", "Enabled", client);
-  else
-    Format(buffer, length, "%T", "Disabled", client);
+stock int Entity_GetClassName(int entity, char[] buffer, int size) {
+  return GetEntPropString(entity, Prop_Data, "m_iClassname", buffer, size);
 }
 
-public float fmin(float x, float y) {
-  return (x < y) ? x : y;
+stock int Weapon_GetPrimaryAmmoType(int weapon) {
+  return GetEntProp(weapon, Prop_Data, "m_iPrimaryAmmoType");
 }
 
-public float fmax(float x, float y) {
-  return (x < y) ? y : x;
+stock int Weapon_GetSecondaryAmmoType(int weapon) {
+  return GetEntProp(weapon, Prop_Data, "m_iSecondaryAmmoType");
+}
+
+stock bool Weapon_IsValid(int weapon) {
+  if (!IsValidEdict(weapon)) {
+    return false;
+  }
+  return Entity_ClassNameMatches(weapon, "weapon_", true);
+}
+
+stock void Client_SetArmor(int client, int value) {
+  SetEntProp(client, Prop_Data, "m_ArmorValue", value);
+}
+
+stock bool Entity_IsPlayer(int entity) {
+  if (entity < 1 || entity > MaxClients) {
+    return false;
+  }
+  return true;
+}
+
+stock int Entity_GetMaxHealth(int entity) {
+  return GetEntProp(entity, Prop_Data, "m_iMaxHealth");
+}
+
+stock int Entity_SetHealth(int entity, int value, bool ignoreMax=false, bool kill=true)
+{
+  int health = value;
+
+  if (!ignoreMax) {
+    int maxHealth = Entity_GetMaxHealth(entity);
+    if (health > maxHealth) {
+      health = maxHealth;
+    }
+  }
+
+  if (health < 0) {
+    health = 0;
+  }
+
+  SetEntProp(entity, Prop_Data, "m_iHealth", health);
+  if (health <= 0) {
+    Entity_Kill(entity);
+  }
+
+  return health;
+}
+
+stock bool Entity_Kill(int kenny, bool killChildren=false) {
+  if (Entity_IsPlayer(kenny)) {
+    ForcePlayerSuicide(kenny);
+    return true;
+  }
+
+  if (killChildren) {
+    return AcceptEntityInput(kenny, "KillHierarchy");
+  } else {
+    return AcceptEntityInput(kenny, "Kill");
+  }
 }
