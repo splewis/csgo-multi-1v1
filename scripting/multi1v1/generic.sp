@@ -15,7 +15,7 @@ char g_ColorCodes[][] = {"\x01", "\x02", "\x03", "\x04", "\x05", "\x06",
 #define SPECMODE_FIRSTPERSON 4
 #define SPECMODE_THIRDPERSON 5
 #define SPECMODE_FREELOOK 6
-#define MAX_WEAPONS       48  // Max number of weapons availabl
+#define MAX_WEAPONS 48  // Max number of weapons availabl
 
 /**
  * Function to identify if a client is valid and in game.
@@ -277,7 +277,7 @@ stock float fmax(float x, float y) {
 stock void String_ToLower(const char[] input, char[] output, int size) {
   size--;
 
-  int x=0;
+  int x = 0;
   while (input[x] != '\0' && x < size) {
     output[x] = CharToLower(input[x]);
     x++;
@@ -298,8 +298,7 @@ stock void Client_SetHelmet(int client, bool helmet) {
   SetEntData(client, offset, helmet);
 }
 
-stock int Client_GetWeaponsOffset(int client)
-{
+stock int Client_GetWeaponsOffset(int client) {
   static int offset = -1;
 
   if (offset == -1) {
@@ -314,7 +313,8 @@ stock void Client_SetActiveWeapon(int client, int weapon) {
   ChangeEdictState(client, FindDataMapInfo(client, "m_hActiveWeapon"));
 }
 
-stock void Client_SetWeaponPlayerAmmoEx(int client, int weapon, int primaryAmmo=-1, int secondaryAmmo=-1) {
+stock void Client_SetWeaponPlayerAmmoEx(int client, int weapon, int primaryAmmo = -1,
+                                        int secondaryAmmo = -1) {
   int offset_ammo = FindDataMapInfo(client, "m_iAmmo");
 
   if (primaryAmmo != -1) {
@@ -329,7 +329,7 @@ stock void Client_SetWeaponPlayerAmmoEx(int client, int weapon, int primaryAmmo=
 }
 
 stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude = "",
-                                          bool clearAmmo = false, bool partialMatch=true) {
+                                          bool clearAmmo = false, bool partialMatch = true) {
   int offset = Client_GetWeaponsOffset(client) - 4;
 
   int numWeaponsRemoved = 0;
@@ -361,7 +361,7 @@ stock int Client_RemoveAllMatchingWeapons(int client, const char[] exclude = "",
   return numWeaponsRemoved;
 }
 
-stock bool Entity_ClassNameMatches(int entity, const char[] className, bool partialMatch=false) {
+stock bool Entity_ClassNameMatches(int entity, const char[] className, bool partialMatch = false) {
   char entity_className[64];
   Entity_GetClassName(entity, entity_className, sizeof(entity_className));
 
@@ -406,8 +406,7 @@ stock int Entity_GetMaxHealth(int entity) {
   return GetEntProp(entity, Prop_Data, "m_iMaxHealth");
 }
 
-stock int Entity_SetHealth(int entity, int value, bool ignoreMax=false, bool kill=true)
-{
+stock int Entity_SetHealth(int entity, int value, bool ignoreMax = false, bool kill = true) {
   int health = value;
 
   if (!ignoreMax) {
@@ -429,7 +428,7 @@ stock int Entity_SetHealth(int entity, int value, bool ignoreMax=false, bool kil
   return health;
 }
 
-stock bool Entity_Kill(int kenny, bool killChildren=false) {
+stock bool Entity_Kill(int kenny, bool killChildren = false) {
   if (Entity_IsPlayer(kenny)) {
     ForcePlayerSuicide(kenny);
     return true;

@@ -8,8 +8,8 @@
 
 #include "include/multi1v1.inc"
 #include "multi1v1/version.sp"
-#include <sourcemod>
 #include <sdktools>
+#include <sourcemod>
 
 #pragma semicolon 1
 #pragma newdecls required
