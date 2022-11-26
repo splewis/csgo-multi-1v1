@@ -119,12 +119,12 @@ bool g_InOnRoundsAddedCallback = false;
 
 /** Arena arrays **/
 bool g_ArenaStatsUpdated[MAXPLAYERS + 1];
-int g_ArenaPlayer1[MAXPLAYERS + 1] = -1;  // who is player 1 in each arena
-int g_ArenaPlayer2[MAXPLAYERS + 1] = -1;  // who is player 2 in each arena
-int g_ArenaWinners[MAXPLAYERS + 1] = -1;  // who won each arena
-int g_ArenaLosers[MAXPLAYERS + 1] = -1;   // who lost each arena
-int g_roundTypes[MAXPLAYERS + 1];         // the round type being used in the arena
-int g_RoundsLeader[MAXPLAYERS + 1] = 0;
+int g_ArenaPlayer1[MAXPLAYERS + 1] = {-1, ...};  // who is player 1 in each arena
+int g_ArenaPlayer2[MAXPLAYERS + 1] = {-1, ...};  // who is player 2 in each arena
+int g_ArenaWinners[MAXPLAYERS + 1] = {-1, ...};  // who won each arena
+int g_ArenaLosers[MAXPLAYERS + 1] = {-1, ...};   // who lost each arena
+int g_roundTypes[MAXPLAYERS + 1];                // the round type being used in the arena
+int g_RoundsLeader[MAXPLAYERS + 1] = {0, ...};
 
 /** Variables for custom-configurable round types **/
 ArrayList g_RoundTypeWeaponLists[MAX_ROUND_TYPES];
@@ -501,7 +501,7 @@ public void OnClientCookiesCached(int client) {
  */
 public Action Event_OnFullConnect(Event event, const char[] name, bool dontBroadcast) {
   if (!g_Enabled)
-    return;
+    return Plugin_Continue;
 
   int client = GetClientOfUserId(event.GetInt("userid"));
 
@@ -520,6 +520,7 @@ public Action Event_OnFullConnect(Event event, const char[] name, bool dontBroad
   // also make sure he's joining queue and not stuck on CS_TEAM_NONE
   Queue_Enqueue(g_waitingQueue, client);
   SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
+  return Plugin_Continue;
 }
 
 /**
@@ -538,7 +539,7 @@ public Action Event_OnPlayerTeam(Event event, const char[] name, bool dontBroadc
  */
 public Action Event_OnRoundPreStart(Event event, const char[] name, bool dontBroadcast) {
   if (!g_Enabled)
-    return;
+    return Plugin_Continue;
 
   // Randomize arena orders if enabled.
   if (g_RandomizeArenaOrderCvar.IntValue != 0) {
@@ -640,6 +641,7 @@ public Action Event_OnRoundPreStart(Event event, const char[] name, bool dontBro
 
   Call_StartForward(g_hOnArenasReady);
   Call_Finish();
+  return Plugin_Continue;
 }
 
 public int spectatorSortFunction(int index1, int index2, Handle array, Handle hndl) {
@@ -688,7 +690,7 @@ public void AddPlayer(int client, Handle rankingQueue) {
  */
 public Action Event_OnRoundPostStart(Event event, const char[] name, bool dontBroadcast) {
   if (!g_Enabled)
-    return;
+    return Plugin_Continue;
 
   g_roundFinished = false;
   for (int arena = 1; arena <= g_maxArenas; arena++) {
@@ -748,6 +750,7 @@ public Action Event_OnRoundPostStart(Event event, const char[] name, bool dontBr
   }
 
   CreateTimer(1.0, Timer_CheckRoundComplete, _, TIMER_REPEAT);
+  return Plugin_Continue;
 }
 
 public Action Timer_NoOpponentHint(Handle timer, int serial) {
@@ -820,7 +823,7 @@ public void SetupPlayer(int client, int arena, int other, bool onCT) {
  */
 public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcast) {
   if (!g_Enabled)
-    return;
+    return Plugin_Continue;
 
   g_totalRounds++;
   g_roundFinished = true;
@@ -856,6 +859,7 @@ public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcas
       }
     }
   }
+  return Plugin_Continue;
 }
 
 /**
@@ -863,14 +867,14 @@ public Action Event_OnRoundEnd(Event event, const char[] name, bool dontBroadcas
  */
 public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
   if (!g_Enabled) {
-    return;
+    return Plugin_Continue;
   }
 
   int victim = GetClientOfUserId(event.GetInt("userid"));
   int attacker = GetClientOfUserId(event.GetInt("attacker"));
 
   if (victim < 0) {
-    return;
+    return Plugin_Continue;
   }
 
   g_LastClientDeathTime[victim] = GetTime();
@@ -878,7 +882,7 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
 
   // If we've already decided the arena, don't worry about anything else in it
   if (g_ArenaStatsUpdated[arena]) {
-    return;
+    return Plugin_Continue;
   }
 
   if (!IsValidClient(attacker) || attacker == victim) {
@@ -918,6 +922,7 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
     Call_Finish();
     DB_RoundUpdate(attacker, victim, false);
   }
+  return Plugin_Continue;
 }
 
 /**
@@ -926,11 +931,11 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
  */
 public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
   if (!g_Enabled)
-    return;
+    return Plugin_Continue;
 
   int client = GetClientOfUserId(event.GetInt("userid"));
   if (!IsActivePlayer(client))
-    return;
+    return Plugin_Continue;
 
   int arena = g_Ranking[client];
 
@@ -938,18 +943,18 @@ public Action Event_OnPlayerSpawn(Event event, const char[] name, bool dontBroad
   if (arena < 1) {
     Queue_Enqueue(g_waitingQueue, client);
     SwitchPlayerTeam(client, CS_TEAM_SPECTATOR);
-    return;
+    return Plugin_Continue;
   }
 
   Call_StartForward(g_hAfterPlayerSpawn);
   Call_PushCell(client);
   Call_Finish();
-  return;
+  return Plugin_Continue;
 }
 
 public Action Event_MatchOver(Event event, const char[] name, bool dontBroadcast) {
   if (!g_Enabled)
-    return;
+    return Plugin_Continue;
 
   int maxClient = -1;
   int maxScore = -1;
@@ -964,6 +969,7 @@ public Action Event_MatchOver(Event event, const char[] name, bool dontBroadcast
   if (IsPlayer(maxClient)) {
     Multi1v1_MessageToAll("%t", "MostWins", maxClient, maxScore);
   }
+  return Plugin_Continue;
 }
 
 /***********************

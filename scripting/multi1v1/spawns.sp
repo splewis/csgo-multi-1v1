@@ -145,7 +145,7 @@ public void Spawns_MapEnd() {
   CloseNestedList(g_CTAnglesList);
 }
 
-public float DistanceToSpawns(const float[3] origin, ArrayList spawns) {
+public float DistanceToSpawns(const float origin[3], ArrayList spawns) {
   float tmp[3];
   float minDist = 1.0e300;
   for (int i = 0; i < spawns.Length; i++) {
@@ -155,13 +155,13 @@ public float DistanceToSpawns(const float[3] origin, ArrayList spawns) {
   return minDist;
 }
 
-public float DistanceToArena(const float[3] origin, int arena) {
+public float DistanceToArena(const float origin[3], int arena) {
   ArrayList tSpawns = view_as<ArrayList>(g_TSpawnsList.Get(arena - 1));
   ArrayList ctSpawns = view_as<ArrayList>(g_CTSpawnsList.Get(arena - 1));
   return fmin(DistanceToSpawns(origin, tSpawns), DistanceToSpawns(origin, ctSpawns));
 }
 
-public int FindClosestArenaNumber(const float[3] origin) {
+public int FindClosestArenaNumber(const float origin[3]) {
   float minDist = 0.0;
   int minArena = 0;
   for (int i = 1; i <= g_maxArenas; i++) {
