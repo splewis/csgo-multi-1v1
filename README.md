@@ -28,7 +28,6 @@ Sometimes it's easier to add something in a seperate plugin than add more convar
 
 - **multi1v1_flashbangs**: if both players in an arena say "yes" to getting flashbangs, a flashbang is given to each player
 - **multi1v1_kniferounds**: adds unranked knife rounds
-- **multi1v1_online_stats_viewer**: adds the !stats and related commands that open up a stats webpage in a MOTD panel
 
 
 ## Download
