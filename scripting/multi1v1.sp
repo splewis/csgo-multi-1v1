@@ -873,7 +873,7 @@ public Action Event_OnPlayerDeath(Event event, const char[] name, bool dontBroad
   int victim = GetClientOfUserId(event.GetInt("userid"));
   int attacker = GetClientOfUserId(event.GetInt("attacker"));
 
-  if (victim < 0) {
+  if (victim < 1) {
     return Plugin_Continue;
   }
 
